@@ -26,6 +26,8 @@
  */
 package org.spout.engine.util.thread;
 
+import com.flowpowered.commons.bit.ShortBitMask;
+
 public interface AsyncManager {
 	/**
 	 * This method is called directly before preSnapshot is called
@@ -95,8 +97,5 @@ public interface AsyncManager {
 	 */
 	public void setExecutionThread(Thread t);
 
-	/**
-	 * Gets the highest stage for the start tick task
-	 */
-	public int getMaxStage();
+	public ShortBitMask getTickStages();
 }

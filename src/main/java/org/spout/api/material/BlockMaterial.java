@@ -28,7 +28,7 @@ package org.spout.api.material;
 
 import java.util.Set;
 
-import com.flowpowered.commons.bytebit.ByteBitSet;
+import com.flowpowered.commons.bit.ByteBitSet;
 import com.flowpowered.events.Cause;
 
 import com.google.common.collect.ImmutableSet;

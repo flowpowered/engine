@@ -24,24 +24,18 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.api.scheduler;
+package org.spout.engine.util.thread.coretasks;
 
-public class IllegalTickSequenceException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+import org.spout.engine.util.thread.AsyncManager;
 
-	public IllegalTickSequenceException(int allowedStages, int restrictedStages, Thread t, TickStage actualStage) {
-		super(getMessage(allowedStages, restrictedStages, t, actualStage));
-	}
-
-	public IllegalTickSequenceException(int allowedStages, TickStage actualStage) {
-		super("Method called during (" + actualStage + ") when only (" + TickStage.getAllStages(allowedStages) + ") were allowed");
-	}
-
-	private static String getMessage(int allowedStages, int restrictedStages, Thread t, TickStage actualStage) {
-		if (Thread.currentThread() != t) {
-			return "Method called by non-owning thread (" + Thread.currentThread() + ") during (" + actualStage + ") when only calls by (" + t + ") during (" + TickStage.getAllStages(allowedStages) + ") were allowed";
-		} else {
-			return "Method called during (" + actualStage + ") when only (" + TickStage.getAllStages(restrictedStages) + ") were allowed for owning thread " + t;
-		}
+public class LocalPhysicsTask extends LocalManagerRunnableFactory {
+	@Override
+	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+		return new ManagerRunnable(manager) {
+			@Override
+			public void runTask() {
+				manager.runPhysics(sequence);
+			}
+		};
 	}
 }

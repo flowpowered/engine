@@ -26,13 +26,13 @@ public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
 
     @Override
     public void start() {
-        super.start();
         try {
             DeployNatives.deploy();
         } catch (Exception ex) {
             Logger.getLogger(SpoutSingleplayer.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
+        super.start();
         getScheduler().startRenderThread();
         getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
     }

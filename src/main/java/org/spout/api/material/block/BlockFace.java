@@ -26,10 +26,9 @@
  */
 package org.spout.api.material.block;
 
-import com.flowpowered.commons.bytebit.ByteBitMask;
-
 import java.io.Serializable;
 
+import com.flowpowered.commons.bit.ByteBitMask;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import org.spout.math.imaginary.Quaternionf;

@@ -26,31 +26,26 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.spout.engine.util.thread.AsyncManager;
 
-public class StartTickTask extends GlobalManagerRunnableFactory {
+public class StartTickTask extends LocalManagerRunnableFactory {
 	private final int stage;
-	private long delta;
+    private final AtomicLong delta;
 
-	public StartTickTask(int stage) {
+	public StartTickTask(int stage, AtomicLong delta) {
 		this.stage = stage;
+        this.delta = delta;
 	}
 
 	@Override
 	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		final long delta = this.delta;
-		if (manager.getMaxStage() < stage) {
-			return null;
-		}
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.startTickRun(stage, delta);
+				manager.startTickRun(stage, delta.get());
 			}
 		};
-	}
-
-	public void setDelta(long delta) {
-		this.delta = delta;
 	}
 }

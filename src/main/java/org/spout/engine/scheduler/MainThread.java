@@ -1,7 +1,9 @@
 package org.spout.engine.scheduler;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,33 +11,49 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.flowpowered.commons.Named;
 
 import org.spout.api.Spout;
 import org.spout.api.scheduler.TickStage;
 import org.spout.api.scheduler.Worker;
-import org.spout.api.util.concurrent.ConcurrentList;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.coretasks.CopySnapshotTask;
-import org.spout.engine.util.thread.coretasks.DynamicUpdatesTask;
+import org.spout.engine.util.thread.coretasks.LocalDynamicUpdatesTask;
+import org.spout.engine.util.thread.coretasks.GlobalDynamicUpdatesTask;
 import org.spout.engine.util.thread.coretasks.FinalizeTask;
 import org.spout.engine.util.thread.coretasks.LightingTask;
+import org.spout.engine.util.thread.coretasks.ManagerRunnable;
 import org.spout.engine.util.thread.coretasks.ManagerRunnableFactory;
-import org.spout.engine.util.thread.coretasks.PhysicsTask;
+import org.spout.engine.util.thread.coretasks.LocalPhysicsTask;
+import org.spout.engine.util.thread.coretasks.GlobalPhysicsTask;
 import org.spout.engine.util.thread.coretasks.PreSnapshotTask;
 import org.spout.engine.util.thread.coretasks.StartTickTask;
 
 public class MainThread extends SchedulerElement {
     private final SpoutScheduler scheduler;
-	// Scheduler tasks
-	private final StartTickTask[] startTickTask = new StartTickTask[] {new StartTickTask(0), new StartTickTask(1), new StartTickTask(2)};
-	private final DynamicUpdatesTask dynamicUpdatesTask = new DynamicUpdatesTask();
-	private final PhysicsTask physicsTask = new PhysicsTask();
-	private final LightingTask lightingTask = new LightingTask();
-	private final FinalizeTask finalizeTask = new FinalizeTask();
-	private final PreSnapshotTask preSnapshotTask = new PreSnapshotTask();
-	private final CopySnapshotTask copySnapshotTask = new CopySnapshotTask();
+    private final AtomicLong currentDelta = new AtomicLong(0);
+    private final ManagerRunnableFactory[] managerRunnableFactories = new ManagerRunnableFactory[] {
+        null,//TickStart has no ManagerRunnableFactory
+        new StartTickTask(0, currentDelta),
+        new StartTickTask(1, currentDelta),
+        new LocalDynamicUpdatesTask(),
+        new GlobalDynamicUpdatesTask(),
+        new LocalPhysicsTask(),
+        new GlobalPhysicsTask(),
+        new LightingTask(),
+        new FinalizeTask(),
+        new PreSnapshotTask(),
+        new CopySnapshotTask()
+    };
+
+    // TODO: make sure that this is safe throughout the whole tick
+    // SnapshotableReference?
+    @SuppressWarnings("unchecked")
+    private final Set<ManagerRunnable>[][] managerRunnables = new Set[managerRunnableFactories.length][];
 
 	/**
 	 * Update count for physics and dynamic updates
@@ -48,14 +66,14 @@ public class MainThread extends SchedulerElement {
 	/**
 	 * A list of all AsyncManagers
 	 */
-	private final List<AsyncManager> asyncManagers = new ConcurrentList<>();
+	//private final List<AsyncManager> asyncManagers = new ConcurrentList<>();
 	// scheduler executor service
 	private final ExecutorService executorService;
 
     public MainThread(SpoutScheduler scheduler) {
         super("MainThread", 20);
         this.scheduler = scheduler;
-		executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1, new MarkedNamedThreadFactory("SpoutScheduler - async manager executor service", true));
+		executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1, new MarkedNamedThreadFactory("SpoutScheduler - AsyncManager executor service", true));
     }
 
     @Override
@@ -64,7 +82,7 @@ public class MainThread extends SchedulerElement {
 
     @Override
     public void onStop() {
-            doCopySnapshot(asyncManagers);
+            doCopySnapshot();
 
 			scheduler.getTaskManager().heartbeat(SpoutScheduler.PULSE_EVERY << 2);
 			scheduler.getTaskManager().shutdown(1L);
@@ -95,28 +113,15 @@ public class MainThread extends SchedulerElement {
     public void onTick(long delta) {
         // Delta is in nanos, we want millis with rounding
         delta = Math.round(delta * 1e-6d);
+        this.currentDelta.set(delta);
 
 		TickStage.setStage(TickStage.TICKSTART);
 
 		scheduler.getTaskManager().heartbeat(delta);
 
-		List<AsyncManager> managers = new ArrayList<>(asyncManagers);
+        runTasks(TickStage.STAGE1);
 
-		TickStage.setStage(TickStage.STAGE1);
-
-		for (int stage = 0; stage < this.startTickTask.length; stage++) {
-			if (stage == 0) {
-				TickStage.setStage(TickStage.STAGE1);
-			} else {
-				TickStage.setStage(TickStage.STAGE2P);
-			}
-
-			startTickTask[stage].setDelta(delta);
-
-			int tickStage = stage == 0 ? TickStage.STAGE1 : TickStage.STAGE2P;
-
-			runTasks(managers, startTickTask[stage], "Stage " + stage, tickStage);
-		}
+        runTasks(TickStage.STAGE2P);
 
         int totalUpdates = -1;
         int lightUpdates = 0;
@@ -127,7 +132,7 @@ public class MainThread extends SchedulerElement {
         int uP = 1;
         while ((uD + uP) > 0 && totalUpdates < UPDATE_THRESHOLD) {
             if (DYNAMIC_UPDATES) {
-                doDynamicUpdates(managers);
+                doDynamicUpdates();
             }
 
             uD = updates.getAndSet(0);
@@ -135,7 +140,7 @@ public class MainThread extends SchedulerElement {
             dynamicUpdates += uD;
 
             if (BLOCK_PHYSICS) {
-                doPhysics(managers);
+                doPhysics();
             }
 
             uP = updates.getAndSet(0);
@@ -143,31 +148,32 @@ public class MainThread extends SchedulerElement {
             physicsUpdates += uP;
         }
 
-        if (LIGHTING || !Spout.debugMode()) {
-            doLighting(managers);
+        if (LIGHTING) {
+            doLighting();
         }
 
         if (totalUpdates >= UPDATE_THRESHOLD) {
             Spout.warn("Block updates per tick of " + totalUpdates + " exceeded the threshold " + UPDATE_THRESHOLD + "; " + dynamicUpdates + " dynamic updates, " + physicsUpdates + " block physics updates and " + lightUpdates + " lighting updates");
         }
 
-        doFinalizeTick(managers);
+        doFinalizeTick();
 
-        doCopySnapshot(managers);
+        doCopySnapshot();
     }
 
 
-	private void doPhysics(List<AsyncManager> managers) {
+	private void doPhysics() {
 		int passStartUpdates = updates.get() - 1;
 		int startUpdates = updates.get();
 		while (passStartUpdates < updates.get() && updates.get() < startUpdates + UPDATE_THRESHOLD) {
 			passStartUpdates = updates.get();
-			this.runTasks(managers, physicsTask, "Physics", TickStage.GLOBAL_PHYSICS, TickStage.PHYSICS);
+            runTasks(TickStage.PHYSICS);
+            runTasks(TickStage.GLOBAL_PHYSICS);
 		}
 	}
 
-	private void doDynamicUpdates(List<AsyncManager> managers) {
-		int passStartUpdates = updates.get() - 1;
+	private void doDynamicUpdates() {
+		/*int passStartUpdates = updates.get() - 1;
 		int startUpdates = updates.get();
 
 		TickStage.setStage(TickStage.GLOBAL_DYNAMIC_BLOCKS);
@@ -189,83 +195,113 @@ public class MainThread extends SchedulerElement {
 			dynamicUpdatesTask.setThreshold(threshold);
 
 			this.runTasks(managers, dynamicUpdatesTask, "Dynamic Blocks", TickStage.GLOBAL_DYNAMIC_BLOCKS, TickStage.DYNAMIC_BLOCKS);
-		}
+		}*/
 	}
 
-	private void doLighting(List<AsyncManager> managers) {
-		this.runTasks(managers, lightingTask, "Lighting", TickStage.LIGHTING);
+	private void doLighting() {
+        runTasks(TickStage.LIGHTING);
 	}
 
 
-	private void doFinalizeTick(List<AsyncManager> managers) {
-		this.runTasks(managers, finalizeTask, "Finalize", TickStage.FINALIZE);
+	private void doFinalizeTick() {
+        runTasks(TickStage.FINALIZE);
 	}
 
-	private void doCopySnapshot(List<AsyncManager> managers) {
-		this.runTasks(managers, preSnapshotTask, "Pre-snapshot", TickStage.PRESNAPSHOT);
-
-		this.runTasks(managers, copySnapshotTask, "Copy-snapshot", TickStage.SNAPSHOT);
+	private void doCopySnapshot() {
+        runTasks(TickStage.PRESNAPSHOT);
+        runTasks(TickStage.SNAPSHOT);
 	}
 
-	private void runTasks(List<AsyncManager> managers, ManagerRunnableFactory taskFactory, String stageString, int tickStage) {
-		runTasks(managers, taskFactory, stageString, tickStage, tickStage);
-	}
-
-	private void runTasks(List<AsyncManager> managers, ManagerRunnableFactory taskFactory, String stageString, int globalStage, int localStage) {
-		int maxSequence = taskFactory.getMaxSequence();
-		for (int s = taskFactory.getMinSequence(); s <= maxSequence; s++) {
-			if (s == -1) {
-				TickStage.setStage(localStage);
-			} else {
-				TickStage.setStage(globalStage);
-			}
-			List<Future<?>> futures = new ArrayList<>(managers.size());
-			for (AsyncManager manager : managers) {
-				if (s == -1 || s == manager.getSequence()) {
-					Runnable r = taskFactory.getTask(manager, s);
-					if (r != null) {
-						futures.add(executorService.submit(r));
-					}
-				}
-			}
-			forLoop:
-			for (int i = 0; i < futures.size(); i++) {
-				boolean done = false;
-				while (!done) {
-					try {
-						Future<?> f = futures.get(i);
-						if (!f.isDone()) {
-							f.get(SpoutScheduler.PULSE_EVERY, TimeUnit.MILLISECONDS);
-						}
-						done = true;
-					} catch (InterruptedException e) {
-						Spout.info("Warning: main thread interrupted while waiting on tick stage task, " + taskFactory.getClass().getName());
-						break forLoop;
-					} catch (ExecutionException e) {
-						Spout.info("Exception thrown when executing task, " + taskFactory.getClass().getName() + ", " + e.getMessage());
-						e.printStackTrace();
-						Spout.info("Caused by");
-						e.getCause().printStackTrace();
-						done = true;
-					} catch (TimeoutException e) {
-					}
-				}
-			}
-		}
-	}
+    public void runTasks(final TickStage stage) {
+        TickStage.setStage(stage);
+        Set<ManagerRunnable>[] sequences = managerRunnables[stage.getOrder() - 1];
+        if (sequences == null) {
+            return;
+        }
+        for (Set<ManagerRunnable> managers : sequences) {
+            if (managers == null) {
+                continue;
+            }
+            try {
+                final List<Future<Void>> futures = executorService.invokeAll(managers);
+                // invokeAll means that it returns when all futures are done or cancelled
+                // We only want to report the exceptions, we don't want to wait
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i < futures.size(); i++) {
+                            try {
+                                futures.get(i).get();
+                            } catch (ExecutionException e) {
+                                Spout.warn("Exception thrown when executing a task in tick stage " + stage, e);
+                            } catch (InterruptedException e) {
+                                Spout.warn("Interrupted when getting future", e);
+                            }
+                        }
+                    }
+                });
+            } catch (InterruptedException e) {
+                Spout.warn("Main thread interrupted while waiting on tick stage " + stage);
+            }
+        }
+    }
 
 	/**
 	 * Adds an async manager to the scheduler
 	 */
-	public boolean addAsyncManager(AsyncManager manager) {
-		return asyncManagers.add(manager);
+    @SuppressWarnings("unchecked")
+	public void addAsyncManager(AsyncManager manager) {
+        for (int stage = 0; stage < managerRunnableFactories.length; stage++) {
+            ManagerRunnableFactory taskFactory = managerRunnableFactories[stage];
+            if (taskFactory == null) {
+                continue;
+            }
+            final int maxSequence = taskFactory.getMaxSequence();
+            final int minSequence = taskFactory.getMinSequence();
+            final int numSequences = maxSequence - minSequence + 1;
+            Set<ManagerRunnable>[] sequences = managerRunnables[stage];
+            if (sequences == null) {
+                sequences = managerRunnables[stage] = new Set[numSequences];
+            }
+            if (((manager.getTickStages().getMask() >> stage) & 1) == 0) {
+                continue;
+            }
+            for (int s = minSequence; s <= maxSequence; s++) {
+                if (s == -1 || s == manager.getSequence()) {
+                    Set<ManagerRunnable> sequence = sequences[s - minSequence];
+                    if (sequence == null) {
+                        sequences[s - minSequence] = sequence = new HashSet<>();
+                    }
+                    sequence.add(taskFactory.getTask(manager, s));
+                }
+            }
+        }
 	}
 
 	/**
 	 * Removes an async manager from the scheduler
 	 */
-	public boolean removeAsyncManager(AsyncManager manager) {
-		return asyncManagers.remove(manager);
+	public void removeAsyncManager(AsyncManager manager) {
+        for (int stage = 0; stage < managerRunnableFactories.length; stage++) {
+            ManagerRunnableFactory taskFactory = managerRunnableFactories[stage];
+            if (taskFactory == null) {
+                continue;
+            }
+            final int maxSequence = taskFactory.getMaxSequence();
+            final int minSequence = taskFactory.getMinSequence();
+            Set<ManagerRunnable>[] sequences = managerRunnables[stage];
+            if (sequences == null) {
+                continue;
+            }
+            if (((manager.getTickStages().getMask() >> stage) & 1) == 0) {
+                continue;
+            }
+            for (int s = minSequence; s <= maxSequence; s++) {
+                if (s == -1 || s == manager.getSequence()) {
+                    sequences[s - minSequence].remove(taskFactory.getTask(manager, s));
+                }
+            }
+        }
 	}
 
 }

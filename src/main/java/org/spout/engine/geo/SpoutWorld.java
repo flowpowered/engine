@@ -1,27 +1,24 @@
 package org.spout.engine.geo;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import com.flowpowered.commons.datatable.ManagedHashMap;
-import com.flowpowered.commons.datatable.ManagedMap;
+import com.flowpowered.commons.bit.ShortBitMask;
+import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
+
 import org.spout.api.Engine;
 import org.spout.api.component.BaseComponentOwner;
 import org.spout.api.component.Component;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.EntityPrefab;
 import org.spout.api.entity.Player;
-import org.spout.api.generator.WorldGenerator;
 import org.spout.api.geo.LoadOption;
 import org.spout.api.geo.World;
-import org.spout.api.geo.cuboid.Block;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.geo.discrete.Point;
-import org.spout.api.geo.discrete.Transform;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
@@ -456,8 +453,11 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     public void setExecutionThread(Thread t) {
     }
 
+    private static ShortBitSet ALL_STAGES = new ShortBitSet(Short.MAX_VALUE);
+
     @Override
-    public int getMaxStage() {
-        return -1;
+    public ShortBitMask getTickStages() {
+        return ALL_STAGES;
     }
+
 }

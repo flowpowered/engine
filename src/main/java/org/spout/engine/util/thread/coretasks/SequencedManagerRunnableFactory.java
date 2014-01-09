@@ -29,7 +29,7 @@ package org.spout.engine.util.thread.coretasks;
 public abstract class SequencedManagerRunnableFactory implements ManagerRunnableFactory {
 	@Override
 	public int getMaxSequence() {
-		return 27;
+		return 26;
 	}
 
 	@Override

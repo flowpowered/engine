@@ -28,7 +28,7 @@ package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
 
-public class FinalizeTask extends GlobalManagerRunnableFactory {
+public class FinalizeTask extends LocalManagerRunnableFactory {
 	@Override
 	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
 		return new ManagerRunnable(manager) {

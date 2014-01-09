@@ -28,14 +28,20 @@ package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
 
-public class PhysicsTask extends SequencedManagerRunnableFactory {
+public class LocalDynamicUpdatesTask extends LocalManagerRunnableFactory {
+	private long threshold = 0;
+
 	@Override
 	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.runPhysics(sequence);
+				manager.runDynamicUpdates(threshold, sequence);
 			}
 		};
+	}
+
+	public void setThreshold(long threshold) {
+		this.threshold = threshold;
 	}
 }

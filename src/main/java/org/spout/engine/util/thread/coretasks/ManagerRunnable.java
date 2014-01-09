@@ -26,9 +26,11 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import java.util.Objects;
+import java.util.concurrent.Callable;
 import org.spout.engine.util.thread.AsyncManager;
 
-public abstract class ManagerRunnable implements Runnable {
+public abstract class ManagerRunnable implements Callable<Void> {
 	private final AsyncManager manager;
 
 	public ManagerRunnable(AsyncManager manager) {
@@ -36,10 +38,30 @@ public abstract class ManagerRunnable implements Runnable {
 	}
 
 	@Override
-	public final void run() {
+	public final Void call() {
 		manager.setExecutionThread(Thread.currentThread());
 		runTask();
+        return null;
 	}
 
 	protected abstract void runTask();
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + Objects.hashCode(this.manager);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final ManagerRunnable other = (ManagerRunnable) obj;
+        if (!Objects.equals(this.manager, other.manager))
+            return false;
+        return true;
+    }
 }

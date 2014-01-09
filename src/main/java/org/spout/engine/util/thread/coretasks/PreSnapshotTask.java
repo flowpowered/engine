@@ -28,7 +28,7 @@ package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
 
-public class PreSnapshotTask extends GlobalManagerRunnableFactory {
+public class PreSnapshotTask extends LocalManagerRunnableFactory {
 	@Override
 	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
 		return new ManagerRunnable(manager) {

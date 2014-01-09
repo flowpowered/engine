@@ -191,7 +191,7 @@ public class WorldFiles {
         CompoundMap map = new CompoundMap();
 
         map.put(new ByteTag("version", WORLD_VERSION));
-        map.put(new StringTag("generator", world.getGenerator().getName()));
+        map.put(new StringTag("generator", world.getGenerator().getClass().getName()));
         map.put(new LongTag("seed", world.getSeed()));
         map.put(new ByteArrayTag("extra_data", world.getData().serialize()));
         map.put(new LongTag("age", world.getAge()));

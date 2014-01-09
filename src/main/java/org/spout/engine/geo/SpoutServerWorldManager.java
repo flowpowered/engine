@@ -54,9 +54,7 @@ public class SpoutServerWorldManager extends SpoutWorldManager<SpoutServerWorld>
 			return oldWorld;
 		}
 
-		if (!engine.getScheduler().addAsyncManager(world)) {
-			throw new IllegalStateException("Unable to add world to the scheduler");
-		}
+		engine.getScheduler().addAsyncManager(world);
 		//getEventManager().callDelayedEvent(new WorldLoadEvent(world));
 		return world;
 	}
@@ -107,9 +105,7 @@ public class SpoutServerWorldManager extends SpoutWorldManager<SpoutServerWorld>
 		boolean success = loadedWorlds.remove(world.getName(), w);
 		if (success) {
 			if (save) {
-				if (!engine.getScheduler().removeAsyncManager(w)) {
-					throw new IllegalStateException("Unable to remove world from scheduler when halting was attempted");
-				}
+				engine.getScheduler().removeAsyncManager(w);
 				//getEventManager().callDelayedEvent(new WorldUnloadEvent(world));
 				w.unload(save);
 			}

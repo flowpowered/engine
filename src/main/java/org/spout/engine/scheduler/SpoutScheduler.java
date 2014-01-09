@@ -208,14 +208,14 @@ public final class SpoutScheduler implements Scheduler {
 	/**
 	 * Adds an async manager to the scheduler
 	 */
-	public boolean addAsyncManager(AsyncManager manager) {
-		return mainThread.addAsyncManager(manager);
+	public void addAsyncManager(AsyncManager manager) {
+		mainThread.addAsyncManager(manager);
 	}
 
 	/**
 	 * Removes an async manager from the scheduler
 	 */
-	public boolean removeAsyncManager(AsyncManager manager) {
-		return mainThread.removeAsyncManager(manager);
+	public void removeAsyncManager(AsyncManager manager) {
+		mainThread.removeAsyncManager(manager);
 	}
 }

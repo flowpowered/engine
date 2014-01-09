@@ -26,11 +26,11 @@
  */
 package org.spout.api.material.block;
 
-import com.flowpowered.commons.bytebit.ByteBitMask;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
+
+import com.flowpowered.commons.bit.ByteBitMask;
 
 import gnu.trove.map.hash.TByteObjectHashMap;
 

@@ -26,14 +26,28 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
-public abstract class GlobalManagerRunnableFactory implements ManagerRunnableFactory {
-	@Override
-	public int getMaxSequence() {
-		return -1;
-	}
+import org.spout.engine.util.thread.AsyncManager;
+
+public class GlobalDynamicUpdatesTask extends SequencedManagerRunnableFactory {
+	private long threshold = 0;
 
 	@Override
-	public int getMinSequence() {
-		return -1;
+	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+		return new ManagerRunnable(manager) {
+			@Override
+			public void runTask() {
+				manager.runDynamicUpdates(threshold, sequence);
+			}
+		};
 	}
+
+	public void setThreshold(long threshold) {
+		this.threshold = threshold;
+	}
+
+    @Override
+    public int getMinSequence() {
+        return 0;
+    }
+
 }
