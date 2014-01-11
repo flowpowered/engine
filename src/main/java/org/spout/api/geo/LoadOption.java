@@ -48,7 +48,7 @@ public class LoadOption {
 	private final boolean generate;
     private final boolean wait;
 
-	private LoadOption(boolean load, boolean generate, boolean wait) {
+	public LoadOption(boolean load, boolean generate, boolean wait) {
 		this.load = load;
 		this.generate = generate;
         this.wait = wait;

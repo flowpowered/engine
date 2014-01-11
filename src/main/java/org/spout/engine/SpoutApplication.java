@@ -84,6 +84,7 @@ public class SpoutApplication {
 			}
 
 			Spout.setEngine(engine);
+            engine.init();
 			engine.start();
 		} catch (Throwable t) {
 			t.printStackTrace();

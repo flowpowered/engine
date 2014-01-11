@@ -6,14 +6,21 @@ import java.util.Set;
 import com.flowpowered.permissions.PermissionDomain;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
+import org.spout.api.entity.PlayerSnapshot;
+import org.spout.api.geo.discrete.Transform;
 import org.spout.flow.commands.CommandException;
 import org.spout.flow.commands.CommandSender;
 
 public class SpoutPlayer implements Player {
+    private final String name;
+
+    public SpoutPlayer(String name) {
+        this.name = name;
+    }
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return name;
     }
 
     @Override
@@ -87,11 +94,6 @@ public class SpoutPlayer implements Player {
     }
 
     @Override
-    public Entity getEntity() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void sendMessage(String message) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -141,4 +143,13 @@ public class SpoutPlayer implements Player {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public PlayerSnapshot snapshot() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Transform getCameraLocation() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

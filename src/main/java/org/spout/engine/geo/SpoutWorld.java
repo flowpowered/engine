@@ -8,7 +8,6 @@ import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
 
-import org.spout.api.Engine;
 import org.spout.api.component.BaseComponentOwner;
 import org.spout.api.component.Component;
 import org.spout.api.entity.Entity;
@@ -19,30 +18,39 @@ import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.geo.discrete.Point;
+import org.spout.api.geo.discrete.Transform;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
+import org.spout.engine.SpoutEngine;
+import org.spout.engine.entity.EntityManager;
+import org.spout.engine.entity.SpoutEntity;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLong;
 import org.spout.math.GenericMath;
+import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
 
 public class SpoutWorld extends BaseComponentOwner implements World, AsyncManager {
+    private final SpoutEngine engine;
     private final String name;
     private final UUID uid;
     private final SnapshotManager snapshotManager;
     private final SnapshotableLong age;
+    private final RegionSource regionSource;
 
-    public SpoutWorld(String name, UUID uid, long age) {
+    public SpoutWorld(SpoutEngine engine, String name, UUID uid, long age) {
+        this.engine = engine;
         this.name = name;
         this.uid = uid;
         this.snapshotManager = new SnapshotManager();
         this.age = new SnapshotableLong(snapshotManager, age);
+        this.regionSource = new RegionSource(engine, this);
     }
 
-    public SpoutWorld(String name) {
-        this(name, UUID.randomUUID(), 0);
+    public SpoutWorld(SpoutEngine engine, String name) {
+        this(engine, name, UUID.randomUUID(), 0);
     }
 
 
@@ -67,38 +75,34 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     }
 
     @Override
-    public Entity createEntity(Point point, Class<? extends Component>... classes) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab) {
+        return spawnEntity(point, option, prefab.getComponents().toArray(new Class[0]));
     }
 
     @Override
-    public Entity createEntity(Point point, EntityPrefab prefab) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes) {
+        SpoutRegion region = (SpoutRegion) getRegionFromBlock(point, option);
+        if (region == null) {
+            return null;
+        }
+
+        SpoutEntity entity = EntityManager.createEntity(new Transform(new Point(point, this), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
+		region.getEntityManager().addEntity(entity);
+        return entity;
     }
 
     @Override
-    public void spawnEntity(Entity e) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes) {
+        Entity[] entities = new Entity[points.length];
+		for (int i = 0; i < points.length; i++) {
+			entities[i] = spawnEntity(points[i], option, classes);
+		}
+		return entities;
     }
 
     @Override
-    public Entity createAndSpawnEntity(Point point, LoadOption option, EntityPrefab prefab) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Entity createAndSpawnEntity(Point point, LoadOption option, Class<? extends Component>... classes) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Entity[] createAndSpawnEntity(Point[] points, LoadOption option, Class<? extends Component>... classes) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Engine getEngine() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public SpoutEngine getEngine() {
+        return engine;
     }
 
     @Override
@@ -213,76 +217,59 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
 
     @Override
     public Collection<Region> getRegions() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Region getRegion(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return regionSource.getRegions();
     }
 
     @Override
     public Region getRegion(int x, int y, int z, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Region getRegionFromChunk(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return regionSource.getRegion(x, y, z, loadopt);
     }
 
     @Override
     public Region getRegionFromChunk(int x, int y, int z, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Region getRegionFromBlock(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getRegion(x >> Region.CHUNKS.BITS, y >> Region.CHUNKS.BITS, z >> Region.CHUNKS.BITS, loadopt);
     }
 
     @Override
     public Region getRegionFromBlock(int x, int y, int z, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Region getRegionFromBlock(Vector3f position) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getRegion(x >> Region.BLOCKS.BITS, y >> Region.BLOCKS.BITS, z >> Region.BLOCKS.BITS, loadopt);
     }
 
     @Override
     public Region getRegionFromBlock(Vector3f position, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    @Override
-    public Chunk getChunk(int x, int y, int z, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getRegionFromBlock(position.getFloorX(), position.getFloorY(), position.getFloorZ(), loadopt);
     }
 
     @Override
     public boolean containsChunk(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
+    }
+
+    @Override
+    public Chunk getChunk(int x, int y, int z, LoadOption loadopt) {
+        Region region = getRegionFromChunk(x, y, z, loadopt);
+        if (region == null) {
+            return null;
+        }
+        return region.getChunk(x, y, z, loadopt);
     }
 
     @Override
     public Chunk getChunkFromBlock(int x, int y, int z, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Region region = getRegionFromBlock(x, y, z, loadopt);
+        if (region == null) {
+            return null;
+        }
+        return region.getChunkFromBlock(x, y, z, loadopt);
     }
 
     @Override
     public Chunk getChunkFromBlock(Vector3f position, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean hasChunk(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean hasChunkAtBlock(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Region region = getRegionFromBlock(position, loadopt);
+        if (region == null) {
+            return null;
+        }
+        return region.getChunkFromBlock(position, loadopt);
     }
 
     @Override
@@ -357,7 +344,7 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
 
     @Override
     public boolean containsBlock(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
 	@Override
@@ -415,7 +402,7 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
 
     @Override
     public void copySnapshotRun() {
-        System.out.println("copySnapshot");
+        System.out.println("SpoutWorld copySnapshot");
     }
 
     @Override

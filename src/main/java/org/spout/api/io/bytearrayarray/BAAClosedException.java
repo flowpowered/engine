@@ -24,41 +24,19 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.api.scheduler;
+package org.spout.api.io.bytearrayarray;
 
 /**
- * A class to allow non-pulsed threads to synchronize with the pulsed thread system
+ * This exception is thrown when a PersistentByteArrayMap is accessed after it has been closed.
  */
-public interface SnapshotLock {
-	/**
-	 * Readlocks the stable snapshot.
-	 *
-	 * This method will prevent server ticks from completing, so any locks should be short
-	 *
-	 * @param plugin the plugin
-	 */
-	public void readLock(Object plugin);
+public class BAAClosedException extends BAAException {
+	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Attempts to readlock the stable snapshot and returns immediately
-	 *
-	 * This method will prevent server ticks from completing, so any locks should be short
-	 *
-	 * @param plugin the plugin
-	 */
-	public boolean readTryLock(Object plugin);
+	public BAAClosedException(String message, Throwable t) {
+		super(message, t);
+	}
 
-	/**
-	 * Releases a previous readlock
-	 *
-	 * @param plugin the plugin
-	 */
-	public void readUnlock(Object plugin);
-
-	/**
-	 * Gets if the lock is read locked
-	 *
-	 * @return true if locked
-	 */
-	public boolean isWriteLocked();
+	public BAAClosedException(String message) {
+		super(message);
+	}
 }

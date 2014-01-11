@@ -34,7 +34,7 @@ public class SpoutServerWorldManager extends SpoutWorldManager<SpoutServerWorld>
 	}
 
 	@Override
-	public World loadWorld(String name, WorldGenerator generator) {
+	public SpoutServerWorld loadWorld(String name, WorldGenerator generator) {
 		if (loadedWorlds.get().containsKey((name))) {
 			return loadedWorlds.get().get(name);
 		}
@@ -48,7 +48,7 @@ public class SpoutServerWorldManager extends SpoutWorldManager<SpoutServerWorld>
 
 		SpoutServerWorld world = WorldFiles.loadWorld((SpoutServer) engine, generator, name);
 
-		World oldWorld = loadedWorlds.putIfAbsent(name, world);
+		SpoutServerWorld oldWorld = loadedWorlds.putIfAbsent(name, world);
 
 		if (oldWorld != null) {
 			return oldWorld;

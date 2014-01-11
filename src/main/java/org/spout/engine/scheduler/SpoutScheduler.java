@@ -218,4 +218,8 @@ public final class SpoutScheduler implements Scheduler {
 	public void removeAsyncManager(AsyncManager manager) {
 		mainThread.removeAsyncManager(manager);
 	}
+
+    public void runCoreAsyncTask(Runnable r) {
+        mainThread.executorService.submit(r);
+    }
 }

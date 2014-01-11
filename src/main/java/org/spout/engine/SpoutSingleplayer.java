@@ -8,12 +8,14 @@ import org.spout.api.Platform;
 import org.spout.api.Singleplayer;
 import org.spout.api.entity.Player;
 import org.spout.api.generator.FlatWorldGenerator;
+import org.spout.api.geo.LoadOption;
 import org.spout.api.geo.World;
 import org.spout.api.material.BlockMaterial;
 import org.spout.engine.entity.SpoutPlayer;
 import org.spout.engine.geo.SpoutWorld;
 import org.spout.engine.render.DeployNatives;
 import org.spout.engine.render.SpoutRenderer;
+import org.spout.math.vector.Vector3f;
 
 public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
     private final AtomicReference<SpoutPlayer> player = new AtomicReference<>();
@@ -23,18 +25,27 @@ public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
         super(args);
     }
 
-
     @Override
-    public void start() {
+    public void init() {
         try {
             DeployNatives.deploy();
         } catch (Exception ex) {
             Logger.getLogger(SpoutSingleplayer.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
+        super.init();
+        SpoutWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
+        activeWorld.set(loadedWorld);
+        SpoutPlayer player = new SpoutPlayer("Spout");
+        this.player.set(player);
+        players.put(player.getName(), player);
+        loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+    }
+
+    @Override
+    public void start() {
         super.start();
         getScheduler().startRenderThread();
-        getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
     }
 
     @Override

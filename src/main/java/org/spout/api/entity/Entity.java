@@ -109,6 +109,8 @@ public interface Entity extends Tickable, WorldSource, ComponentOwner {
 	 */
 	public EntitySnapshot snapshot();
 
+    public Physics getPhysics();
+
 	/**
 	 * Gets the {@link ManagedMap} which an Entity always has.
 	 *

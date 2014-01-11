@@ -33,17 +33,12 @@ import com.flowpowered.commons.datatable.SerializableMap;
 
 import org.spout.api.component.Component;
 import org.spout.api.geo.discrete.Transform;
+import org.spout.api.scheduler.Snapshot;
 
 /**
  * Represents a snapshot of an entity state at a specific UTC timestamp, with immutable values
  */
-public interface EntitySnapshot {
-	/**
-	 * Returns the entity reference, if the entity still exists
-	 *
-	 * @return entity reference if it exists, else null
-	 */
-	public Entity getReference();
+public interface EntitySnapshot extends Snapshot<Entity> {
 
 	/**
 	 * Gets the id of the entity. <p> Entity ids' may become invalid if the server has stopped and started. They do not persist across server instances. For persistent ids, use {@link #getUID()}. </p>
@@ -100,11 +95,4 @@ public interface EntitySnapshot {
 	 * @return entity
 	 */
 	public List<Class<? extends Component>> getComponents();
-
-	/**
-	 * Gets the UTC system clock time at the time this snapshot was created <p> Equivalent to the output of System.currentTimeMillis() </p>
-	 *
-	 * @return UTC system time
-	 */
-	public long getSnapshotTime();
 }

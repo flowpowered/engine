@@ -15,7 +15,7 @@ import org.spout.engine.geo.SpoutServerWorldManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
 public class SpoutServer extends SpoutEngine implements Server {
-    private final SnapshotableLinkedHashMap<String, SpoutPlayer> players;
+    protected final SnapshotableLinkedHashMap<String, SpoutPlayer> players;
     private final SpoutServerWorldManager worldManager;
 
     public SpoutServer(SpoutApplication args) {
@@ -73,7 +73,7 @@ public class SpoutServer extends SpoutEngine implements Server {
     }
 
     @Override
-    public ServerWorldManager getWorldManager() {
+    public SpoutServerWorldManager getWorldManager() {
         return worldManager;
     }
 }

@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.spout.api.generator.WorldGenerator;
 import org.spout.api.geo.ServerWorld;
 import org.spout.api.geo.discrete.Transform;
+import org.spout.engine.SpoutEngine;
 import org.spout.engine.filesystem.WorldFiles;
 import org.spout.math.vector.Vector3f;
 
@@ -19,14 +20,14 @@ public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
 	 */
 	private final Transform spawnLocation = new Transform();
 
-    public SpoutServerWorld(String name, UUID uid, long age, WorldGenerator generator, long seed) {
-        super(name, uid, age);
+    public SpoutServerWorld(SpoutEngine engine, String name, UUID uid, long age, WorldGenerator generator, long seed) {
+        super(engine, name, uid, age);
         this.generator = generator;
         this.seed = seed;
     }
 
-    public SpoutServerWorld(String name, WorldGenerator generator) {
-        super(name);
+    public SpoutServerWorld(SpoutEngine engine, String name, WorldGenerator generator) {
+        super(engine, name);
         this.generator = generator;
         this.seed = new Random().nextLong();
     }

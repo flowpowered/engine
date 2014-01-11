@@ -26,7 +26,6 @@
  */
 package org.spout.api.geo;
 
-import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,11 +39,10 @@ import org.spout.api.component.ComponentOwner;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.EntityPrefab;
 import org.spout.api.entity.Player;
-import org.spout.api.generator.WorldGenerator;
 import org.spout.api.geo.discrete.Point;
-import org.spout.api.geo.discrete.Transform;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
+import org.spout.math.vector.Vector3f;
 
 /**
  * Represents a World.
@@ -81,62 +79,36 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	public Entity getEntity(UUID uid);
 
 	/**
-	 * Creates a new {@link Entity} at the {@link Point} with the {@link Component} classes attached.
-	 *
-	 * @param point The area in space where spawn will occur
-	 * @param classes The classes to attach
-	 * @return The entity set to spawn at the point provided with components attached
-	 */
-	public Entity createEntity(Point point, Class<? extends Component>... classes);
-
-	/**
-	 * Creates a new {@link Entity} at the {@link Point} blueprinted with the {@link EntityPrefab} provided.
-	 *
-	 * @param point The area in space where spawn will occur
-	 * @param prefab The blueprint
-	 * @return The entity set to spawn at the point provided with the prefab applied
-	 */
-	public Entity createEntity(Point point, EntityPrefab prefab);
-
-	/**
-	 * Spawns the {@link Entity}.
-	 *
-	 * @param e Entity to spawn
-	 */
-	public void spawnEntity(Entity e);
-
-	/**
-	 * Creates and spawns an {@link Entity} at the {@link Point} blueprinted with the {@link EntityPrefab} provided. <p> The {@link LoadOption} parameter is used to tell Spout if it should load, create
-	 * and load, or not load the chunk for the point provided. Great caution should be used; only load (and more so create) if absolutely necessary.
+	 * Spawns an {@link Entity} at the {@link Point} blueprinted with the {@link EntityPrefab} provided. <p>
+     * The {@link LoadOption} parameter is used to tell Spout if it should load or not load the region for the point provided.
+     * If the region is not loaded currently, or it isn't loaded as specified by the {@link LoadOption}, then this may return null and the entity may not be spawned.
 	 *
 	 * @param point The area in space to spawn
-	 * @param option Whether to not load, load, or load and create the chunk
+	 * @param option Whether to not load or not load the region if it is not currently loaded
 	 * @param prefab The blueprint
 	 * @return The spawned entity at the point with the prefab applied
 	 */
-	public Entity createAndSpawnEntity(Point point, LoadOption option, EntityPrefab prefab);
+	public Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab);
 
 	/**
-	 * Creates and spawns an {@link Entity} at the {@link Point} with the {@link Component} classes attached. <p> The {@link LoadOption} parameter is used to tell Spout if it should load, create and
-	 * load, or not load the chunk for the point provided. Great caution should be used; only load (and more so create) if absolutely necessary.
-	 *
+     * @see World#spawnEntity(org.spout.math.vector.Vector3f, org.spout.api.geo.LoadOption, org.spout.api.entity.EntityPrefab)
+     *
 	 * @param point The area in space to spawn
 	 * @param option Whether to not load, load, or load and create the chunk
 	 * @param classes The classes to attach
 	 * @return The spawned entity at the point with the components attached
 	 */
-	public Entity createAndSpawnEntity(Point point, LoadOption option, Class<? extends Component>... classes);
+	public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes);
 
 	/**
-	 * Creates and spawns multiple {@link Entity} at the {@link Point}s with the {@link Component} classes attached. <p> The {@link LoadOption} parameter is used to tell Spout if it should load, create
-	 * and load, or not load the chunk for the points provided. Great caution should be used; only load (and more so create) if absolutely necessary.
+     * @see World#spawnEntity(org.spout.math.vector.Vector3f, org.spout.api.geo.LoadOption, org.spout.api.entity.EntityPrefab)
 	 *
 	 * @param points The areas in space to spawn
 	 * @param option Whether to not load, load, or load and create the chunk
 	 * @param classes The classes to attach
 	 * @return The spawned entities at the points with the components attached
 	 */
-	public Entity[] createAndSpawnEntity(Point[] points, LoadOption option, Class<? extends Component>... classes);
+	public Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes);
 
 	/**
 	 * Gets the engine associated with this world

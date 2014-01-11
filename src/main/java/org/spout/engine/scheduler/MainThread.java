@@ -1,19 +1,15 @@
 package org.spout.engine.scheduler;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.flowpowered.commons.Named;
 
@@ -21,6 +17,7 @@ import org.spout.api.Spout;
 import org.spout.api.scheduler.TickStage;
 import org.spout.api.scheduler.Worker;
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.LoggingThreadPoolExecutor;
 import org.spout.engine.util.thread.coretasks.CopySnapshotTask;
 import org.spout.engine.util.thread.coretasks.LocalDynamicUpdatesTask;
 import org.spout.engine.util.thread.coretasks.GlobalDynamicUpdatesTask;
@@ -68,12 +65,13 @@ public class MainThread extends SchedulerElement {
 	 */
 	//private final List<AsyncManager> asyncManagers = new ConcurrentList<>();
 	// scheduler executor service
-	private final ExecutorService executorService;
+	protected final ExecutorService executorService;
 
     public MainThread(SpoutScheduler scheduler) {
         super("MainThread", 20);
         this.scheduler = scheduler;
-		executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1, new MarkedNamedThreadFactory("SpoutScheduler - AsyncManager executor service", true));
+        final int nThreads = Runtime.getRuntime().availableProcessors() * 2 + 1;
+		executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "SpoutScheduler - AsyncManager executor service");
     }
 
     @Override

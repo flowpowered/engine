@@ -45,30 +45,10 @@ public interface AreaRegionAccess extends AreaChunkAccess {
 	 * @param x the region x coordinate
 	 * @param y the region y coordinate
 	 * @param z the region z coordinate
-	 * @return the region
-	 */
-	public Region getRegion(int x, int y, int z);
-
-	/**
-	 * Gets the {@link Region} at region coordinates (x, y, z)
-	 *
-	 * @param x the region x coordinate
-	 * @param y the region y coordinate
-	 * @param z the region z coordinate
 	 * @param loadopt to control whether to load and/or generate the region, if needed
 	 * @return the region
 	 */
 	public Region getRegion(int x, int y, int z, LoadOption loadopt);
-
-	/**
-	 * Gets the {@link Region} at chunk coordinates (x, y, z)
-	 *
-	 * @param x the chunk x coordinate
-	 * @param y the chunk y coordinate
-	 * @param z the chunk z coordinate
-	 * @return the region
-	 */
-	public Region getRegionFromChunk(int x, int y, int z);
 
 	/**
 	 * Gets the {@link Region} at chunk coordinates (x, y, z)
@@ -87,28 +67,10 @@ public interface AreaRegionAccess extends AreaChunkAccess {
 	 * @param x the block x coordinate
 	 * @param y the block y coordinate
 	 * @param z the block z coordinate
-	 * @return the region
-	 */
-	public Region getRegionFromBlock(int x, int y, int z);
-
-	/**
-	 * Gets the {@link Region} at block coordinates (x, y, z)
-	 *
-	 * @param x the block x coordinate
-	 * @param y the block y coordinate
-	 * @param z the block z coordinate
 	 * @param loadopt to control whether to load and/or generate the region, if needed
 	 * @return the region
 	 */
 	public Region getRegionFromBlock(int x, int y, int z, LoadOption loadopt);
-
-	/**
-	 * Gets the {@link Region} at block coordinates (x, y, z)
-	 *
-	 * @param position of the block
-	 * @return the region
-	 */
-	public Region getRegionFromBlock(Vector3f position);
 
 	/**
 	 * Gets the {@link Region} at block coordinates (x, y, z)

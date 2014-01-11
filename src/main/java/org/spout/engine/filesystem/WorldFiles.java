@@ -101,11 +101,11 @@ public class WorldFiles {
                 }
             }
             Spout.info("Loading world [{0}]", worldName);
-            world = loadWorldImpl(worldName, map, generator, itemMap);
+            world = loadWorldImpl(engine, worldName, map, generator, itemMap);
         } catch (FileNotFoundException ioe) {
             Spout.info("Creating new world named [{0}]", worldName);
 
-            world = new SpoutServerWorld(worldName, generator);
+            world = new SpoutServerWorld(engine, worldName, generator);
             world.save();
         } catch (IOException ioe) {
             Spout.severe("Error reading file for world " + worldName, ioe);
@@ -113,7 +113,7 @@ public class WorldFiles {
         return world;
     }
 
-    private static SpoutServerWorld loadWorldImpl(String name, CompoundMap map, WorldGenerator fallbackGenerator, StringToUniqueIntegerMap itemMap) {
+    private static SpoutServerWorld loadWorldImpl(SpoutEngine engine, String name, CompoundMap map, WorldGenerator fallbackGenerator, StringToUniqueIntegerMap itemMap) {
         byte version = SafeCast.toByte(NBTMapper.toTagValue(map.get("version")), (byte) -1);
         if (version > WORLD_VERSION) {
             Spout.severe("World version " + version + " exceeds maximum allowed value of " + WORLD_VERSION);
@@ -131,7 +131,7 @@ public class WorldFiles {
 
         WorldGenerator generator = findGenerator(generatorName, fallbackGenerator);
 
-        SpoutServerWorld world = new SpoutServerWorld(name, uuid, age, generator, seed);
+        SpoutServerWorld world = new SpoutServerWorld(engine, name, uuid, age, generator, seed);
 
         Transform t = TransformTag.getValue(world, map.get("spawn_position"));
 

@@ -1,21 +1,19 @@
 package org.spout.engine;
 
-import org.spout.engine.filesystem.SpoutFileSystem;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.events.SimpleEventManager;
-import com.flowpowered.filesystem.FileSystem;
 
 import org.spout.api.Engine;
 import org.spout.api.material.MaterialRegistry;
-import org.spout.api.scheduler.TaskPriority;
 import org.spout.api.util.SyncedStringMap;
+import org.spout.engine.filesystem.SpoutFileSystem;
 import org.spout.engine.scheduler.SpoutScheduler;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 
 public abstract class SpoutEngine implements Engine {
     private final SpoutApplication args;
     private final EventManager eventManager;
-    private final FileSystem fileSystem;
+    private final SpoutFileSystem fileSystem;
 
     private SpoutScheduler scheduler;
     protected final SnapshotManager snapshotManager = new SnapshotManager();
@@ -33,10 +31,12 @@ public abstract class SpoutEngine implements Engine {
 		return getClass().getPackage().getImplementationVersion();
 	}
 
-
-    public void start() {
+    public void init() {
         itemMap = MaterialRegistry.setupRegistry();
         scheduler = new SpoutScheduler(this);
+    }
+
+    public void start() {
         scheduler.startMainThread();
         System.out.println("Engine started.");
     }
@@ -64,7 +64,7 @@ public abstract class SpoutEngine implements Engine {
     }
 
     @Override
-    public FileSystem getFileSystem() {
+    public SpoutFileSystem getFileSystem() {
         return fileSystem;
     }
 

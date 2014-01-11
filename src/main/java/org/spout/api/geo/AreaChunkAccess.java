@@ -33,6 +33,16 @@ import org.spout.math.vector.Vector3f;
 
 public interface AreaChunkAccess extends AreaBlockAccess {
 	/**
+	 * Gets if a chunk is contained in this area
+	 *
+	 * @param x coordinate of the chunk
+	 * @param y coordinate of the chunk
+	 * @param z coordinate of the chunk
+	 * @return True if it is contained, False if not
+	 */
+	public boolean containsChunk(int x, int y, int z);
+
+	/**
 	 * Gets the {@link Chunk} at chunk coordinates (x, y, z)
 	 *
 	 * @param x coordinate of the chunk
@@ -42,16 +52,6 @@ public interface AreaChunkAccess extends AreaBlockAccess {
 	 * @return the chunk
 	 */
 	public Chunk getChunk(int x, int y, int z, LoadOption loadopt);
-
-	/**
-	 * Gets if a chunk is contained in this area
-	 *
-	 * @param x coordinate of the chunk
-	 * @param y coordinate of the chunk
-	 * @param z coordinate of the chunk
-	 * @return True if it is contained, False if not
-	 */
-	public boolean containsChunk(int x, int y, int z);
 
 	/**
 	 * Gets the {@link Chunk} at block coordinates (x, y, z)
@@ -72,26 +72,6 @@ public interface AreaChunkAccess extends AreaBlockAccess {
 	 * @return the chunk
 	 */
 	public Chunk getChunkFromBlock(Vector3f position, LoadOption loadopt);
-
-	/**
-	 * True if the region has a loaded chunk at the (x, y, z).
-	 *
-	 * @param x coordinate of the chunk
-	 * @param y coordinate of the chunk
-	 * @param z coordinate of the chunk
-	 * @return true if chunk exists
-	 */
-	public boolean hasChunk(int x, int y, int z);
-
-	/**
-	 * True if the region has a loaded chunk at the block coordinates (x, y, z).
-	 *
-	 * @param x coordinate of the block
-	 * @param y coordinate of the block
-	 * @param z coordinate of the block
-	 * @return true if chunk exists
-	 */
-	public boolean hasChunkAtBlock(int x, int y, int z);
 
 	/**
 	 * Queues a chunk for saving at the next available opportunity.

@@ -28,6 +28,7 @@ package org.spout.api.entity;
 
 import java.util.List;
 
+import org.spout.api.geo.discrete.Transform;
 import org.spout.flow.commands.CommandSender;
 
 public interface Player extends CommandSender {
@@ -135,8 +136,9 @@ public interface Player extends CommandSender {
 	public void sendCommand(String command, String... args);
 
     /**
-     *
-     * @return the entity that this player is controlling
+     * @return the location that player's camera is at
      */
-    public Entity getEntity();
+    public Transform getCameraLocation();
+
+    public PlayerSnapshot snapshot();
 }

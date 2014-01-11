@@ -8,15 +8,27 @@ import org.spout.api.Engine;
 import org.spout.api.component.Component;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.EntitySnapshot;
+import org.spout.api.entity.Physics;
+import org.spout.api.geo.LoadOption;
 import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
+import org.spout.api.geo.discrete.Transform;
 
 public class SpoutEntity implements Entity {
+    private final int id;
+    private Transform location;
+    private SpoutPhysics physics;
+
+    public SpoutEntity(int id, Transform transform) {
+        this.id = id;
+        this.location = transform;
+        this.physics = new SpoutPhysics(this);
+    }
 
     @Override
     public int getId() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return id;
     }
 
     @Override
@@ -56,7 +68,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public Region getRegion() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return location.getPosition().getRegion(LoadOption.LOAD_GEN);
     }
 
     @Override
@@ -86,7 +98,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public World getWorld() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return location.getPosition().getWorld();
     }
 
     @Override
@@ -127,6 +139,20 @@ public class SpoutEntity implements Entity {
     @Override
     public Collection<Component> values() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    void finalizeRun() {
+    }
+
+    void preSnapshotRun() {
+    }
+
+    void copySnapshot() {
+    }
+
+    @Override
+    public Physics getPhysics() {
+        return physics;
     }
 
 }
