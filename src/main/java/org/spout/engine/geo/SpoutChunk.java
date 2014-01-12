@@ -5,8 +5,11 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import com.flowpowered.commons.datatable.ManagedHashMap;
+import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.events.Cause;
+
 import gnu.trove.map.hash.TShortObjectHashMap;
+
 import org.spout.api.component.BlockComponentOwner;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
@@ -15,15 +18,21 @@ import org.spout.api.geo.cuboid.Block;
 import org.spout.api.geo.cuboid.BlockComponentContainer;
 import org.spout.api.geo.cuboid.BlockContainer;
 import org.spout.api.geo.cuboid.Chunk;
+import static org.spout.api.geo.cuboid.Chunk.BLOCKS;
 import org.spout.api.geo.cuboid.ChunkSnapshot;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.material.BlockMaterial;
+import org.spout.api.material.block.BlockFullState;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 import org.spout.api.util.hashing.NibbleQuadHashed;
+import org.spout.engine.geo.region.SpoutRegion;
+import org.spout.engine.geo.world.SpoutWorld;
+import org.spout.math.GenericMath;
 import org.spout.math.vector.Vector3f;
 
 public class SpoutChunk extends Chunk {
 
+    private final SpoutRegion region;
 	/**
 	 * Data map and Datatable associated with it
 	 */
@@ -32,10 +41,18 @@ public class SpoutChunk extends Chunk {
 	 * Not thread safe, synchronize on access
 	 */
 	private final TShortObjectHashMap<BlockComponentOwner> blockComponents = new TShortObjectHashMap<>();
+    private final int generationIndex;
+	/**
+	 * Storage for block ids, data and auxiliary data. For blocks with data = 0 and auxiliary data = null, the block is stored as a short.
+	 */
+	protected final AtomicBlockStore blockStore;
 
-    public SpoutChunk(World world, float x, float y, float z) {
+    public SpoutChunk(SpoutRegion region, World world, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
         super(world, x, y, z);
+        this.region = region;
         this.dataMap = new ManagedHashMap();
+        this.generationIndex = generationIndex;
+        this.blockStore = blockStore;
     }
 
     @Override
@@ -89,8 +106,8 @@ public class SpoutChunk extends Chunk {
     }
 
     @Override
-    public Region getRegion() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public SpoutRegion getRegion() {
+        return region;
     }
 
     @Override
@@ -150,7 +167,7 @@ public class SpoutChunk extends Chunk {
 
     @Override
     public int getGenerationIndex() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return generationIndex;
     }
 
     @Override
@@ -208,20 +225,20 @@ public class SpoutChunk extends Chunk {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public Block getBlock(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	@Override
+	public SpoutBlock getBlock(int x, int y, int z) {
+		return new SpoutBlock((SpoutWorld) getWorld(), x, y, z);
+	}
 
-    @Override
-    public Block getBlock(float x, float y, float z) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	@Override
+	public SpoutBlock getBlock(float x, float y, float z) {
+		return this.getBlock(GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
+	}
 
-    @Override
-    public Block getBlock(Vector3f position) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	@Override
+	public SpoutBlock getBlock(Vector3f position) {
+		return this.getBlock(position.getX(), position.getY(), position.getZ());
+	}
 
     @Override
     public boolean commitCuboid(CuboidBlockMaterialBuffer buffer, Cause<?> cause) {
@@ -264,18 +281,23 @@ public class SpoutChunk extends Chunk {
     }
 
     @Override
-    public BlockMaterial getBlockMaterial(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+	public BlockMaterial getBlockMaterial(int x, int y, int z) {
+		int state = blockStore.getFullData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK);
+		return BlockMaterial.get(state);
     }
 
     @Override
     public int getBlockFullState(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return blockStore.getFullData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK);
     }
 
     @Override
     public short getBlockData(int x, int y, int z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return blockStore.getData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK);
+    }
+
+    public AtomicBlockStore getBlockStore() {
+        return blockStore;
     }
 
 	public BlockComponentOwner getBlockComponentOwner(int x, int y, int z, boolean create) {

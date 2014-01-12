@@ -49,8 +49,10 @@ public class StandardChunkMesher implements ChunkMesher {
         for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
                 BlockMaterial backMaterial = chunk.getBlock(-1, yy, zz);
+                backMaterial = backMaterial == null ? BlockMaterial.AIR : backMaterial;
                 for (int xx = 0; xx < Chunk.BLOCKS.SIZE + 1; xx++) {
-                    final BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    frontMaterial = frontMaterial == null ? BlockMaterial.AIR : frontMaterial;
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.NS);
                     if (face == BlockFace.NORTH) {
                         add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
@@ -73,8 +75,10 @@ public class StandardChunkMesher implements ChunkMesher {
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
                 BlockMaterial backMaterial = chunk.getBlock(xx, -1, zz);
+                backMaterial = backMaterial == null ? BlockMaterial.AIR : backMaterial;
                 for (int yy = 0; yy < Chunk.BLOCKS.SIZE + 1; yy++) {
-                    final BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    frontMaterial = frontMaterial == null ? BlockMaterial.AIR : frontMaterial;
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.BT);
                     if (face == BlockFace.BOTTOM) {
                         add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
@@ -97,8 +101,10 @@ public class StandardChunkMesher implements ChunkMesher {
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
                 BlockMaterial backMaterial = chunk.getBlock(xx, yy, -1);
+                backMaterial = backMaterial == null ? BlockMaterial.AIR : backMaterial;
                 for (int zz = 0; zz < Chunk.BLOCKS.SIZE + 1; zz++) {
-                    final BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    frontMaterial = frontMaterial == null ? BlockMaterial.AIR : frontMaterial;
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.EW);
                     if (face == BlockFace.EAST) {
                         add(indices, index + 3, index + 2, index + 1, index + 2, index, index + 1);
@@ -121,10 +127,10 @@ public class StandardChunkMesher implements ChunkMesher {
     }
 
     private BlockFace getFace(BlockMaterial back, BlockMaterial front, BlockFaces axis) {
-        if (!back.isInvisible() && !front.isFaceRendered(axis.get(0), back)) {
+        if (!back.isInvisible() && !front.occludes(axis.get(0), back)) {
             return axis.get(1);
         }
-        if (!front.isInvisible() && !back.isFaceRendered(axis.get(1), front)) {
+        if (!front.isInvisible() && !back.occludes(axis.get(1), front)) {
             return axis.get(0);
         }
         return null;

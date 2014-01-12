@@ -71,7 +71,7 @@ public interface ChunkSnapshotGroup {
 	public ChunkSnapshot getChunkFromBlock(int bx, int by, int bz);
 
 	/**
-	 * Gets the block material at the world block coordinates.<br> Note: Coordinates must be within this model, or index out of bounds will be thrown.
+	 * Gets the block material at the chunk block coordinates.<br> Note: Coordinates must be within this model, or index out of bounds will be thrown.
 	 *
 	 * @param bx coordinate of the block
 	 * @param by coordinate of the block

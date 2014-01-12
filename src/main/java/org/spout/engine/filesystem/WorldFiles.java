@@ -47,7 +47,7 @@ import org.spout.api.io.nbt.UUIDTag;
 import org.spout.api.store.BinaryFileStore;
 import org.spout.api.util.sanitation.SafeCast;
 import org.spout.engine.SpoutEngine;
-import org.spout.engine.geo.SpoutServerWorld;
+import org.spout.engine.geo.world.SpoutServerWorld;
 import org.spout.nbt.ByteArrayTag;
 import org.spout.nbt.ByteTag;
 import org.spout.nbt.CompoundMap;

@@ -72,6 +72,7 @@ public class Network {
 
     public Network(Entity entity) {
         this.entity = entity;
+        entity.getData().put(IS_OBSERVER, true);
         entity.getData().put(OBSERVER_ITERATOR, INITIAL_TICK);
     }
 
@@ -184,7 +185,7 @@ public class Network {
 	 * @param live A copy of the owner's live transform state
 	 */
 	public void finalizeRun(final Transform live) {
-		if (Spout.getPlatform() != Platform.SERVER) {
+		if (!Spout.getPlatform().isServer()) {
 			return;
 		}
 		//Entity changed chunks as observer OR observer status changed so update

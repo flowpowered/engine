@@ -8,8 +8,8 @@ import org.spout.api.geo.World;
 import org.spout.api.geo.WorldManager;
 import org.spout.api.render.Renderer;
 import org.spout.engine.entity.SpoutPlayer;
-import org.spout.engine.geo.SpoutWorld;
-import org.spout.engine.geo.SpoutWorldManager;
+import org.spout.engine.geo.world.SpoutWorld;
+import org.spout.engine.geo.world.SpoutWorldManager;
 
 public class SpoutClient extends SpoutEngine implements Client {
     private final AtomicReference<SpoutPlayer> player = new AtomicReference<>();

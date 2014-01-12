@@ -1,4 +1,4 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.world;
 
 import java.util.ArrayList;
 import java.util.Collection;

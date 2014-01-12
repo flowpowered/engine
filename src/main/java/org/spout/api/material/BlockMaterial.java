@@ -303,10 +303,9 @@ public class BlockMaterial extends Material implements Placeable {
 	/**
 	 * Gets the occluded faces of this Block Material for the data value specified<br> Occluded faces do not let light though and require rendering behind it at those faces
 	 *
-	 * @param data value of the material
 	 * @return the occluded faces
 	 */
-	public ByteBitSet getOcclusion(short data) {
+	public ByteBitSet getOcclusion() {
 		return this.occlusion;
 	}
 
@@ -317,31 +316,30 @@ public class BlockMaterial extends Material implements Placeable {
 	 * @param faces to make this Block Material occlude
 	 * @return this Block Material
 	 */
-	public BlockMaterial setOcclusion(short data, BlockFaces faces) {
-		this.getOcclusion(data).set(faces);
+	public BlockMaterial setOcclusion(BlockFaces faces) {
+		this.getOcclusion().set(faces);
 		return this;
 	}
 
 	/**
 	 * Sets the occludes face of this Block Material<br> Occluded faces do not let light though and require rendering behind it at those faces
 	 *
-	 * @param data of this Block Material
 	 * @param face to make this Block Material occlude
 	 * @return this Block Material
 	 */
-	public BlockMaterial setOcclusion(short data, BlockFace face) {
-		this.getOcclusion(data).set(face);
+	public BlockMaterial setOcclusion(BlockFace face) {
+		this.getOcclusion().set(face);
 		return this;
 	}
 
 	/**
-	 * Gets if the a face should be rendered
+	 * Gets if the material occludes the adjacent face (in other words, if that face is rendered on this material)
 	 *
 	 * @param face the fact to render
 	 * @param material the material of the neighbouring block
 	 */
-	public boolean isFaceRendered(BlockFace face, BlockMaterial material) {
-		return true;
+	public boolean occludes(BlockFace face, BlockMaterial material) {
+		return getOcclusion().isAny(face);
 	}
 
 	@Override

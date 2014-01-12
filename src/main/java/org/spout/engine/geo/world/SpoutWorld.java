@@ -1,5 +1,6 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.world;
 
+import org.spout.engine.geo.region.SpoutRegion;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,9 @@ import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 import org.spout.engine.SpoutEngine;
 import org.spout.engine.entity.EntityManager;
 import org.spout.engine.entity.SpoutEntity;
+import org.spout.engine.geo.RegionSource;
+import org.spout.engine.geo.SpoutBlock;
+import org.spout.engine.geo.SpoutChunk;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLong;
@@ -46,7 +50,7 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
         this.uid = uid;
         this.snapshotManager = new SnapshotManager();
         this.age = new SnapshotableLong(snapshotManager, age);
-        this.regionSource = new RegionSource(engine, this);
+        this.regionSource = new RegionSource(engine, (SpoutServerWorld) this);
     }
 
     public SpoutWorld(SpoutEngine engine, String name) {
@@ -221,22 +225,22 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     }
 
     @Override
-    public Region getRegion(int x, int y, int z, LoadOption loadopt) {
+    public SpoutRegion getRegion(int x, int y, int z, LoadOption loadopt) {
         return regionSource.getRegion(x, y, z, loadopt);
     }
 
     @Override
-    public Region getRegionFromChunk(int x, int y, int z, LoadOption loadopt) {
+    public SpoutRegion getRegionFromChunk(int x, int y, int z, LoadOption loadopt) {
         return getRegion(x >> Region.CHUNKS.BITS, y >> Region.CHUNKS.BITS, z >> Region.CHUNKS.BITS, loadopt);
     }
 
     @Override
-    public Region getRegionFromBlock(int x, int y, int z, LoadOption loadopt) {
+    public SpoutRegion getRegionFromBlock(int x, int y, int z, LoadOption loadopt) {
         return getRegion(x >> Region.BLOCKS.BITS, y >> Region.BLOCKS.BITS, z >> Region.BLOCKS.BITS, loadopt);
     }
 
     @Override
-    public Region getRegionFromBlock(Vector3f position, LoadOption loadopt) {
+    public SpoutRegion getRegionFromBlock(Vector3f position, LoadOption loadopt) {
         return getRegionFromBlock(position.getFloorX(), position.getFloorY(), position.getFloorZ(), loadopt);
     }
 
@@ -246,8 +250,8 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     }
 
     @Override
-    public Chunk getChunk(int x, int y, int z, LoadOption loadopt) {
-        Region region = getRegionFromChunk(x, y, z, loadopt);
+    public SpoutChunk getChunk(int x, int y, int z, LoadOption loadopt) {
+        SpoutRegion region = getRegionFromChunk(x, y, z, loadopt);
         if (region == null) {
             return null;
         }

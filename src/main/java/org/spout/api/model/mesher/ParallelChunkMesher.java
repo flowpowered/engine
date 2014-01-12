@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.spout.api.geo.cuboid.ChunkSnapshotGroup;
 import org.spout.engine.render.SpoutRenderer;
+import org.spout.math.vector.Vector3i;
 import org.spout.renderer.data.VertexData;
 import org.spout.renderer.gl.VertexArray;
 import org.spout.renderer.model.Model;
@@ -69,7 +70,7 @@ public class ParallelChunkMesher {
      * @return The chunk's model
      */
     public ChunkModel queue(ChunkSnapshotGroup chunk) {
-        return new ChunkModel(executor.submit(new ChunkMeshTask(chunk)));
+        return new ChunkModel(new Vector3i(chunk.getX(), chunk.getY(), chunk.getZ()), executor.submit(new ChunkMeshTask(chunk)));
     }
 
     /**
@@ -109,8 +110,10 @@ public class ParallelChunkMesher {
         private boolean complete = false;
         private ChunkModel previous;
 
-        private ChunkModel(Future<VertexData> mesh) {
+        private ChunkModel(Vector3i position, Future<VertexData> mesh) {
             this.mesh = mesh;
+            // TODO: replace magic number
+            setPosition(position.mul(16).toFloat());
         }
 
         @Override
@@ -196,5 +199,6 @@ public class ParallelChunkMesher {
                 }
             }
         }
+
     }
 }

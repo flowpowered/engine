@@ -1,5 +1,6 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.region;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -13,16 +14,26 @@ import org.spout.api.geo.LoadOption;
 import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Block;
 import org.spout.api.geo.cuboid.Chunk;
+import org.spout.api.geo.cuboid.ChunkSnapshot;
 import org.spout.api.geo.cuboid.Region;
-import static org.spout.api.geo.cuboid.Region.CHUNKS;
 import org.spout.api.geo.discrete.Transform;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.block.BlockFace;
+import org.spout.api.material.block.BlockFaces;
+import org.spout.api.model.mesher.ParallelChunkMesher;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.scheduler.TickStage;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 import org.spout.engine.SpoutEngine;
 import org.spout.engine.entity.EntityManager;
+import org.spout.engine.entity.SpoutEntity;
+import org.spout.engine.entity.SpoutEntitySnapshot;
+import org.spout.engine.filesystem.ChunkDataForRegion;
+import org.spout.engine.geo.SpoutChunk;
+import org.spout.engine.geo.SpoutChunkSnapshot;
+import org.spout.engine.geo.SpoutChunkSnapshotGroup;
+import org.spout.engine.geo.world.SpoutWorld;
+import org.spout.engine.scheduler.RenderThread;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
@@ -34,15 +45,23 @@ public class SpoutRegion extends Region implements AsyncManager {
 	 * Holds all of the entities to be simulated
 	 */
 	protected final EntityManager entityManager = new EntityManager();
-	@SuppressWarnings ("unchecked")
 	// TODO: possibly have a SoftReference of unloaded chunks to allow for quicker loading of chunk
-	protected final AtomicReference<SpoutChunk>[][][] chunks = new AtomicReference[CHUNKS.SIZE][CHUNKS.SIZE][CHUNKS.SIZE];
-	protected final AtomicReference<SpoutChunk>[][][] live = new AtomicReference[CHUNKS.SIZE][CHUNKS.SIZE][CHUNKS.SIZE];
-    protected final boolean chunksModified = false;
+    /**
+     * Chunks used for ticking.
+     */
+	protected final AtomicReference<SpoutChunk[]> chunks = new AtomicReference<>(new SpoutChunk[CHUNKS.VOLUME]);
+    /**
+     * All live chunks. These are not ticked, but can be accessed.
+     */
+	protected final AtomicReference<SpoutChunk[]> live = new AtomicReference<>(new SpoutChunk[CHUNKS.VOLUME]);
+    protected volatile boolean chunksModified = false;
+    private final RenderThread render;
 
-    public SpoutRegion(SpoutEngine engine, World world, float x, float y, float z) {
+    public SpoutRegion(SpoutEngine engine, World world, float x, float y, float z, RenderThread render) {
         super(world, x, y, z);
         this.engine = engine;
+        this.render = render;
+
     }
 
     @Override
@@ -80,7 +99,7 @@ public class SpoutRegion extends Region implements AsyncManager {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-	private void checkChunkLoaded(SpoutChunk chunk, LoadOption loadopt) {
+	protected void checkChunkLoaded(SpoutChunk chunk, LoadOption loadopt) {
 		if (loadopt.loadIfNeeded()) {
 			//if (!chunk.cancelUnload()) {
 			//	throw new IllegalStateException("Unloaded chunk returned by getChunk");
@@ -89,7 +108,7 @@ public class SpoutRegion extends Region implements AsyncManager {
 	}
 
     @Override
-    public Chunk getChunk(int x, int y, int z, final LoadOption loadopt) {
+    public SpoutChunk getChunk(int x, int y, int z, final LoadOption loadopt) {
         // If we're not waiting, then we don't care because it's async anyways
         if (loadopt.isWait()) {
             if (loadopt.generateIfNeeded()) {
@@ -103,12 +122,59 @@ public class SpoutRegion extends Region implements AsyncManager {
         y &= CHUNKS.MASK;
         z &= CHUNKS.MASK;
 
-        final SpoutChunk chunk = chunks[x][y][z].get();
+        final SpoutChunk chunk = chunks.get()[getChunkIndex(x, y, z)];
         if (chunk != null) {
             checkChunkLoaded(chunk, loadopt);
         }
         return chunk;
     }
+
+	protected void setGeneratedChunks(SpoutChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
+		while(true) {
+            SpoutChunk[] live = this.live.get();
+            SpoutChunk[] newArray = Arrays.copyOf(live, live.length);
+            final int width = newChunks.length;
+            for (int x = 0; x < width; x++) {
+                for (int z = 0; z < width; z++) {
+                    for (int y = 0; y < width; y++) {
+                        int chunkIndex = getChunkIndex(x + baseX, y + baseY, z + baseZ);
+                        if (live[chunkIndex] != null) {
+                            throw new IllegalStateException("Tried to set a generated chunk, but a chunk already existed!");
+                        }
+                        newArray[chunkIndex] = newChunks[x][y][z];
+                    }
+                }
+            }
+            if (this.live.compareAndSet(live, newArray)) {
+                chunksModified = true;
+                //newChunk.queueNew();
+                break;
+			}
+        }
+	}
+
+	protected SpoutChunk setChunk(SpoutChunk newChunk, int x, int y, int z, ChunkDataForRegion dataForRegion) {
+        final int chunkIndex = getChunkIndex(x, y, z);
+        while (true) {
+            SpoutChunk[] live = this.live.get();
+            SpoutChunk old = live[chunkIndex];
+            if (old != null) {
+                //newChunk.setUnloadedUnchecked();
+                return old;
+            }
+            SpoutChunk[] newArray = Arrays.copyOf(live, live.length);
+            newArray[chunkIndex] = newChunk;
+            if (this.live.compareAndSet(live, newArray)) {
+                chunksModified = true;
+                if (dataForRegion != null) {
+					for (SpoutEntitySnapshot snapshot : dataForRegion.loadedEntities) {
+						SpoutEntity entity = EntityManager.createEntity(snapshot.getTransform());
+						entityManager.addEntity(entity);
+					}
+				}
+			}
+		}
+	}
 
 	public static int getChunkKey(int chunkX, int chunkY, int chunkZ) {
 		chunkX &= CHUNKS.MASK;
@@ -317,9 +383,35 @@ public class SpoutRegion extends Region implements AsyncManager {
         entityManager.preSnapshotRun();
     }
 
+    volatile boolean run = false;
     @Override
     public void copySnapshotRun() {
         entityManager.copyAllSnapshots();
+        if (chunksModified) {
+            chunks.set(live.get());
+            chunksModified = false;
+        }
+        if (run) return;
+        for (SpoutChunk chunk : chunks.get()) {
+            if (chunk == null) {
+                return;
+            }
+            run = true;
+            ChunkSnapshot[][][] chunks = new ChunkSnapshot[3][3][3];
+            int cx = chunk.getX();
+            int cy = chunk.getY();
+            int cz = chunk.getZ();
+            chunks[1][1][1] = new SpoutChunkSnapshot(getWorld(), cx, cy, cz, chunk.getBlockStore().getBlockIdArray(), chunk.getBlockStore().getDataArray());
+
+            for (BlockFace face : BlockFaces.BTNSWE) {
+                SpoutChunk local = getWorld().getChunk(getX() + face.getOffset().getFloorX(), getY() + face.getOffset().getFloorY(), getZ() + face.getOffset().getFloorZ(), LoadOption.NO_LOAD);
+                if (local == null) {
+                    continue;
+                }
+                chunks[face.getOffset().getFloorX() + 1][face.getOffset().getFloorY() + 1][face.getOffset().getFloorZ() + 1] = new SpoutChunkSnapshot(getWorld(), local.getX(), local.getY(), local.getZ(), local.getBlockStore().getBlockIdArray(), local.getBlockStore().getDataArray());
+            }
+            render.addChunkModel(render.getMesher().queue(new SpoutChunkSnapshotGroup(cx, cy, cz, chunks)));
+        }
     }
 
     @Override
@@ -369,5 +461,14 @@ public class SpoutRegion extends Region implements AsyncManager {
 
     public RigidBody addBody(Transform live, float mass, CollisionShape shape, boolean ghost, boolean mobile) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    protected static int getChunkIndex(int x, int y, int z) {
+        return (CHUNKS.AREA * x) + (CHUNKS.SIZE * y) + z;
+    }
+
+    @Override
+    public SpoutWorld getWorld() {
+        return (SpoutWorld) super.getWorld();
     }
 }

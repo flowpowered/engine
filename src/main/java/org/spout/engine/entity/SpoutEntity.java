@@ -3,6 +3,7 @@ package org.spout.engine.entity;
 import java.util.Collection;
 import java.util.UUID;
 
+import com.flowpowered.commons.datatable.ManagedHashMap;
 import com.flowpowered.commons.datatable.ManagedMap;
 import org.spout.api.Engine;
 import org.spout.api.component.Component;
@@ -17,13 +18,18 @@ import org.spout.api.geo.discrete.Transform;
 
 public class SpoutEntity implements Entity {
     private final int id;
-    private Transform location;
     private SpoutPhysics physics;
+    private ManagedHashMap data;
+
+    private Network network;
 
     public SpoutEntity(int id, Transform transform) {
         this.id = id;
-        this.location = transform;
         this.physics = new SpoutPhysics(this);
+        this.physics.setTransform(transform);
+        this.physics.copySnapshot();
+        this.data = new ManagedHashMap();
+        this.network = new Network(this);
     }
 
     @Override
@@ -48,7 +54,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public boolean isRemoved() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
     @Override
@@ -68,7 +74,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public Region getRegion() {
-        return location.getPosition().getRegion(LoadOption.LOAD_GEN);
+        return physics.getPosition().getRegion(LoadOption.LOAD_GEN);
     }
 
     @Override
@@ -78,7 +84,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public ManagedMap getData() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data;
     }
 
     @Override
@@ -98,7 +104,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public World getWorld() {
-        return location.getPosition().getWorld();
+        return physics.getPosition().getWorld();
     }
 
     @Override
@@ -142,12 +148,15 @@ public class SpoutEntity implements Entity {
     }
 
     void finalizeRun() {
+        network.finalizeRun(physics.getTransformLive());
     }
 
     void preSnapshotRun() {
+        network.preSnapshotRun(physics.getTransformLive());
     }
 
     void copySnapshot() {
+        network.copySnapshot();
     }
 
     @Override

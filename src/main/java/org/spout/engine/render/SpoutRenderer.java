@@ -42,7 +42,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.flowpowered.commons.TPSMonitor;
+
 import org.lwjgl.opengl.GLContext;
+import org.spout.api.render.Renderer;
 import org.spout.engine.render.effect.BlurEffect;
 import org.spout.engine.render.effect.SSAOEffect;
 import org.spout.engine.render.effect.ShadowMappingEffect;
@@ -87,13 +90,14 @@ import org.spout.renderer.gl.Texture.WrapMode;
 import org.spout.renderer.gl.VertexArray;
 import org.spout.renderer.model.Model;
 import org.spout.renderer.model.StringModel;
+import org.spout.renderer.util.MeshGenerator;
 import org.spout.renderer.util.Rectangle;
 
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
  * detection anti-aliasing. The default OpenGL version is 3.2.
  */
-public class SpoutRenderer implements org.spout.api.render.Renderer {
+public class SpoutRenderer implements Renderer {
     // CONSTANTS
     private final String WINDOW_TITLE = "Spout";
     private final Vector2f WINDOW_SIZE = new Vector2f(1200, 800);
@@ -707,20 +711,6 @@ public class SpoutRenderer implements org.spout.api.render.Renderer {
 
     private void addScreen() {
         guiRenderList.add(new Model(deferredStageScreenVertexArray, materials.get("screen")));
-
-        // TEST CODE
-        final VertexArray vertexArray = glFactory.createVertexArray();
-        vertexArray.setData(MeshGenerator.generateCone(null, 10, 10));
-        vertexArray.create();
-        final Model model = new Model(vertexArray, materials.get("transparency"));
-        model.getUniforms().add(new ColorUniform("modelColor", new Color(200, 10, 10, 200)));
-        model.setPosition(new Vector3f(0, 22, 0));
-        addTransparentModel(model);
-        final Model model2 = model.getInstance();
-        model2.getUniforms().add(new ColorUniform("modelColor", new Color(10, 10, 200, 120)));
-        model2.setPosition(new Vector3f(0, 22, 0));
-        model2.setRotation(Quaternionf.fromAngleDegAxis(180, 1, 0, 0));
-        addTransparentModel(model2);
     }
 
     private void addFPSMonitor() {
@@ -839,12 +829,12 @@ public class SpoutRenderer implements org.spout.api.render.Renderer {
 
     @Override
     public Vector2f getResolution() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return WINDOW_SIZE;
     }
 
     @Override
     public float getAspectRatio() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ASPECT_RATIO;
     }
 
     private class DoDeferredStageAction extends RenderModelsAction {

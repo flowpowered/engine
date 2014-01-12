@@ -1,4 +1,4 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.world;
 
 import java.io.File;
 import java.util.List;
@@ -7,9 +7,13 @@ import java.util.UUID;
 
 import org.spout.api.generator.WorldGenerator;
 import org.spout.api.geo.ServerWorld;
+import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
+import org.spout.api.io.bytearrayarray.BAAWrapper;
 import org.spout.engine.SpoutEngine;
 import org.spout.engine.filesystem.WorldFiles;
+import org.spout.engine.geo.region.RegionFileManager;
+import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
 
 public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
@@ -18,18 +22,26 @@ public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
 	/**
 	 * The spawn position.
 	 */
-	private final Transform spawnLocation = new Transform();
+	private final Transform spawnLocation;
+	/**
+	 * RegionFile manager for the world
+	 */
+	private final RegionFileManager regionFileManager;
 
     public SpoutServerWorld(SpoutEngine engine, String name, UUID uid, long age, WorldGenerator generator, long seed) {
         super(engine, name, uid, age);
+        this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
         this.generator = generator;
         this.seed = seed;
+        this.regionFileManager = new RegionFileManager(new File(name));
     }
 
     public SpoutServerWorld(SpoutEngine engine, String name, WorldGenerator generator) {
         super(engine, name);
+        this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
         this.generator = generator;
         this.seed = new Random().nextLong();
+        this.regionFileManager = new RegionFileManager(new File(name));
     }
 
     @Override
@@ -76,4 +88,10 @@ public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+	public BAAWrapper getRegionFile(int rx, int ry, int rz) {
+		if (regionFileManager == null) {
+			throw new IllegalStateException("Client does not have file manager");
+		}
+		return regionFileManager.getBAAWrapper(rx, ry, rz);
+	}
 }

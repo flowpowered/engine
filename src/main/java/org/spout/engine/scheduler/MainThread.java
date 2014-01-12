@@ -12,10 +12,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.flowpowered.commons.Named;
+import com.flowpowered.commons.ticking.TickingElement;
 
 import org.spout.api.Spout;
 import org.spout.api.scheduler.TickStage;
 import org.spout.api.scheduler.Worker;
+import org.spout.engine.geo.region.RegionGenerator;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.LoggingThreadPoolExecutor;
 import org.spout.engine.util.thread.coretasks.CopySnapshotTask;
@@ -30,7 +32,7 @@ import org.spout.engine.util.thread.coretasks.GlobalPhysicsTask;
 import org.spout.engine.util.thread.coretasks.PreSnapshotTask;
 import org.spout.engine.util.thread.coretasks.StartTickTask;
 
-public class MainThread extends SchedulerElement {
+public class MainThread extends TickingElement {
     private final SpoutScheduler scheduler;
     private final AtomicLong currentDelta = new AtomicLong(0);
     private final ManagerRunnableFactory[] managerRunnableFactories = new ManagerRunnableFactory[] {
@@ -81,6 +83,8 @@ public class MainThread extends SchedulerElement {
     @Override
     public void onStop() {
             doCopySnapshot();
+            RegionGenerator.shutdownExecutorService();
+            RegionGenerator.awaitExecutorServiceTermination();
 
 			scheduler.getTaskManager().heartbeat(SpoutScheduler.PULSE_EVERY << 2);
 			scheduler.getTaskManager().shutdown(1L);

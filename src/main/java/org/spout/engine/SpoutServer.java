@@ -11,7 +11,7 @@ import org.spout.api.Server;
 import org.spout.api.entity.Player;
 import org.spout.api.geo.ServerWorldManager;
 import org.spout.engine.entity.SpoutPlayer;
-import org.spout.engine.geo.SpoutServerWorldManager;
+import org.spout.engine.geo.world.SpoutServerWorldManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
 public class SpoutServer extends SpoutEngine implements Server {

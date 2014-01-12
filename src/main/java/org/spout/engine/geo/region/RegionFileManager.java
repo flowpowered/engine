@@ -34,7 +34,6 @@ import org.spout.api.Spout;
 import org.spout.api.geo.cuboid.ChunkSnapshot;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.io.bytearrayarray.BAAWrapper;
-import org.spout.engine.geo.SpoutRegion;
 
 public class RegionFileManager {
 	/**

@@ -31,7 +31,7 @@ import org.spout.api.entity.Entity;
 import org.spout.api.geo.World;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
-import org.spout.engine.geo.SpoutRegion;
+import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.engine.util.math.ReactConverter;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;

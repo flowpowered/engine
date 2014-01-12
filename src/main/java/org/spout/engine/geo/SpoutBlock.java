@@ -26,6 +26,8 @@
  */
 package org.spout.engine.geo;
 
+import org.spout.engine.geo.world.SpoutWorld;
+import org.spout.engine.geo.region.SpoutRegion;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 

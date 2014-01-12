@@ -35,6 +35,7 @@ import org.spout.api.entity.EntitySnapshot;
 import org.spout.api.geo.AreaBlockSource;
 import org.spout.api.geo.World;
 import org.spout.api.geo.discrete.Point;
+import org.spout.api.material.BlockMaterial;
 
 public abstract class ChunkSnapshot extends Cube implements AreaBlockSource {
 	/**
