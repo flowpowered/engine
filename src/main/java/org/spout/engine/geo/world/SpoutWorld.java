@@ -22,13 +22,14 @@ import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.scheduler.TaskManager;
+import org.spout.api.scheduler.TickStage;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 import org.spout.engine.SpoutEngine;
 import org.spout.engine.entity.EntityManager;
 import org.spout.engine.entity.SpoutEntity;
-import org.spout.engine.geo.RegionSource;
+import org.spout.engine.geo.region.RegionSource;
 import org.spout.engine.geo.SpoutBlock;
-import org.spout.engine.geo.SpoutChunk;
+import org.spout.engine.geo.chunk.SpoutChunk;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLong;
@@ -222,6 +223,10 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     @Override
     public Collection<Region> getRegions() {
         return regionSource.getRegions();
+    }
+
+    public Collection<SpoutRegion> getSpoutRegions() {
+        return (Collection) getRegions();
     }
 
     @Override
@@ -444,11 +449,11 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     public void setExecutionThread(Thread t) {
     }
 
-    private static ShortBitSet ALL_STAGES = new ShortBitSet(Short.MAX_VALUE);
+    private static ShortBitMask STAGES = TickStage.allOf(TickStage.SNAPSHOT);
 
     @Override
     public ShortBitMask getTickStages() {
-        return ALL_STAGES;
+        return STAGES;
     }
 
 }

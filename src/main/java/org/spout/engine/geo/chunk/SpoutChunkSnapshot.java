@@ -1,4 +1,4 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.chunk;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.chunk;
 
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.ChunkSnapshot;

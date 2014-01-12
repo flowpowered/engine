@@ -24,7 +24,7 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.engine.geo;
+package org.spout.engine.geo.region;
 
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.geo.region.SpoutRegion;
@@ -45,7 +45,6 @@ import org.spout.api.util.map.concurrent.TripleIntObjectReferenceArrayMap;
 import org.spout.api.util.thread.annotation.DelayedWrite;
 import org.spout.api.util.thread.annotation.LiveRead;
 import org.spout.engine.SpoutEngine;
-import org.spout.engine.geo.region.SpoutServerRegion;
 import org.spout.engine.geo.world.SpoutServerWorld;
 
 public class RegionSource implements Iterable<Region> {
@@ -127,7 +126,7 @@ public class RegionSource implements Iterable<Region> {
 		}
 
         SpoutServerWorld serverWorld = (SpoutServerWorld) world;
-		region = new SpoutServerRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
+		region = new SpoutRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
 		SpoutRegion current = loadedRegions.putIfAbsent(x, y, z, region);
 
 		if (current != null) {

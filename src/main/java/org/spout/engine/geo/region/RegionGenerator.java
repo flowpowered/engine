@@ -40,7 +40,7 @@ import org.spout.api.Spout;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
-import org.spout.engine.geo.SpoutChunk;
+import org.spout.engine.geo.chunk.SpoutChunk;
 import org.spout.engine.geo.world.SpoutServerWorld;
 import org.spout.engine.util.thread.LoggingThreadPoolExecutor;
 import org.spout.math.GenericMath;

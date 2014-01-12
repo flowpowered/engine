@@ -1,4 +1,4 @@
-package org.spout.engine.geo;
+package org.spout.engine.geo.chunk;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +25,7 @@ import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.block.BlockFullState;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 import org.spout.api.util.hashing.NibbleQuadHashed;
+import org.spout.engine.geo.SpoutBlock;
 import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.math.GenericMath;

@@ -1,13 +1,17 @@
 package org.spout.engine.geo.region;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
 
+import org.spout.api.Spout;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
 import org.spout.api.geo.LoadOption;
@@ -17,10 +21,10 @@ import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.ChunkSnapshot;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.geo.discrete.Transform;
+import org.spout.api.io.bytearrayarray.BAAWrapper;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.block.BlockFace;
 import org.spout.api.material.block.BlockFaces;
-import org.spout.api.model.mesher.ParallelChunkMesher;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.scheduler.TickStage;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
@@ -29,9 +33,10 @@ import org.spout.engine.entity.EntityManager;
 import org.spout.engine.entity.SpoutEntity;
 import org.spout.engine.entity.SpoutEntitySnapshot;
 import org.spout.engine.filesystem.ChunkDataForRegion;
-import org.spout.engine.geo.SpoutChunk;
-import org.spout.engine.geo.SpoutChunkSnapshot;
-import org.spout.engine.geo.SpoutChunkSnapshotGroup;
+import org.spout.engine.filesystem.ChunkFiles;
+import org.spout.engine.geo.chunk.SpoutChunk;
+import org.spout.engine.geo.chunk.SpoutChunkSnapshot;
+import org.spout.engine.geo.chunk.SpoutChunkSnapshotGroup;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.scheduler.RenderThread;
 import org.spout.engine.util.thread.AsyncManager;
@@ -40,6 +45,11 @@ import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 
 public class SpoutRegion extends Region implements AsyncManager {
+	private final RegionGenerator generator;
+	/**
+	 * Reference to the persistent ByteArrayArray that stores chunk data
+	 */
+	private final BAAWrapper chunkStore;
     protected final SpoutEngine engine;
 	/**
 	 * Holds all of the entities to be simulated
@@ -57,9 +67,11 @@ public class SpoutRegion extends Region implements AsyncManager {
     protected volatile boolean chunksModified = false;
     private final RenderThread render;
 
-    public SpoutRegion(SpoutEngine engine, World world, float x, float y, float z, RenderThread render) {
+    public SpoutRegion(SpoutEngine engine, World world, float x, float y, float z, BAAWrapper chunkStore, RenderThread render) {
         super(world, x, y, z);
         this.engine = engine;
+        this.generator = new RegionGenerator(this, 4);
+        this.chunkStore = chunkStore;
         this.render = render;
 
     }
@@ -125,9 +137,99 @@ public class SpoutRegion extends Region implements AsyncManager {
         final SpoutChunk chunk = chunks.get()[getChunkIndex(x, y, z)];
         if (chunk != null) {
             checkChunkLoaded(chunk, loadopt);
+            return chunk;
         }
-        return chunk;
+
+        if (!loadopt.loadIfNeeded() || !engine.getPlatform().isServer()) {
+            return null;
+        }
+
+        if (loadopt.isWait()) {
+            return loadOrGenChunkImmediately(x, y, z, loadopt);
+        }
+
+        final int finalX = x;
+        final int finalY = y;
+        final int finalZ = z;
+        engine.getScheduler().runCoreAsyncTask(new Runnable() {
+            @Override
+            public void run() {
+                loadOrGenChunkImmediately(finalX, finalY, finalZ, loadopt);
+            }
+        });
+        return null;
     }
+
+    // If loadopt.isWait(), this method is run synchronously and so is any further generation
+    // If !loadopt.isWait(), this method is run by a runnable, because the loading is taxing; any further generation is also run in its own Runnable
+	private SpoutChunk loadOrGenChunkImmediately(int x, int y, int z, final LoadOption loadopt) {
+		SpoutChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(x, y, z) : null;
+
+		if (newChunk != null || !loadopt.generateIfNeeded()) {
+            return newChunk;
+		}
+
+        generator.generateChunk(x, y, z, loadopt.isWait());
+        if (!loadopt.isWait()) {
+            return null;
+        }
+        final SpoutChunk generatedChunk = live.get()[getChunkIndex(x, y, z)];
+        if (generatedChunk != null) {
+            checkChunkLoaded(generatedChunk, loadopt);
+            return generatedChunk;
+        }
+        Spout.getLogger().severe("Chunk failed to generate!  (" + loadopt + ")");
+        Spout.getLogger().info("Region " + this + ", chunk " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z));
+        Thread.dumpStack();
+        return null;
+	}
+
+    private SpoutChunk loadChunk(int x, int y, int z) {
+        final InputStream stream = this.getChunkInputStream(x, y, z);
+        if (stream != null) {
+            try {
+                try {
+                    ChunkDataForRegion dataForRegion = new ChunkDataForRegion();
+                    SpoutChunk newChunk = ChunkFiles.loadChunk(this, x, y, z, stream, dataForRegion);
+                    if (newChunk == null) {
+                        Spout.getLogger().severe("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
+                        return null;
+                    }
+                    SpoutChunk c = setChunk(newChunk, x, y, z, dataForRegion);
+                    checkChunkLoaded(c, LoadOption.LOAD_ONLY);
+                    return c;
+                } finally {
+                    stream.close();
+                }
+            } catch (IOException e) {
+                Spout.getLogger().log(Level.WARNING, "IOException when loading chunk!", e);
+            }
+        }
+        return null;
+    }
+
+	/**
+	 * Gets the DataInputStream corresponding to a given Chunk.<br> <br> The stream is based on a snapshot of the array.
+	 *
+	 * @param x the chunk
+	 * @return the DataInputStream
+	 */
+	public InputStream getChunkInputStream(int x, int y, int z) {
+		return chunkStore.getBlockInputStream(getChunkKey(x, y, z));
+	}
+
+	public static int getChunkKey(int chunkX, int chunkY, int chunkZ) {
+		chunkX &= CHUNKS.MASK;
+		chunkY &= CHUNKS.MASK;
+		chunkZ &= CHUNKS.MASK;
+
+		int key = 0;
+		key |= chunkX;
+		key |= chunkY << CHUNKS.BITS;
+		key |= chunkZ << (CHUNKS.BITS << 1);
+
+		return key;
+	}
 
 	protected void setGeneratedChunks(SpoutChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
 		while(true) {
@@ -174,19 +276,6 @@ public class SpoutRegion extends Region implements AsyncManager {
 				}
 			}
 		}
-	}
-
-	public static int getChunkKey(int chunkX, int chunkY, int chunkZ) {
-		chunkX &= CHUNKS.MASK;
-		chunkY &= CHUNKS.MASK;
-		chunkZ &= CHUNKS.MASK;
-
-		int key = 0;
-		key |= chunkX;
-		key |= chunkY << CHUNKS.BITS;
-		key |= chunkZ << (CHUNKS.BITS << 1);
-
-		return key;
 	}
 
     @Override
@@ -470,5 +559,10 @@ public class SpoutRegion extends Region implements AsyncManager {
     @Override
     public SpoutWorld getWorld() {
         return (SpoutWorld) super.getWorld();
+    }
+
+    public SpoutChunk[] getChunks() {
+        SpoutChunk[] get = chunks.get();
+        return Arrays.copyOf(get, get.length);
     }
 }

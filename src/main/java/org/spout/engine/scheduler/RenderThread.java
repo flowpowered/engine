@@ -10,7 +10,7 @@ import org.lwjgl.opengl.Display;
 import org.spout.api.model.mesher.ParallelChunkMesher;
 import org.spout.api.model.mesher.ParallelChunkMesher.ChunkModel;
 import org.spout.api.model.mesher.StandardChunkMesher;
-import org.spout.engine.geo.SpoutChunkSnapshotGroup;
+import org.spout.engine.geo.chunk.SpoutChunkSnapshotGroup;
 import org.spout.engine.render.SpoutRenderer;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
