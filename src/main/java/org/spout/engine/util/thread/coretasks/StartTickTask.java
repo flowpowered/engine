@@ -29,6 +29,7 @@ package org.spout.engine.util.thread.coretasks;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.StartTickManager;
 
 public class StartTickTask extends LocalManagerRunnableFactory {
 	private final int stage;
@@ -44,7 +45,7 @@ public class StartTickTask extends LocalManagerRunnableFactory {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.startTickRun(stage, delta.get());
+				((StartTickManager) manager).startTickRun(stage, delta.get());
 			}
 		};
 	}

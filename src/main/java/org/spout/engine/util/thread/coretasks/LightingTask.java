@@ -27,6 +27,7 @@
 package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.LightingManager;
 
 public class LightingTask extends SequencedManagerRunnableFactory {
 	@Override
@@ -34,7 +35,7 @@ public class LightingTask extends SequencedManagerRunnableFactory {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.runLighting(sequence);
+				((LightingManager) manager).runLighting(sequence);
 			}
 		};
 	}

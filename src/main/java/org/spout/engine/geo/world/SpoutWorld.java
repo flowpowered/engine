@@ -30,14 +30,14 @@ import org.spout.engine.entity.SpoutEntity;
 import org.spout.engine.geo.region.RegionSource;
 import org.spout.engine.geo.SpoutBlock;
 import org.spout.engine.geo.chunk.SpoutChunk;
-import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.CopySnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLong;
 import org.spout.math.GenericMath;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
 
-public class SpoutWorld extends BaseComponentOwner implements World, AsyncManager {
+public class SpoutWorld extends BaseComponentOwner implements World, CopySnapshotManager {
     private final SpoutEngine engine;
     private final String name;
     private final UUID uid;
@@ -402,42 +402,13 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     }
 
     @Override
-    public void finalizeRun() {
-    }
-
-    @Override
-    public void preSnapshotRun() {
-    }
-
-    @Override
     public void copySnapshotRun() {
         System.out.println("SpoutWorld copySnapshot");
     }
 
     @Override
-    public void startTickRun(int stage, long delta) {
-    }
-
-    @Override
-    public void runPhysics(int sequence) {
-    }
-
-    @Override
-    public void runDynamicUpdates(long threshold, int sequence) {
-    }
-
-    @Override
-    public void runLighting(int sequence) {
-    }
-
-    @Override
     public int getSequence() {
         return -1;
-    }
-
-    @Override
-    public long getFirstDynamicUpdateTime() {
-        return 0;
     }
 
     @Override
@@ -450,10 +421,8 @@ public class SpoutWorld extends BaseComponentOwner implements World, AsyncManage
     }
 
     private static ShortBitMask STAGES = TickStage.allOf(TickStage.SNAPSHOT);
-
     @Override
     public ShortBitMask getTickStages() {
         return STAGES;
     }
-
 }

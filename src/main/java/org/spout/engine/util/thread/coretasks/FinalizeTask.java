@@ -27,6 +27,7 @@
 package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.FinalizeManager;
 
 public class FinalizeTask extends LocalManagerRunnableFactory {
 	@Override
@@ -34,7 +35,7 @@ public class FinalizeTask extends LocalManagerRunnableFactory {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.finalizeRun();
+				((FinalizeManager) manager).finalizeRun();
 			}
 		};
 	}

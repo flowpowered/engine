@@ -40,11 +40,12 @@ import org.spout.engine.geo.chunk.SpoutChunkSnapshotGroup;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.scheduler.RenderThread;
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.CompleteAsyncManager;
 import org.spout.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 
-public class SpoutRegion extends Region implements AsyncManager {
+public class SpoutRegion extends Region implements CompleteAsyncManager {
 	private final RegionGenerator generator;
 	/**
 	 * Reference to the persistent ByteArrayArray that stores chunk data

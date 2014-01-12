@@ -27,6 +27,7 @@
 package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.DynamicUpdateManager;
 
 public class GlobalDynamicUpdatesTask extends SequencedManagerRunnableFactory {
 	private long threshold = 0;
@@ -36,7 +37,7 @@ public class GlobalDynamicUpdatesTask extends SequencedManagerRunnableFactory {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.runDynamicUpdates(threshold, sequence);
+				((DynamicUpdateManager) manager).runDynamicUpdates(threshold, sequence);
 			}
 		};
 	}

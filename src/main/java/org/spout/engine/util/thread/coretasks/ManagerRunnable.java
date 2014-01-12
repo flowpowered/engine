@@ -40,7 +40,7 @@ public abstract class ManagerRunnable implements Callable<Void> {
 	@Override
 	public final Void call() {
 		manager.setExecutionThread(Thread.currentThread());
-		runTask();
+        runTask();
         return null;
 	}
 

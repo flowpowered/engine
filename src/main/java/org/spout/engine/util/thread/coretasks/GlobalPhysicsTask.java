@@ -27,6 +27,7 @@
 package org.spout.engine.util.thread.coretasks;
 
 import org.spout.engine.util.thread.AsyncManager;
+import org.spout.engine.util.thread.PhysicsManager;
 
 public class GlobalPhysicsTask extends SequencedManagerRunnableFactory {
 	@Override
@@ -34,7 +35,7 @@ public class GlobalPhysicsTask extends SequencedManagerRunnableFactory {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				manager.runPhysics(sequence);
+				((PhysicsManager) manager).runPhysics(sequence);
 			}
 		};
 	}
