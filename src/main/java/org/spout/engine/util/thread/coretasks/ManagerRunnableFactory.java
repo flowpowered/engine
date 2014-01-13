@@ -26,6 +26,7 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 
 public interface ManagerRunnableFactory {
@@ -34,4 +35,6 @@ public interface ManagerRunnableFactory {
 	public int getMaxSequence();
 
 	public int getMinSequence();
+
+    public TickStage getTickStage();
 }

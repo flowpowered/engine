@@ -28,6 +28,7 @@ package org.spout.engine.util.thread.coretasks;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.StartTickManager;
 
@@ -49,4 +50,9 @@ public class StartTickTask extends LocalManagerRunnableFactory {
 			}
 		};
 	}
+
+    @Override
+    public TickStage getTickStage() {
+        return TickStage.TICKSTART;
+    }
 }

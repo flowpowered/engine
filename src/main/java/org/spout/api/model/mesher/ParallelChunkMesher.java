@@ -30,7 +30,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.spout.api.geo.cuboid.ChunkSnapshotGroup;
+import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 import org.spout.engine.render.SpoutRenderer;
 import org.spout.math.vector.Vector3i;
 import org.spout.renderer.data.VertexData;
@@ -70,7 +70,7 @@ public class ParallelChunkMesher {
      * @return The chunk's model
      */
     public ChunkModel queue(ChunkSnapshotGroup chunk) {
-        return new ChunkModel(new Vector3i(chunk.getX(), chunk.getY(), chunk.getZ()), executor.submit(new ChunkMeshTask(chunk)));
+        return new ChunkModel(chunk.getMiddle().getPosition(), executor.submit(new ChunkMeshTask(chunk)));
     }
 
     /**

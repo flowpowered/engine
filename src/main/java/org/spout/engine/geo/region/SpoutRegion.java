@@ -15,10 +15,8 @@ import org.spout.api.Spout;
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
 import org.spout.api.geo.LoadOption;
-import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Block;
 import org.spout.api.geo.cuboid.Chunk;
-import org.spout.api.geo.cuboid.ChunkSnapshot;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.geo.discrete.Transform;
 import org.spout.api.io.bytearrayarray.BAAWrapper;
@@ -35,11 +33,11 @@ import org.spout.engine.entity.SpoutEntitySnapshot;
 import org.spout.engine.filesystem.ChunkDataForRegion;
 import org.spout.engine.filesystem.ChunkFiles;
 import org.spout.engine.geo.chunk.SpoutChunk;
-import org.spout.engine.geo.chunk.SpoutChunkSnapshot;
-import org.spout.engine.geo.chunk.SpoutChunkSnapshotGroup;
+import org.spout.engine.geo.snapshot.ChunkSnapshot;
+import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
+import org.spout.engine.geo.snapshot.RegionSnapshot;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.scheduler.RenderThread;
-import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.CompleteAsyncManager;
 import org.spout.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
@@ -66,14 +64,16 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
      */
 	protected final AtomicReference<SpoutChunk[]> live = new AtomicReference<>(new SpoutChunk[CHUNKS.VOLUME]);
     protected volatile boolean chunksModified = false;
+    private final RegionSnapshot snapshot;
     private final RenderThread render;
 
-    public SpoutRegion(SpoutEngine engine, World world, float x, float y, float z, BAAWrapper chunkStore, RenderThread render) {
+    public SpoutRegion(SpoutEngine engine, SpoutWorld world, float x, float y, float z, BAAWrapper chunkStore, RenderThread render) {
         super(world, x, y, z);
         this.engine = engine;
         this.generator = new RegionGenerator(this, 4);
         this.chunkStore = chunkStore;
         this.render = render;
+        this.snapshot = new RegionSnapshot(world.getSnapshot(), getBase().toInt());
 
     }
 
@@ -475,32 +475,20 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
 
     volatile boolean run = false;
     @Override
-    public void copySnapshotRun() {
+    public void copySnapshotRun(int sequence) {
         entityManager.copyAllSnapshots();
         if (chunksModified) {
             chunks.set(live.get());
+            snapshot.update(this);
             chunksModified = false;
         }
         if (run) return;
-        for (SpoutChunk chunk : chunks.get()) {
+        for (ChunkSnapshot chunk : snapshot.getChunks()) {
             if (chunk == null) {
                 return;
             }
             run = true;
-            ChunkSnapshot[][][] chunks = new ChunkSnapshot[3][3][3];
-            int cx = chunk.getX();
-            int cy = chunk.getY();
-            int cz = chunk.getZ();
-            chunks[1][1][1] = new SpoutChunkSnapshot(getWorld(), cx, cy, cz, chunk.getBlockStore().getBlockIdArray(), chunk.getBlockStore().getDataArray());
-
-            for (BlockFace face : BlockFaces.BTNSWE) {
-                SpoutChunk local = getWorld().getChunk(getX() + face.getOffset().getFloorX(), getY() + face.getOffset().getFloorY(), getZ() + face.getOffset().getFloorZ(), LoadOption.NO_LOAD);
-                if (local == null) {
-                    continue;
-                }
-                chunks[face.getOffset().getFloorX() + 1][face.getOffset().getFloorY() + 1][face.getOffset().getFloorZ() + 1] = new SpoutChunkSnapshot(getWorld(), local.getX(), local.getY(), local.getZ(), local.getBlockStore().getBlockIdArray(), local.getBlockStore().getDataArray());
-            }
-            render.addChunkModel(render.getMesher().queue(new SpoutChunkSnapshotGroup(cx, cy, cz, chunks)));
+            render.addChunkModel(render.getMesher().queue(new ChunkSnapshotGroup(chunk)));
         }
     }
 
@@ -521,8 +509,11 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
     }
 
     @Override
-    public int getSequence() {
-        return -1;
+    public boolean checkSequence(TickStage stage, int seqence) {
+        if (stage == TickStage.SNAPSHOT) {
+            return seqence == -1;
+        }
+        return seqence == -1;
     }
 
     @Override
@@ -565,5 +556,9 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
     public SpoutChunk[] getChunks() {
         SpoutChunk[] get = chunks.get();
         return Arrays.copyOf(get, get.length);
+    }
+
+    public RegionSnapshot getSnapshot() {
+        return snapshot;
     }
 }

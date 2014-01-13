@@ -26,6 +26,7 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.CopySnapshotManager;
 
@@ -35,8 +36,18 @@ public class CopySnapshotTask extends LocalManagerRunnableFactory {
 		return new ManagerRunnable(manager) {
 			@Override
 			public void runTask() {
-				((CopySnapshotManager) manager).copySnapshotRun();
+				((CopySnapshotManager) manager).copySnapshotRun(sequence);
 			}
 		};
 	}
+
+    @Override
+    public int getMaxSequence() {
+        return 0;
+    }
+
+    @Override
+    public TickStage getTickStage() {
+        return TickStage.SNAPSHOT;
+    }
 }

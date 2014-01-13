@@ -28,10 +28,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.flowpowered.commons.store.block.AtomicBlockStore;
+import org.spout.api.geo.LoadOption;
 
 import org.spout.api.geo.cuboid.Chunk;
+import org.spout.api.geo.cuboid.Region;
+import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.Material;
 import org.spout.engine.geo.chunk.SpoutChunk;
+import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.math.vector.Vector3i;
 
 /**
@@ -56,6 +60,10 @@ public class ChunkSnapshot {
         return world;
     }
 
+    public RegionSnapshot getRegion() {
+        return region;
+    }
+
     public Vector3i getPosition() {
         return base;
     }
@@ -72,16 +80,44 @@ public class ChunkSnapshot {
         return base.getZ();
     }
 
-    public Material getMaterial(Vector3i position) {
+    public ChunkSnapshot getRelativeChunk(Vector3i relative) {
+        return getRelativeChunk(relative.getX(), relative.getY(), relative.getZ());
+    }
+
+    public ChunkSnapshot getRelativeChunk(int x, int y, int z) {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
+            final int regionX = getRegion().getBase().getX();
+            final int regionY = getRegion().getBase().getY();
+            final int regionZ = getRegion().getBase().getZ();
+            final int otherChunkX = this.getX() + x;
+            final int otherChunkY = this.getY() + y;
+            final int otherChunkZ = this.getZ() + z;
+            final int otherRegionX = otherChunkX / Region.CHUNKS.SIZE;
+            final int otherRegionY = otherChunkY / Region.CHUNKS.SIZE;
+            final int otherRegionZ = otherChunkZ / Region.CHUNKS.SIZE;
+            if (regionX == otherRegionX && regionZ == otherRegionZ && regionY == otherRegionY) {
+                // Get the chunk from the current region
+                return getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
+            }
+            return this.getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ).getChunk(otherChunkX, otherChunkY, otherChunkZ);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public BlockMaterial getMaterial(Vector3i position) {
         return getMaterial(position.getX(), position.getY(), position.getZ());
     }
 
-    public Material getMaterial(int x, int y, int z) {
+    public BlockMaterial getMaterial(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
             final int index = getBlockIndex(x, y, z);
-            return Material.get(blockIDs[index], blockData[index]);
+            return BlockMaterial.get(blockIDs[index], blockData[index]);
         } finally {
             lock.unlock();
         }

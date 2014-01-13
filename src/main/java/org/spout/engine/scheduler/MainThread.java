@@ -269,7 +269,7 @@ public class MainThread extends TickingElement {
                 continue;
             }
             for (int s = minSequence; s <= maxSequence; s++) {
-                if (s == -1 || s == manager.getSequence()) {
+                if (manager.checkSequence(taskFactory.getTickStage(), s)) {
                     Set<ManagerRunnable> sequence = sequences[s - minSequence];
                     if (sequence == null) {
                         sequences[s - minSequence] = sequence = new HashSet<>();
@@ -299,8 +299,9 @@ public class MainThread extends TickingElement {
                 continue;
             }
             for (int s = minSequence; s <= maxSequence; s++) {
-                if (s == -1 || s == manager.getSequence()) {
-                    sequences[s - minSequence].remove(taskFactory.getTask(manager, s));
+                Set<ManagerRunnable> sequence = sequences[s - minSequence];
+                if (sequence != null) {
+                    sequence.remove(taskFactory.getTask(manager, s));
                 }
             }
         }

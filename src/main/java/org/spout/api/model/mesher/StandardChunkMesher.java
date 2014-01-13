@@ -27,11 +27,11 @@ import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
 import org.spout.api.geo.cuboid.Chunk;
 
-import org.spout.api.geo.cuboid.ChunkSnapshotGroup;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.block.BlockFace;
 import org.spout.api.material.block.BlockFaces;
 import org.spout.api.model.mesher.Mesh.MeshAttribute;
+import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 
 /**
  * The standard chunk mesher. Voxels are meshed as blocks. Occludes any block not visible, including the edge blocks. Can mesh a chunk with 3n^2(n+2) block access operations, n being the size of the
@@ -48,10 +48,10 @@ public class StandardChunkMesher implements ChunkMesher {
         // Mesh the faces on the x axis
         for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
-                BlockMaterial backMaterial = chunk.getBlock(-1, yy, zz);
+                BlockMaterial backMaterial = chunk.getMaterial(-1, yy, zz);
                 backMaterial = backMaterial == null ? BlockMaterial.AIR : backMaterial;
                 for (int xx = 0; xx < Chunk.BLOCKS.SIZE + 1; xx++) {
-                    BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    BlockMaterial frontMaterial = chunk.getMaterial(xx, yy, zz);
                     frontMaterial = frontMaterial == null ? BlockMaterial.AIR : frontMaterial;
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.NS);
                     if (face == BlockFace.NORTH) {
@@ -74,10 +74,10 @@ public class StandardChunkMesher implements ChunkMesher {
         // Mesh the faces on the y axis
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int zz = 0; zz < Chunk.BLOCKS.SIZE; zz++) {
-                BlockMaterial backMaterial = chunk.getBlock(xx, -1, zz);
+                BlockMaterial backMaterial = chunk.getMaterial(xx, -1, zz);
                 backMaterial = backMaterial == null ? BlockMaterial.AIR : backMaterial;
                 for (int yy = 0; yy < Chunk.BLOCKS.SIZE + 1; yy++) {
-                    BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    BlockMaterial frontMaterial = chunk.getMaterial(xx, yy, zz);
                     frontMaterial = frontMaterial == null ? BlockMaterial.AIR : frontMaterial;
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.BT);
                     if (face == BlockFace.BOTTOM) {
@@ -100,10 +100,10 @@ public class StandardChunkMesher implements ChunkMesher {
         // Mesh the faces on the z axis
         for (int xx = 0; xx < Chunk.BLOCKS.SIZE; xx++) {
             for (int yy = 0; yy < Chunk.BLOCKS.SIZE; yy++) {
-                BlockMaterial backMaterial = chunk.getBlock(xx, yy, -1);
+                BlockMaterial backMaterial = chunk.getMaterial(xx, yy, -1);
                 backMaterial = backMaterial == null ? BlockMaterial.AIR : backMaterial;
                 for (int zz = 0; zz < Chunk.BLOCKS.SIZE + 1; zz++) {
-                    BlockMaterial frontMaterial = chunk.getBlock(xx, yy, zz);
+                    BlockMaterial frontMaterial = chunk.getMaterial(xx, yy, zz);
                     frontMaterial = frontMaterial == null ? BlockMaterial.AIR : frontMaterial;
                     final BlockFace face = getFace(backMaterial, frontMaterial, BlockFaces.EW);
                     if (face == BlockFace.EAST) {

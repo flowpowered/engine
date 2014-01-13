@@ -26,6 +26,7 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.FinalizeManager;
 
@@ -39,4 +40,9 @@ public class FinalizeTask extends LocalManagerRunnableFactory {
 			}
 		};
 	}
+
+    @Override
+    public TickStage getTickStage() {
+        return TickStage.FINALIZE;
+    }
 }

@@ -26,6 +26,7 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.PhysicsManager;
 
@@ -45,4 +46,8 @@ public class GlobalPhysicsTask extends SequencedManagerRunnableFactory {
         return 0;
     }
 
+    @Override
+    public TickStage getTickStage() {
+        return TickStage.GLOBAL_PHYSICS;
+    }
 }

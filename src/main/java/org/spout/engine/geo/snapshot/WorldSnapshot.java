@@ -108,6 +108,20 @@ public class WorldSnapshot {
         }
     }
 
+    public RegionSnapshot getChunk(Vector3i position) {
+        return getRegion(position.getX(), position.getY(), position.getZ());
+    }
+
+    public RegionSnapshot getChunk(int x, int y, int z) {
+        final Lock lock = this.lock.readLock();
+        lock.lock();
+        try {
+            return regions.get(x, y, z);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public long getTime() {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -141,7 +155,7 @@ public class WorldSnapshot {
                 final Vector3i base = region.getBase().toInt();
                 RegionSnapshot regionSnapshot = regions.get(base.getX(), base.getY(), base.getZ());
                 if (regionSnapshot == null) {
-                    regionSnapshot = new RegionSnapshot(this, base);
+                    regionSnapshot = region.getSnapshot();
                     regions.put(base.getX(), base.getY(), base.getZ(), regionSnapshot);
                 }
                 if (regionSnapshot.update(region)) {
@@ -149,13 +163,7 @@ public class WorldSnapshot {
                 }
                 validRegions.add(base);
             }
-            for (Iterator<RegionSnapshot> iterator = regions.valueCollection().iterator(); iterator.hasNext(); ) {
-                final Vector3i position = iterator.next().getBase();
-                if (!validRegions.contains(position)) {
-                    iterator.remove();
-                    changed = true;
-                }
-            }
+            changed |= regions.valueCollection().retainAll(validRegions);
             time = current.getAge();
             if (changed) {
                 updateNumber++;

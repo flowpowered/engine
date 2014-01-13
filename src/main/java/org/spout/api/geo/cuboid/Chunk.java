@@ -332,8 +332,8 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
     public Chunk getRelative(int x, int y, int z, LoadOption opt) {
         // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
         final int otherChunkX = this.getX() + x;
-        final int otherChunkY = this.getX() + y;
-        final int otherChunkZ = this.getX() + z;
+        final int otherChunkY = this.getY() + y;
+        final int otherChunkZ = this.getZ() + z;
         final int regionX = getRegion().getX();
         final int regionY = getRegion().getY();
         final int regionZ = getRegion().getZ();

@@ -23,7 +23,7 @@
  */
 package org.spout.api.model.mesher;
 
-import org.spout.api.geo.cuboid.ChunkSnapshotGroup;
+import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 
 /**
  * Converts chunk snapshot groups to meshes for rendering.

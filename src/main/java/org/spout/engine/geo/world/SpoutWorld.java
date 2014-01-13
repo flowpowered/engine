@@ -30,6 +30,7 @@ import org.spout.engine.entity.SpoutEntity;
 import org.spout.engine.geo.region.RegionSource;
 import org.spout.engine.geo.SpoutBlock;
 import org.spout.engine.geo.chunk.SpoutChunk;
+import org.spout.engine.geo.snapshot.WorldSnapshot;
 import org.spout.engine.util.thread.CopySnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLong;
@@ -44,6 +45,7 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
     private final SnapshotManager snapshotManager;
     private final SnapshotableLong age;
     private final RegionSource regionSource;
+    private final WorldSnapshot snapshot;
 
     public SpoutWorld(SpoutEngine engine, String name, UUID uid, long age) {
         this.engine = engine;
@@ -52,6 +54,7 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
         this.snapshotManager = new SnapshotManager();
         this.age = new SnapshotableLong(snapshotManager, age);
         this.regionSource = new RegionSource(engine, (SpoutServerWorld) this);
+        this.snapshot = new WorldSnapshot(this);
     }
 
     public SpoutWorld(SpoutEngine engine, String name) {
@@ -401,14 +404,23 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public WorldSnapshot getSnapshot() {
+        return snapshot;
+    }
+
     @Override
-    public void copySnapshotRun() {
+    public void copySnapshotRun(int sequence) {
+        // TODO: modified status
+        snapshot.update(this);
         System.out.println("SpoutWorld copySnapshot");
     }
 
     @Override
-    public int getSequence() {
-        return -1;
+    public boolean checkSequence(TickStage stage, int sequence) {
+        if (stage == TickStage.SNAPSHOT) {
+            return sequence == 0;
+        }
+        return sequence == -1;
     }
 
     @Override

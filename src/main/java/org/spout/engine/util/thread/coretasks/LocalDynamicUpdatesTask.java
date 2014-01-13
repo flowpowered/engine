@@ -26,6 +26,7 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.DynamicUpdateManager;
 
@@ -45,4 +46,9 @@ public class LocalDynamicUpdatesTask extends LocalManagerRunnableFactory {
 	public void setThreshold(long threshold) {
 		this.threshold = threshold;
 	}
+
+    @Override
+    public TickStage getTickStage() {
+        return TickStage.DYNAMIC_BLOCKS;
+    }
 }

@@ -26,6 +26,7 @@
  */
 package org.spout.engine.util.thread.coretasks;
 
+import org.spout.api.scheduler.TickStage;
 import org.spout.engine.util.thread.AsyncManager;
 import org.spout.engine.util.thread.LightingManager;
 
@@ -44,4 +45,9 @@ public class LightingTask extends SequencedManagerRunnableFactory {
 	public int getMinSequence() {
 		return 0;
 	}
+
+    @Override
+    public TickStage getTickStage() {
+        return TickStage.LIGHTING;
+    }
 }

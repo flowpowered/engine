@@ -10,11 +10,9 @@ import org.lwjgl.opengl.Display;
 import org.spout.api.model.mesher.ParallelChunkMesher;
 import org.spout.api.model.mesher.ParallelChunkMesher.ChunkModel;
 import org.spout.api.model.mesher.StandardChunkMesher;
-import org.spout.engine.geo.chunk.SpoutChunkSnapshotGroup;
 import org.spout.engine.render.SpoutRenderer;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
-import org.spout.math.vector.Vector3i;
 import org.spout.renderer.Camera;
 import org.spout.renderer.GLVersioned;
 import org.spout.renderer.data.Color;
@@ -109,7 +107,7 @@ public class RenderThread extends TickingElement {
             }
             if (mouseGrabbed) {
                 final float sensitivity = mouseSensitivity * dt;
-                cameraPitch -= Mouse.getDX() * sensitivity;
+                cameraPitch += Mouse.getDX() * sensitivity;
                 cameraPitch %= 360;
                 final Quaternionf pitch = Quaternionf.fromAngleDegAxis(cameraPitch, 0, 1, 0);
                 cameraYaw += Mouse.getDY() * sensitivity;

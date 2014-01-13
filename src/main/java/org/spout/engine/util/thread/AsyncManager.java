@@ -27,15 +27,18 @@
 package org.spout.engine.util.thread;
 
 import com.flowpowered.commons.bit.ShortBitMask;
+import org.spout.api.scheduler.TickStage;
 
 public interface AsyncManager {
 
 	/**
-	 * Gets the sequence number associated with this manager
+	 * Checks if the current sequence is 
 	 *
-	 * @return the sequence number, of -1 for none
+     * @param stage the current TickStage
+     * @param sequence the current sequence
+     * @return true if the AsyncManager should be called, false if not
 	 */
-	public int getSequence();
+	public boolean checkSequence(TickStage stage, int sequence);
 
 	/**
 	 * Gets the execution thread associated with this manager
