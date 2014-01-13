@@ -3,13 +3,14 @@ package org.spout.engine.entity;
 import java.util.List;
 import java.util.Set;
 
+import com.flowpowered.chat.ChatReceiver;
+import com.flowpowered.commands.CommandException;
 import com.flowpowered.permissions.PermissionDomain;
+
 import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
 import org.spout.api.entity.PlayerSnapshot;
 import org.spout.api.geo.discrete.Transform;
-import org.spout.flow.commands.CommandException;
-import org.spout.flow.commands.CommandSender;
 
 public class SpoutPlayer implements Player {
     private final String name;
@@ -20,7 +21,7 @@ public class SpoutPlayer implements Player {
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
@@ -99,7 +100,7 @@ public class SpoutPlayer implements Player {
     }
 
     @Override
-    public void sendMessage(CommandSender from, String message) {
+    public void sendMessage(ChatReceiver from, String message) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -28,112 +28,115 @@ package org.spout.api.entity;
 
 import java.util.List;
 
+import com.flowpowered.commands.Command;
+import com.flowpowered.commands.CommandSender;
+
 import org.spout.api.geo.discrete.Transform;
-import org.spout.flow.commands.CommandSender;
 
 public interface Player extends CommandSender {
-	/**
-	 * Gets the player's name.
-	 *
-	 * @return the player's name
-	 */
-	public String getName();
+    /**
+     * Gets the player's name.
+     *
+     * @return the player's name
+     */
+    @Override
+    public String getName();
 
-	/**
-	 * Gets the player's display name.
-	 *
-	 * @return the player's display name
-	 */
-	public String getDisplayName();
+    /**
+     * Gets the player's display name.
+     *
+     * @return the player's display name
+     */
+    public String getDisplayName();
 
-	/**
-	 * Sets the player's display name.
-	 *
-	 * @param name the player's new display name
-	 */
-	public void setDisplayName(String name);
+    /**
+     * Sets the player's display name.
+     *
+     * @param name the player's new display name
+     */
+    public void setDisplayName(String name);
 
-	/**
-	 * Gets if the player is online
-	 *
-	 * @return true if online
-	 */
-	public boolean isOnline();
+    /**
+     * Gets if the player is online
+     *
+     * @return true if online
+     */
+    public boolean isOnline();
 
-	/**
-	 * Gets if the player has joined before
-	 *
-	 * @return true if joined before
-	 */
-	public boolean hasJoinedBefore();
+    /**
+     * Gets if the player has joined before
+     *
+     * @return true if joined before
+     */
+    public boolean hasJoinedBefore();
 
-	/**
-	 * Kicks the player without giving a reason, or forcing it.
-	 */
-	public void kick();
+    /**
+     * Kicks the player without giving a reason, or forcing it.
+     */
+    public void kick();
 
-	/**
-	 * Kicks the player for the given reason.
-	 *
-	 * @param reason the message to send to the player.
-	 */
-	public void kick(String reason);
+    /**
+     * Kicks the player for the given reason.
+     *
+     * @param reason the message to send to the player.
+     */
+    public void kick(String reason);
 
-	/**
-	 * Bans the player without giving a reason.
-	 */
-	public void ban();
+    /**
+     * Bans the player without giving a reason.
+     */
+    public void ban();
 
-	/**
-	 * Bans the player for the given reason.
-	 *
-	 * @param kick whether to kick or not
-	 */
-	public void ban(boolean kick);
+    /**
+     * Bans the player for the given reason.
+     *
+     * @param kick whether to kick or not
+     */
+    public void ban(boolean kick);
 
-	/**
-	 * Bans the player for the given reason.
-	 *
-	 * @param kick whether to kick or not
-	 * @param reason for ban
-	 */
-	public void ban(boolean kick, String reason);
+    /**
+     * Bans the player for the given reason.
+     *
+     * @param kick whether to kick or not
+     * @param reason for ban
+     */
+    public void ban(boolean kick, String reason);
 
-	/**
-	 * Immediately saves the players state to disk
-	 *
-	 * @return true if successful
-	 */
-	public boolean save();
+    /**
+     * Immediately saves the players state to disk
+     *
+     * @return true if successful
+     */
+    public boolean save();
 
-	/**
-	 * If an entity is set as invisible, it will not be sent to the client.
-	 */
-	public void setVisible(Entity entity, boolean visible);
+    /**
+     * If an entity is set as invisible, it will not be sent to the client.
+     */
+    public void setVisible(Entity entity, boolean visible);
 
-	/**
-	 * Retrieves a list of all invisible {@link Entity}'s to the player
-	 *
-	 * @return {@link List<{@link Entity}>} of invisible {@link Entity}'s
-	 */
-	public List<Entity> getInvisibleEntities();
+    /**
+     * Retrieves a list of all invisible {@link Entity}'s to the player
+     *
+     * @return {@link List<{@link Entity}>} of invisible {@link Entity}'s
+     */
+    public List<Entity> getInvisibleEntities();
 
-	/**
-	 * Returns true if the {@link Entity} provided is invisible this this {@link Player}
-	 *
-	 * @param entity Entity to check if invisible to the {@link Player}
-	 * @return true if the {@link Entity} is invisible
-	 */
-	public boolean isInvisible(Entity entity);
+    /**
+     * Returns true if the {@link Entity} provided is invisible this this {@link Player}
+     *
+     * @param entity Entity to check if invisible to the {@link Player}
+     * @return true if the {@link Entity} is invisible
+     */
+    public boolean isInvisible(Entity entity);
 
-	/**
-	 * Sends a command to be processed on the opposite Platform. This is basically a shortcut method to prevent the need to register a command locally with a {@link Command.NetworkSendType} of {@code
-	 * SEND}.
-	 *
-	 * @param command to send
-	 * @param args to send
-	 */
-	public void sendCommand(String command, String... args);
+    /**
+     * Sends a command to be processed on the opposite Platform. This is basically a shortcut method to prevent the need to register a command locally with a {@link Command.NetworkSendType} of {@code
+     * SEND}.
+     *
+     * @param command to send
+     * @param args to send
+     */
+    public void sendCommand(String command, String... args);
 
     /**
      * @return the location that player's camera is at
