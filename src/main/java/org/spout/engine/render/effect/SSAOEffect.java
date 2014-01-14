@@ -29,16 +29,16 @@ import java.util.Random;
 import org.spout.math.GenericMath;
 import org.spout.math.vector.Vector2f;
 import org.spout.math.vector.Vector3f;
-import org.spout.renderer.data.Uniform;
-import org.spout.renderer.data.Uniform.FloatUniform;
-import org.spout.renderer.data.Uniform.IntUniform;
-import org.spout.renderer.data.Uniform.Vector2Uniform;
-import org.spout.renderer.data.Uniform.Vector3ArrayUniform;
-import org.spout.renderer.gl.GLFactory;
-import org.spout.renderer.gl.Texture;
-import org.spout.renderer.gl.Texture.Format;
-import org.spout.renderer.gl.Texture.InternalFormat;
-import org.spout.renderer.util.CausticUtil;
+import org.spout.renderer.api.data.Uniform;
+import org.spout.renderer.api.data.Uniform.FloatUniform;
+import org.spout.renderer.api.data.Uniform.IntUniform;
+import org.spout.renderer.api.data.Uniform.Vector2Uniform;
+import org.spout.renderer.api.data.Uniform.Vector3ArrayUniform;
+import org.spout.renderer.api.gl.GLFactory;
+import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.Format;
+import org.spout.renderer.api.gl.Texture.InternalFormat;
+import org.spout.renderer.api.util.CausticUtil;
 
 public class SSAOEffect {
     private final int kernelSize;

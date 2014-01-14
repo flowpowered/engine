@@ -23,6 +23,7 @@
  */
 package org.spout.api.model.mesher;
 
+import org.spout.api.model.mesh.Mesh;
 import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 
 /**

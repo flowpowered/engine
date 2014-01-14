@@ -473,7 +473,6 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
         entityManager.preSnapshotRun();
     }
 
-    volatile boolean run = false;
     @Override
     public void copySnapshotRun(int sequence) {
         entityManager.copyAllSnapshots();
@@ -482,14 +481,7 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
             snapshot.update(this);
             chunksModified = false;
         }
-        if (run) return;
-        for (ChunkSnapshot chunk : snapshot.getChunks()) {
-            if (chunk == null) {
-                return;
-            }
-            run = true;
-            render.addChunkModel(render.getMesher().queue(new ChunkSnapshotGroup(chunk)));
-        }
+
     }
 
     @Override

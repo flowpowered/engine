@@ -35,10 +35,10 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.math.vector.Vector2f;
 import org.spout.physics.math.Vector3;
-import org.spout.renderer.data.VertexAttribute;
-import org.spout.renderer.data.VertexAttribute.DataType;
-import org.spout.renderer.data.VertexData;
-import org.spout.renderer.util.CausticUtil;
+import org.spout.renderer.api.data.VertexAttribute;
+import org.spout.renderer.api.data.VertexAttribute.DataType;
+import org.spout.renderer.api.data.VertexData;
+import org.spout.renderer.api.util.CausticUtil;
 
 /**
  * Generates various shape meshes of the desired size and stores them to the models.

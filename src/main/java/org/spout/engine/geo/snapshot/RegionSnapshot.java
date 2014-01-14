@@ -102,6 +102,7 @@ public class RegionSnapshot {
                     continue;
                 } else if (currentChunk != null && currentSnapshot == null) {
                     ChunkSnapshot chunkSnapshot = new ChunkSnapshot(world, this, currentChunk.getBase().toInt());
+                    chunkSnapshot.update(currentChunk);
                     chunks[i] = chunkSnapshot;
                     changed = true;
                 } else if (currentChunk == null && currentSnapshot != null) {

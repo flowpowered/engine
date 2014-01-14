@@ -56,42 +56,43 @@ import org.spout.math.matrix.Matrix3f;
 import org.spout.math.matrix.Matrix4f;
 import org.spout.math.vector.Vector2f;
 import org.spout.math.vector.Vector3f;
-import org.spout.renderer.Action.RenderModelsAction;
-import org.spout.renderer.Camera;
-import org.spout.renderer.GLImplementation;
-import org.spout.renderer.GLVersioned.GLVersion;
-import org.spout.renderer.Material;
-import org.spout.renderer.Pipeline;
-import org.spout.renderer.Pipeline.PipelineBuilder;
-import org.spout.renderer.data.Color;
-import org.spout.renderer.data.Uniform;
-import org.spout.renderer.data.Uniform.ColorUniform;
-import org.spout.renderer.data.Uniform.FloatUniform;
-import org.spout.renderer.data.Uniform.IntUniform;
-import org.spout.renderer.data.Uniform.Matrix4Uniform;
-import org.spout.renderer.data.Uniform.Vector2Uniform;
-import org.spout.renderer.data.Uniform.Vector3Uniform;
-import org.spout.renderer.data.UniformHolder;
-import org.spout.renderer.data.VertexAttribute.DataType;
-import org.spout.renderer.gl.Context;
-import org.spout.renderer.gl.Context.BlendFunction;
-import org.spout.renderer.gl.Context.Capability;
-import org.spout.renderer.gl.FrameBuffer;
-import org.spout.renderer.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.gl.GLFactory;
-import org.spout.renderer.gl.Program;
-import org.spout.renderer.gl.Shader;
-import org.spout.renderer.gl.Texture;
-import org.spout.renderer.gl.Texture.CompareMode;
-import org.spout.renderer.gl.Texture.FilterMode;
-import org.spout.renderer.gl.Texture.Format;
-import org.spout.renderer.gl.Texture.InternalFormat;
-import org.spout.renderer.gl.Texture.WrapMode;
-import org.spout.renderer.gl.VertexArray;
-import org.spout.renderer.model.Model;
-import org.spout.renderer.model.StringModel;
-import org.spout.renderer.util.MeshGenerator;
-import org.spout.renderer.util.Rectangle;
+import org.spout.renderer.api.Action.RenderModelsAction;
+import org.spout.renderer.api.Camera;
+import org.spout.renderer.api.GLImplementation;
+import org.spout.renderer.api.GLVersioned.GLVersion;
+import org.spout.renderer.api.Material;
+import org.spout.renderer.api.Pipeline;
+import org.spout.renderer.api.Pipeline.PipelineBuilder;
+import org.spout.renderer.api.data.Color;
+import org.spout.renderer.api.data.Uniform;
+import org.spout.renderer.api.data.Uniform.ColorUniform;
+import org.spout.renderer.api.data.Uniform.FloatUniform;
+import org.spout.renderer.api.data.Uniform.IntUniform;
+import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.data.Uniform.Vector2Uniform;
+import org.spout.renderer.api.data.Uniform.Vector3Uniform;
+import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.data.VertexAttribute.DataType;
+import org.spout.renderer.api.gl.Context;
+import org.spout.renderer.api.gl.Context.BlendFunction;
+import org.spout.renderer.api.gl.Context.Capability;
+import org.spout.renderer.api.gl.FrameBuffer;
+import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
+import org.spout.renderer.api.gl.GLFactory;
+import org.spout.renderer.api.gl.Program;
+import org.spout.renderer.api.gl.Shader;
+import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.CompareMode;
+import org.spout.renderer.api.gl.Texture.FilterMode;
+import org.spout.renderer.api.gl.Texture.Format;
+import org.spout.renderer.api.gl.Texture.InternalFormat;
+import org.spout.renderer.api.gl.Texture.WrapMode;
+import org.spout.renderer.api.gl.VertexArray;
+import org.spout.renderer.api.model.Model;
+import org.spout.renderer.api.model.StringModel;
+import org.spout.renderer.api.util.MeshGenerator;
+import org.spout.renderer.api.util.Rectangle;
+import org.spout.renderer.lwjgl.LWJGLUtil;
 
 /**
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
@@ -125,8 +126,8 @@ public class SpoutRenderer implements Renderer {
     private final Camera lightCamera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
     private final Camera guiCamera = Camera.createOrthographic(1, 0, 1 / ASPECT_RATIO, 0, NEAR_PLANE, FAR_PLANE);
     // OPENGL VERSION AND FACTORY
-    private GLVersion glVersion = GLVersion.GL30;
-    private GLFactory glFactory = GLImplementation.get(glVersion);
+    private GLVersion glVersion;
+    private GLFactory glFactory;
     // CONTEXT
     private Context context;
     // RENDER LISTS
@@ -155,6 +156,10 @@ public class SpoutRenderer implements Renderer {
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
     private boolean fpsMonitorStarted = false;
+
+    public SpoutRenderer() {
+        setGLVersion(GLVersion.GL32);
+    }
 
     /**
      * Creates the OpenGL context and initializes the internal resources for the renderer
@@ -555,8 +560,18 @@ public class SpoutRenderer implements Renderer {
      * @param version The OpenGL version to use
      */
     public void setGLVersion(GLVersion version) {
-        glVersion = version;
-        glFactory = GLImplementation.get(version);
+        switch (version) {
+            case GL20:
+            case GL21:
+                glFactory = GLImplementation.get(LWJGLUtil.GL21_IMPL);
+                glVersion = GLVersion.GL21;
+                break;
+            case GL30:
+            case GL31:
+            case GL32:
+                glFactory = GLImplementation.get(LWJGLUtil.GL32_IMPL);
+                glVersion = GLVersion.GL32;
+        }
     }
 
     /**

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import org.spout.api.Client;
 import org.spout.api.Engine;
 import org.spout.api.scheduler.Scheduler;
 import org.spout.api.scheduler.Task;
@@ -71,7 +72,7 @@ public final class SpoutScheduler implements Scheduler {
 		mainThread = new MainThread(this);
 
 		if (engine.getPlatform().isClient()) {
-			renderThread = new RenderThread(this);
+			renderThread = new RenderThread((Client) engine, this);
 		} else {
 			renderThread = null;
 		}

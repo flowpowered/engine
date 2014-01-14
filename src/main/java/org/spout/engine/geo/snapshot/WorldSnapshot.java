@@ -157,13 +157,17 @@ public class WorldSnapshot {
                 if (regionSnapshot == null) {
                     regionSnapshot = region.getSnapshot();
                     regions.put(base.getX(), base.getY(), base.getZ(), regionSnapshot);
-                }
-                if (regionSnapshot.update(region)) {
                     changed = true;
                 }
                 validRegions.add(base);
             }
-            changed |= regions.valueCollection().retainAll(validRegions);
+            for (Iterator<RegionSnapshot> iterator = regions.valueCollection().iterator(); iterator.hasNext(); ) {
+                final Vector3i position = iterator.next().getBase();
+                if (!validRegions.contains(position)) {
+                    iterator.remove();
+                    changed = true;
+                }
+            }
             time = current.getAge();
             if (changed) {
                 updateNumber++;

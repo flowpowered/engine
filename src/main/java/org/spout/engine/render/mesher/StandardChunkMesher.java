@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spout.api.model.mesher;
+package org.spout.engine.render.mesher;
 
 import gnu.trove.list.TFloatList;
 import gnu.trove.list.TIntList;
@@ -30,7 +30,9 @@ import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.block.BlockFace;
 import org.spout.api.material.block.BlockFaces;
-import org.spout.api.model.mesher.Mesh.MeshAttribute;
+import org.spout.api.model.mesher.ChunkMesher;
+import org.spout.api.model.mesh.Mesh;
+import org.spout.api.model.mesh.Mesh.MeshAttribute;
 import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 
 /**
