@@ -36,6 +36,8 @@ import org.spout.api.scheduler.Scheduler;
 import org.spout.api.scheduler.Task;
 import org.spout.api.scheduler.TaskPriority;
 import org.spout.api.scheduler.Worker;
+import org.spout.engine.scheduler.input.InputThread;
+import org.spout.engine.scheduler.render.RenderThread;
 import org.spout.engine.util.thread.AsyncManager;
 
 /**
@@ -64,6 +66,7 @@ public final class SpoutScheduler implements Scheduler {
     // SchedulerElements
     private final MainThread mainThread;
     private final RenderThread renderThread;
+    private final InputThread inputThread;
 
 	/**
 	 * Creates a new task scheduler.
@@ -72,8 +75,10 @@ public final class SpoutScheduler implements Scheduler {
 		mainThread = new MainThread(this);
 
 		if (engine.getPlatform().isClient()) {
+            inputThread = new InputThread(this);
 			renderThread = new RenderThread((Client) engine, this);
 		} else {
+            inputThread = null;
 			renderThread = null;
 		}
 		taskManager = new SpoutTaskManager(this);
@@ -87,11 +92,12 @@ public final class SpoutScheduler implements Scheduler {
 		mainThread.start();
 	}
 
-	public void startRenderThread() {
-		if (renderThread.isRunning()) {
-			throw new IllegalStateException("Attempt was made to start the render thread twice");
+	public void startClientThreads() {
+		if (renderThread.isRunning() || inputThread.isRunning()) {
+			throw new IllegalStateException("Attempt was made to start the client threads twice");
 		}
         renderThread.start();
+        inputThread.start();
 	}
 
 	/**
@@ -101,6 +107,9 @@ public final class SpoutScheduler implements Scheduler {
         mainThread.stop();
         if (renderThread != null) {
             renderThread.stop();
+        }
+        if (inputThread != null) {
+            inputThread.stop();
         }
 	}
 
@@ -204,6 +213,10 @@ public final class SpoutScheduler implements Scheduler {
 
     public RenderThread getRenderThread() {
         return renderThread;
+    }
+
+    public InputThread getInputThread() {
+        return inputThread;
     }
 
 	/**

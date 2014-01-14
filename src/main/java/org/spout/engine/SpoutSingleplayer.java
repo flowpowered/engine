@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import org.spout.api.Platform;
 import org.spout.api.Singleplayer;
+import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
 import org.spout.api.generator.SolidWorldGenerator;
 import org.spout.api.geo.LoadOption;
@@ -20,6 +21,9 @@ import org.spout.math.vector.Vector3f;
 public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
     private final AtomicReference<SpoutPlayer> player = new AtomicReference<>();
     private final AtomicReference<SpoutWorld> activeWorld = new AtomicReference<>();
+
+    // TEST CODE
+    private Entity testEntity;
 
     public SpoutSingleplayer(SpoutApplication args) {
         super(args);
@@ -39,12 +43,17 @@ public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
         SpoutPlayer player = new SpoutPlayer("Spout");
         this.player.set(player);
         players.put(player.getName(), player);
-        loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        this.testEntity = entity;
+    }
+
+    public Entity getTestEntity() {
+        return testEntity;
     }
 
     @Override
     public void start() {
-        getScheduler().startRenderThread();
+        getScheduler().startClientThreads();
         super.start();
     }
 

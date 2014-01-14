@@ -1,4 +1,4 @@
-package org.spout.engine.scheduler;
+package org.spout.engine.scheduler.render;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import com.flowpowered.commons.ticking.TickingElement;
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
@@ -13,7 +14,13 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.spout.api.Client;
+import org.spout.api.Singleplayer;
+import org.spout.api.entity.Entity;
 import org.spout.api.geo.cuboid.Chunk;
+import org.spout.api.geo.discrete.Point;
+import org.spout.api.geo.discrete.Transform;
+import org.spout.engine.SpoutSingleplayer;
+import org.spout.engine.entity.SpoutPlayer;
 import org.spout.engine.geo.snapshot.ChunkSnapshot;
 import org.spout.engine.geo.snapshot.RegionSnapshot;
 import org.spout.engine.geo.snapshot.WorldSnapshot;
@@ -22,6 +29,10 @@ import org.spout.engine.render.mesher.ParallelChunkMesher;
 import org.spout.engine.render.mesher.StandardChunkMesher;
 import org.spout.engine.render.SpoutRenderer;
 import org.spout.engine.render.model.ChunkModel;
+import org.spout.engine.scheduler.SpoutScheduler;
+import org.spout.engine.scheduler.input.InputThread;
+import org.spout.engine.scheduler.input.KeyboardEvent;
+import org.spout.math.TrigMath;
 import org.spout.math.imaginary.Quaternionf;
 import org.spout.math.vector.Vector3f;
 import org.spout.math.vector.Vector3i;
@@ -33,6 +44,7 @@ public class RenderThread extends TickingElement {
     private final Client client;
     private final SpoutScheduler scheduler;
     private final SpoutRenderer renderer;
+    private final InputThread input;
     private final ParallelChunkMesher mesher;
     // TEST CODE
     private final List<ChunkModel> modelsToAdd = new ArrayList<>();
@@ -45,6 +57,7 @@ public class RenderThread extends TickingElement {
         this.client = client;
         this.scheduler = scheduler;
         this.renderer = new SpoutRenderer();
+        this.input = scheduler.getInputThread();
         this.mesher = new ParallelChunkMesher(renderer, new StandardChunkMesher());
     }
 
@@ -54,6 +67,9 @@ public class RenderThread extends TickingElement {
         renderer.getCamera().setPosition(new Vector3f(0, 5, 0));
         renderer.setSolidColor(new Color(0, 200, 0));
         renderer.init();
+
+        input.subscribeToKeyboard();
+        input.getKeyboardQueue().add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
     }
 
     @Override
@@ -66,9 +82,9 @@ public class RenderThread extends TickingElement {
         if (Display.isCloseRequested()) {
             scheduler.stop();
         }
-        processInput(dt);
+        handleInput(dt / 1e9f);
         updateChunkModels(((SpoutWorld) client.getWorld()).getSnapshot());
-        updateLight(dt);
+        updateLight(client.getWorld().getAge());
         renderer.render();
     }
 
@@ -178,48 +194,45 @@ public class RenderThread extends TickingElement {
         renderer.addSolidModel(model);
     }
 
-   // TEST CODE
-    // TODO: properly handle user input
-    private static float cameraPitch = 0;
-    private static float cameraYaw = 0;
-    private static float mouseSensitivity = 0.0000000001f;
-    private static float cameraSpeed = 0.000000001f;
-    private static boolean mouseGrabbed = true;
+    private static final float MOUSE_SENSITIVITY = 0.08f;
+    private static final float CAMERA_SPEED = 0.2f;
+    private float cameraPitch = 0;
+    private float cameraYaw = 0;
+    private int mouseX = 0;
+    private int mouseY = 0;
+    private boolean mouseGrabbed = false;
 
-    private void processInput(float dt) {
-        dt /= (1f / 60);
+    private void handleInput(float dt) {
+        // Calculate the FPS correction factor
+        dt *= 60;
+        // Store the old mouse grabbed state
         final boolean mouseGrabbedBefore = mouseGrabbed;
-        while (Keyboard.next()) {
-            if (Keyboard.getEventKeyState()) {
-                switch (Keyboard.getEventKey()) {
-                    case Keyboard.KEY_ESCAPE:
-                        mouseGrabbed ^= true;
-                        break;
-                    case Keyboard.KEY_F2:
-                        renderer.saveScreenshot(new File("screenies"));
+        // Handle keyboard events
+        handleKeyboardEvents();
+        // Handle the mouse and keyboard inputs, if the input is active
+        if (input.isActive()) {
+            // If the mouse grabbed state has changed from the keyboard events, update the mouse grabbed state
+            if (mouseGrabbed != mouseGrabbedBefore) {
+                input.setMouseGrabbed(mouseGrabbed);
+                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will ignored
+                if (mouseGrabbed) {
+                    mouseX = input.getMouseX();
+                    mouseY = input.getMouseY();
                 }
             }
-        }
-        final Camera camera = renderer.getCamera();
-        if (Display.isActive()) {
-            if (mouseGrabbed != mouseGrabbedBefore) {
-                Mouse.setGrabbed(!mouseGrabbedBefore);
-            }
+            // Handle the mouse input if it's been grabbed
             if (mouseGrabbed) {
-                final float sensitivity = mouseSensitivity * dt;
-                cameraPitch += Mouse.getDX() * sensitivity;
-                cameraPitch %= 360;
-                final Quaternionf pitch = Quaternionf.fromAngleDegAxis(cameraPitch, 0, 1, 0);
-                cameraYaw += Mouse.getDY() * sensitivity;
-                cameraYaw %= 360;
-                final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
-                camera.setRotation(pitch.mul(yaw));
+                handleMouseInput(dt);
             }
+            // TODO: Update the camera position to match the player
+
+            // TEST CODE!
+            final Camera camera = renderer.getCamera();
             final Vector3f right = camera.getRight();
             final Vector3f up = camera.getUp();
             final Vector3f forward = camera.getForward();
             Vector3f position = camera.getPosition();
-            final float speed = cameraSpeed * dt;
+            final float speed = CAMERA_SPEED * 60 * dt;
             if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
                 position = position.add(forward.mul(speed));
             }
@@ -238,22 +251,64 @@ public class RenderThread extends TickingElement {
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                 position = position.add(up.mul(-speed));
             }
+            Transform transform = ((SpoutSingleplayer) client).getTestEntity().getPhysics().getTransform();
+            transform.setPosition(new Point(position, transform.getPosition().getWorld()));
             camera.setPosition(position);
         }
     }
 
-    private static final float LIGHT_ANGLE_LIMIT = (float) (Math.PI / 64);
+    private void handleKeyboardEvents() {
+        final Queue<KeyboardEvent> keyboardEvents = input.getKeyboardQueue();
+        while (!keyboardEvents.isEmpty()) {
+            final KeyboardEvent event = keyboardEvents.poll();
+            if (event.wasPressedDown()) {
+                switch (event.getKey()) {
+                    case Keyboard.KEY_ESCAPE:
+                        mouseGrabbed ^= true;
+                        break;
+                    case Keyboard.KEY_F2:
+                        renderer.saveScreenshot(new File(""));
+                }
+            }
+        }
+    }
+
+    private void handleMouseInput(float dt) {
+        // Get the input
+        // Calculate sensitivity adjusted to the FPS
+        final float sensitivity = MOUSE_SENSITIVITY * dt;
+        // Get the latest mouse x and y
+        final int mouseX = input.getMouseX();
+        final int mouseY = input.getMouseY();
+        // Rotate the camera by the difference from the old and new mouse coordinates
+        cameraPitch -= (mouseX - this.mouseX) * sensitivity;
+        cameraPitch %= 360;
+        final Quaternionf pitch = Quaternionf.fromAngleDegAxis(cameraPitch, 0, 1, 0);
+        cameraYaw += (mouseY - this.mouseY) * sensitivity;
+        cameraYaw %= 360;
+        final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
+        // Set the new camera rotation
+        renderer.getCamera().setRotation(pitch.mul(yaw));
+        // Update the last mouse x and y
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+    }
+
+    private static final float PI = (float) TrigMath.PI;
+    private static final float TWO_PI = 2 * PI;
+    private static final float LIGHT_ANGLE_LIMIT = PI / 64;
     private static final Vector3f SHADOWED_CHUNKS = new Vector3f(Chunk.BLOCKS.SIZE * 4, 64, Chunk.BLOCKS.SIZE * 4);
+    private static final long MILLIS_IN_A_DAY = 1000 * 60 * 60 * 24;
     private void updateLight(long time) {
-        time %= 1000 * 60 * 60 * 24;;
+        time %= MILLIS_IN_A_DAY;;
         double lightAngle;
-        final double dayAngle = ((double) time / (1000 * 1000 * 60 * 60 * 24)) * Math.PI * 2;
+        final double dayAngle = ((double) time / (MILLIS_IN_A_DAY)) * TWO_PI;
         if (dayAngle < Math.PI) {
             lightAngle = dayAngle;
         } else {
-            lightAngle = dayAngle - Math.PI;
+            lightAngle = dayAngle - PI;
         }
-        lightAngle = lightAngle / Math.PI * (Math.PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
+        lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
         final Vector3f position = renderer.getCamera().getPosition();
         renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
