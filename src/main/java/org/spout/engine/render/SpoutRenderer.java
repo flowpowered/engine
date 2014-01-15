@@ -43,19 +43,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.flowpowered.commons.TPSMonitor;
-
-import org.lwjgl.opengl.GLContext;
-import org.spout.api.render.Renderer;
-import org.spout.engine.render.effect.BlurEffect;
-import org.spout.engine.render.effect.SSAOEffect;
-import org.spout.engine.render.effect.ShadowMappingEffect;
-import org.spout.engine.scheduler.SpoutScheduler;
-
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector3f;
+
+import org.lwjgl.opengl.GLContext;
+
+import org.spout.api.render.Renderer;
+import org.spout.engine.render.effect.BlurEffect;
+import org.spout.engine.render.effect.SSAOEffect;
+import org.spout.engine.render.effect.ShadowMappingEffect;
+import org.spout.engine.scheduler.SpoutScheduler;
 import org.spout.renderer.api.Action.RenderModelsAction;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;
@@ -155,6 +155,7 @@ public class SpoutRenderer implements Renderer {
     // FPS MONITOR
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
+    private StringModel positionModel;
     private boolean fpsMonitorStarted = false;
 
     public SpoutRenderer() {
@@ -491,7 +492,7 @@ public class SpoutRenderer implements Renderer {
 
     private void addDefaultObjects() {
         addScreen();
-        addFPSMonitor();
+        addHUD();
     }
 
     /**
@@ -728,7 +729,7 @@ public class SpoutRenderer implements Renderer {
         guiRenderList.add(new Model(deferredStageScreenVertexArray, materials.get("screen")));
     }
 
-    private void addFPSMonitor() {
+    private void addHUD() {
         final Font ubuntu;
         try {
             ubuntu = Font.createFont(Font.TRUETYPE_FONT, SpoutRenderer.class.getResourceAsStream("/fonts/ubuntu-r.ttf"));
@@ -746,6 +747,12 @@ public class SpoutRenderer implements Renderer {
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
         guiRenderList.add(fpsModel);
         fpsMonitorModel = fpsModel;
+
+        final StringModel posModel = sandboxModel.getInstance();
+        posModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.255, -0.1));
+        posModel.setString("Position: " + getCamera().getPosition().toInt().toString() + " Rotation: " + getCamera().getRotation().toString());
+        guiRenderList.add(posModel);
+        positionModel = posModel;
     }
 
     /**
@@ -768,7 +775,7 @@ public class SpoutRenderer implements Renderer {
         previousViewMatrixUniform.set(modelCamera.getViewMatrix());
         previousProjectionMatrixUniform.set(modelCamera.getProjectionMatrix());
         // UPDATE FPS
-        updateFPSMonitor();
+        updateHUD();
     }
 
     private void setPreviousModelMatrices() {
@@ -780,9 +787,11 @@ public class SpoutRenderer implements Renderer {
         }
     }
 
-    private void updateFPSMonitor() {
+    private void updateHUD() {
         fpsMonitor.update();
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
+
+        positionModel.setString("Position: " + getCamera().getPosition().toInt().toString() + " Rotation: " + getCamera().getRotation().toString());
     }
 
     /**

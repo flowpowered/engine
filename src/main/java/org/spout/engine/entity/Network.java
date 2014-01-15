@@ -72,8 +72,8 @@ public class Network {
 
     public Network(Entity entity) {
         this.entity = entity;
-        entity.getData().put(IS_OBSERVER, true);
         entity.getData().put(OBSERVER_ITERATOR, INITIAL_TICK);
+        setObserver(true);
     }
 
 	public static class WrappedSerizableIterator implements Serializable, Iterator<Vector3i> {
@@ -147,7 +147,7 @@ public class Network {
 		if (get != null) {
 			return get.object;
 		}
-		Transform t = entity.getPhysics().getTransform();
+		Transform t = entity.getPhysics().getSnapshottedTransform();
 		Point p = t.getPosition();
 		int cx = p.getChunkX();
 		int cy = p.getChunkY();
@@ -225,12 +225,12 @@ public class Network {
 		first = false;
 		final int syncDistance = getSyncDistance();
 		World w = entity.getWorld();
-		Transform t = entity.getPhysics().getTransform();
+		Transform t = entity.getPhysics().getSnapshottedTransform();
 		Point p = t.getPosition();
 		int cx = p.getChunkX();
 		int cy = p.getChunkY();
 		int cz = p.getChunkZ();
-		Chunk center = p.getChunk(LOAD_GEN_NOWAIT);
+		Chunk center = p.getChunk(LoadOption.LOAD_GEN);
 
 		HashSet<Chunk> observing = new HashSet<>((syncDistance * syncDistance * syncDistance * 3) / 2);
 		Iterator<Vector3i> itr = liveObserverIterator.get();
@@ -240,7 +240,7 @@ public class Network {
 		observeChunksFailed = false;
 		while (itr.hasNext()) {
 			Vector3i v = itr.next();
-			Chunk chunk = center == null ? w.getChunk(v.getX(), v.getY(), v.getZ(), LOAD_GEN_NOWAIT) : center.getRelative(v.getX() - cx, v.getY() - cy, v.getZ() - cz, LOAD_GEN_NOWAIT);
+			Chunk chunk = center == null ? w.getChunk(v.getX(), v.getY(), v.getZ(), LoadOption.LOAD_GEN) : center.getRelative(v.getX() - cx, v.getY() - cy, v.getZ() - cz, LOAD_GEN_NOWAIT);
 			if (chunk != null) {
 				chunk.refreshObserver(entity);
 				observing.add(chunk);

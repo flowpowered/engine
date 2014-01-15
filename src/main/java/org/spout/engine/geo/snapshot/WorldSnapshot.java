@@ -35,11 +35,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.flowpowered.commons.map.TripleIntObjectMap;
 import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
+import com.flowpowered.math.vector.Vector3i;
 
 import org.spout.api.geo.World;
 import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.engine.geo.world.SpoutWorld;
-import com.flowpowered.math.vector.Vector3i;
 
 /**
  *

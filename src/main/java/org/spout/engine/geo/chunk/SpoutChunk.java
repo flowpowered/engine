@@ -98,12 +98,12 @@ public class SpoutChunk extends Chunk {
 
     @Override
     public boolean refreshObserver(Entity player) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     @Override
     public boolean removeObserver(Entity player) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     @Override

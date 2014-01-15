@@ -7,20 +7,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.math.TrigMath;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
+
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
+
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+
 import org.spout.api.Client;
-import org.spout.api.Singleplayer;
-import org.spout.api.entity.Entity;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
 import org.spout.engine.SpoutSingleplayer;
-import org.spout.engine.entity.SpoutPlayer;
 import org.spout.engine.geo.snapshot.ChunkSnapshot;
 import org.spout.engine.geo.snapshot.RegionSnapshot;
 import org.spout.engine.geo.snapshot.WorldSnapshot;
@@ -32,10 +36,6 @@ import org.spout.engine.render.model.ChunkModel;
 import org.spout.engine.scheduler.SpoutScheduler;
 import org.spout.engine.scheduler.input.InputThread;
 import org.spout.engine.scheduler.input.KeyboardEvent;
-import com.flowpowered.math.TrigMath;
-import com.flowpowered.math.imaginary.Quaternionf;
-import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.math.vector.Vector3i;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned;
 import org.spout.renderer.api.data.Color;
@@ -203,8 +203,6 @@ public class RenderThread extends TickingElement {
     private boolean mouseGrabbed = false;
 
     private void handleInput(float dt) {
-        // Calculate the FPS correction factor
-        dt *= 60;
         // Store the old mouse grabbed state
         final boolean mouseGrabbedBefore = mouseGrabbed;
         // Handle keyboard events
@@ -222,7 +220,7 @@ public class RenderThread extends TickingElement {
             }
             // Handle the mouse input if it's been grabbed
             if (mouseGrabbed) {
-                handleMouseInput(dt);
+                handleMouseInput(dt * 60);
             }
             // TODO: Update the camera position to match the player
 
@@ -251,7 +249,7 @@ public class RenderThread extends TickingElement {
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                 position = position.add(up.mul(-speed));
             }
-            Transform transform = ((SpoutSingleplayer) client).getTestEntity().getPhysics().getTransform();
+            Transform transform = ((SpoutSingleplayer) client).getTestEntity().getPhysics().getSnapshottedTransform();
             transform.setPosition(new Point(position, transform.getPosition().getWorld()));
             camera.setPosition(position);
         }

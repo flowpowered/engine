@@ -47,7 +47,6 @@ public class SpoutPhysics extends Physics {
 	//Spout
 	private final Transform snapshot = new Transform();
 	private final Transform live = new Transform();
-	private final Transform render = new Transform();
 	//React
 	private RigidBody body;
 	private final RigidBodyMaterial material = new RigidBodyMaterial();
@@ -103,16 +102,12 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public Transform getTransform() {
+	public Transform getSnapshottedTransform() {
 		return snapshot.copy();
 	}
 
-	@Override
-	public Transform getTransformRender() {
-		return render;
-	}
-
-	public Transform getTransformLive() {
+    @Override
+	public Transform getTransform() {
 		return live;
 	}
 
@@ -124,7 +119,7 @@ public class SpoutPhysics extends Physics {
 	@Override
 	public SpoutPhysics setTransform(Transform transform, boolean sync) {
 		if (transform == null) {
-			throw new IllegalArgumentException("transform cannot be null!");
+			throw new IllegalArgumentException("Transform cannot be null!");
 		}
 		live.set(transform);
 		if (sync) {
@@ -140,7 +135,7 @@ public class SpoutPhysics extends Physics {
 
 	@Override
 	public Point getPosition() {
-		return snapshot.getPosition();
+		return live.getPosition();
 	}
 
 	@Override
@@ -156,7 +151,7 @@ public class SpoutPhysics extends Physics {
 
 	@Override
 	public Quaternionf getRotation() {
-		return snapshot.getRotation();
+		return live.getRotation();
 	}
 
 	@Override
@@ -176,7 +171,7 @@ public class SpoutPhysics extends Physics {
 
 	@Override
 	public Vector3f getScale() {
-		return snapshot.getScale();
+		return live.getScale();
 	}
 
 	@Override
@@ -388,7 +383,7 @@ public class SpoutPhysics extends Physics {
 
 	@Override
 	public String toString() {
-		return "snapshot= {" + snapshot + "}, live= {" + live + "}, render= " + render + "}, body= {" + body + "}";
+		return "snapshot= {" + snapshot + "}, live= {" + live + "}, body= {" + body + "}";
 	}
 
 	/**
@@ -406,54 +401,15 @@ public class SpoutPhysics extends Physics {
 	 * Called after the simulation was polled for an update. <p> This updates Spout's live with the transform of the body. The render transform is updated with interpolation from the body </p>
 	 */
 	public void onPostPhysicsTick(float dt) {
-		interpolateAndSetRender(dt);
-	}
-
-	/**
-	 * Interpolates the live transform and sets the output to the render transform. <p/> This is necessary for smooth rendering.
-	 */
-	public void interpolateAndSetRender(float dt) {
-		//TODO: Untangle Camera position/rotation from render transform
-		//Spout Interpolation
-		if (body == null) {
-			if (render.isEmpty()) {
-				render.set(snapshot);
-			}
-			if (isWorldDirty()) {
-				render.set(live);
-			}
-			final float step = dt * (60f / 20f);
-
-			final Point position = live.getPosition();
-			final Quaternionf rotation = live.getRotation();
-			final Vector3f scale = live.getScale();
-
-			render.setPosition(render.getPosition().mul(1 - step).add(position.mul(dt)));
-
-			final Quaternionf renderRot = render.getRotation();
-			render.setRotation(new Quaternionf(
-					renderRot.getX() * (1 - step) + rotation.getX() * step,
-					renderRot.getY() * (1 - step) + rotation.getY() * step,
-					renderRot.getZ() * (1 - step) + rotation.getZ() * step,
-					renderRot.getW() * (1 - step) + rotation.getW() * step));
-
-			render.setScale(render.getScale().mul(1 - step).add(scale.mul(step)));
-		} else {
 			final Transform physicsLive = ReactConverter.toSpoutTransform(body.getTransform(), live.getPosition().getWorld(), live.getScale());
 			if (!live.equals(physicsLive)) {
 				live.set(physicsLive);
 				sync();
 			}
-			final Transform physicsRender = ReactConverter.toSpoutTransform(body.getInterpolatedTransform(), live.getPosition().getWorld(), live.getScale());
-			if (!render.equals(physicsRender)) {
-				render.set(physicsRender);
-			}
-		}
 	}
 
 	public void copySnapshot() {
 		snapshot.set(live);
-		render.set(snapshot);
 	}
 
 	private void sync() {

@@ -46,7 +46,9 @@ public class SolidWorldGenerator implements WorldGenerator {
 
 	@Override
 	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-        blockData.flood(material);
+        if (blockData.getBaseChunkX() > 0) {
+            blockData.flood(material);
+        }
 	}
 
 	@Override

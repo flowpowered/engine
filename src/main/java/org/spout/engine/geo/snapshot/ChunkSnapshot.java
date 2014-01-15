@@ -28,12 +28,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.flowpowered.commons.store.block.AtomicBlockStore;
+import com.flowpowered.math.vector.Vector3i;
 
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.material.BlockMaterial;
 import org.spout.engine.geo.chunk.SpoutChunk;
-import com.flowpowered.math.vector.Vector3i;
 
 /**
  *

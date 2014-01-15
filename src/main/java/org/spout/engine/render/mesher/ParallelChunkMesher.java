@@ -25,7 +25,6 @@ package org.spout.engine.render.mesher;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -36,10 +35,7 @@ import org.spout.engine.geo.snapshot.ChunkSnapshot;
 import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 import org.spout.engine.render.SpoutRenderer;
 import org.spout.engine.render.model.ChunkModel;
-import com.flowpowered.math.vector.Vector3i;
 import org.spout.renderer.api.data.VertexData;
-import org.spout.renderer.api.gl.VertexArray;
-import org.spout.renderer.api.model.Model;
 
 /**
  * Meshes chunks in parallel. Returns chunk models which may not be rendered when {@link org.spoutcraft.client.nterface.mesh.ParallelChunkMesher.ChunkModel#render()} is called, this is happens when

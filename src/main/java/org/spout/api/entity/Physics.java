@@ -78,11 +78,11 @@ public abstract class Physics {
 	 * @return The Transform as of the last game tick.
 	 */
 	@SnapshotRead
-	public abstract Transform getTransform();
+	public abstract Transform getSnapshottedTransform();
 
 	/**
 	 * Sets the {@link Transform} for this {@link org.spout.api.entity.Entity}. <p> This function sets the live state of the entity's transform, not the snapshot state. As such, its advised to set the
-	 * transform lastly else retrieving the transform afterwards within the same tick will not return expected values (due to potential other plugin changes as well as {@link #getTransform()) returning
+	 * transform lastly else retrieving the transform afterwards within the same tick will not return expected values (due to potential other plugin changes as well as {@link #getSnapshottedTransform()) returning
 	 * snapshot state). This is equivalent to calling {@link #setTransform(transform, true)}.
 	 *
 	 * @param transform The new live transform state of this entity.
@@ -92,7 +92,7 @@ public abstract class Physics {
 
 	/**
 	 * Sets the {@link Transform} for this {@link org.spout.api.entity.Entity}. <p> This function sets the live state of the entity's transform, not the snapshot state. As such, its advised to set the
-	 * transform lastly else retrieving the transform afterwards within the same tick will not return expected values (due to potential other plugin changes as well as {@link #getTransform()) returning
+	 * transform lastly else retrieving the transform afterwards within the same tick will not return expected values (due to potential other plugin changes as well as {@link #getSnapshottedTransform()) returning
 	 * snapshot state).
 	 *
 	 * @param transform The new live transform state of this entity.
@@ -236,7 +236,7 @@ public abstract class Physics {
 	 * Impulse is a force across delta time (since last simulation tick). A few rules apply. <p/> - The entity must have a mass > 0 (ie not a static object). - The offset is in world space. This means
 	 * the impulse is applied from the offset provided. - Entities of higher masses need greater impulses to move. Can't get movement to occur? Lower mass or apply greater impulse. <p> For example, if I
 	 * want to propel an entity forward, like a wave of water pushing an entity downstream, I would do the following. <p> // Vector3.FORWARD = 0, 0, 1 physics.impulse(Vector3.FORWARD, new
-	 * Vector3(getPosition().subtract(getTransform().getForward())); // The above adds 1 to the forwardness of the Entity every simulation step (if applied in onTick for example)
+	 * Vector3(getPosition().subtract(getSnapshottedTransform().getForward())); // The above adds 1 to the forwardness of the Entity every simulation step (if applied in onTick for example)
 	 *
 	 * @param impulse The Vector3 impulse (force) to apply.
 	 * @param offset The offset within the world to apply the impulse from.
@@ -248,7 +248,7 @@ public abstract class Physics {
 	 * Impulse is a force across delta time (since last simulation tick). A few rules apply. <p/> - The entity must have a mass > 0 (ie not a static object). - The offset is in world space. This means
 	 * the impulse is applied from the offset provided. - Entities of higher masses need greater impulses to move. Can't get movement to occur? Lower mass or apply greater impulse. <p/> For example, if I
 	 * want to propel an entity forward, like a wave of water pushing an entity downstream, I would do the following. <p/> // Vector3.FORWARD = 0, 0, 1 physics.impulse(Vector3.FORWARD, new
-	 * Vector3(getPosition().subtract(getTransform().getForward())); // The above adds 1 to the forwardness of the Entity every simulation step (if applied in onTick for example)
+	 * Vector3(getPosition().subtract(getSnapshottedTransform().getForward())); // The above adds 1 to the forwardness of the Entity every simulation step (if applied in onTick for example)
 	 *
 	 * @param impulse The Vector3 impulse (force) to apply.
 	 * @return This component, so you can chain.
@@ -414,8 +414,5 @@ public abstract class Physics {
 	 */
 	public abstract boolean isGhost();
 
-	/**
-	 * TODO: Remove during Caustic merge.
-	 */
-	public abstract Transform getTransformRender();
+    public abstract Transform getTransform();
 }

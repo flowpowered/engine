@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.flowpowered.commons.datatable.ManagedHashMap;
 import com.flowpowered.commons.datatable.ManagedMap;
+
 import org.spout.api.Engine;
 import org.spout.api.component.Component;
 import org.spout.api.entity.Entity;
@@ -15,6 +16,8 @@ import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.geo.discrete.Transform;
+import org.spout.engine.geo.chunk.SpoutChunk;
+import org.spout.engine.geo.region.SpoutRegion;
 
 public class SpoutEntity implements Entity {
     private final int id;
@@ -68,13 +71,15 @@ public class SpoutEntity implements Entity {
     }
 
     @Override
-    public Chunk getChunk() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public SpoutChunk getChunk() {
+        Chunk chunk = physics.getPosition().getChunk(LoadOption.NO_LOAD);
+        return (SpoutChunk) chunk;
     }
 
     @Override
-    public Region getRegion() {
-        return physics.getPosition().getRegion(LoadOption.LOAD_GEN);
+    public SpoutRegion getRegion() {
+        Region region = physics.getPosition().getRegion(LoadOption.NO_LOAD);
+        return (SpoutRegion) region;
     }
 
     @Override
@@ -148,14 +153,37 @@ public class SpoutEntity implements Entity {
     }
 
     void finalizeRun() {
-        network.finalizeRun(physics.getTransformLive());
+		SpoutChunk chunkLive = getChunk();
+		SpoutChunk chunkSnapshot = (SpoutChunk) physics.getSnapshottedTransform().getPosition().getChunk(LoadOption.NO_LOAD);
+        SpoutRegion regionLive = getRegion();
+        SpoutRegion regionSnapshot = (SpoutRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.NO_LOAD);
+        EntityManager entityManager = regionSnapshot != null ? regionSnapshot.getEntityManager() : null;
+		//Move entity from Region A to Region B
+        boolean activated = false;
+        if (chunkSnapshot != null && (chunkLive == null || chunkSnapshot.getRegion() != chunkLive.getRegion())) {
+            activated = physics.isActivated();
+            physics.deactivate();
+            entityManager.removeEntity(this);  
+        }
+        //Get the new EntityManager for the new region
+        entityManager = regionLive != null ? regionLive.getEntityManager() : null;
+        if (chunkLive != null && (chunkSnapshot == null || chunkSnapshot.getRegion() != chunkLive.getRegion())) {
+            //Add entity to Region B
+            entityManager.addEntity(this);
+            if (activated) {
+                physics.activate(chunkLive.getRegion());
+            }
+        }
+
+        network.finalizeRun(physics.getTransform());
     }
 
     void preSnapshotRun() {
-        network.preSnapshotRun(physics.getTransformLive());
+        network.preSnapshotRun(physics.getTransform());
     }
 
     void copySnapshot() {
+        physics.copySnapshot();
         network.copySnapshot();
     }
 
