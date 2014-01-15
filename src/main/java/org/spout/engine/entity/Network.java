@@ -46,7 +46,7 @@ import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  * The networking behind {@link org.spout.api.entity.Entity}s.

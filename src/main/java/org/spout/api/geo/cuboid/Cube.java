@@ -27,7 +27,7 @@
 package org.spout.api.geo.cuboid;
 
 import org.spout.api.geo.discrete.Point;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Represents a Cube that is located somewhere in a world.

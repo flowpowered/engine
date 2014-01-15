@@ -32,7 +32,7 @@ import org.spout.api.Engine;
 import org.spout.api.component.Component;
 import org.spout.api.component.ComponentOwner;
 import org.spout.api.entity.Entity;
-import org.spout.math.GenericMath;
+import com.flowpowered.math.GenericMath;
 
 /**
  * Represents a component who shapes the logic behind an {@link Entity}.

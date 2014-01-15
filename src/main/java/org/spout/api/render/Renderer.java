@@ -1,6 +1,6 @@
 package org.spout.api.render;
 
-import org.spout.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2f;
 
 public interface Renderer {
 

@@ -35,7 +35,7 @@ import com.flowpowered.commons.LogicUtil;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.spout.math.GenericMath;
+import com.flowpowered.math.GenericMath;
 
 public abstract class Material extends MaterialRegistry {
 	private final short id;

@@ -29,7 +29,7 @@ package org.spout.api.io.nbt;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.spout.math.imaginary.Quaternionf;
+import com.flowpowered.math.imaginary.Quaternionf;
 import org.spout.nbt.FloatTag;
 import org.spout.nbt.ListTag;
 import org.spout.nbt.Tag;

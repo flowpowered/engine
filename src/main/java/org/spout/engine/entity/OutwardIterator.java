@@ -30,7 +30,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  * An Iterator that iterates outwards from a given central 3d integer coordinate.<br> <br> The Manhattan distance from the given center to the coordinates in the sequence increases monotonically and

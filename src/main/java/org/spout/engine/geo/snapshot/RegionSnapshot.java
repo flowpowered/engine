@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.engine.geo.chunk.SpoutChunk;
 import org.spout.engine.geo.region.SpoutRegion;
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  *

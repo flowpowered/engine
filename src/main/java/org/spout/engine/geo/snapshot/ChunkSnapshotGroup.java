@@ -25,7 +25,7 @@ package org.spout.engine.geo.snapshot;
 
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.material.BlockMaterial;
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  * A chunk and it's immediate neighbours (BTNESW), used for meshing the chunk including it's edge blocks with proper occlusion.

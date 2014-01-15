@@ -38,7 +38,7 @@ import org.spout.api.Spout;
 import org.spout.api.material.block.BlockFullState;
 import org.spout.api.store.BinaryFileStore;
 import org.spout.api.util.SyncedStringMap;
-import org.spout.math.GenericMath;
+import com.flowpowered.math.GenericMath;
 
 /**
  * Handles all registered materials on the server statically.

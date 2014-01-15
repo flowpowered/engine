@@ -26,9 +26,9 @@
  */
 package org.spout.api.geo.discrete;
 
-import org.spout.math.imaginary.Complexf;
-import org.spout.math.matrix.Matrix3f;
-import org.spout.math.vector.Vector2f;
+import com.flowpowered.math.imaginary.Complexf;
+import com.flowpowered.math.matrix.Matrix3f;
+import com.flowpowered.math.vector.Vector2f;
 
 public class Transform2D {
 	private Vector2f position;

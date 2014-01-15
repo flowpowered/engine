@@ -31,7 +31,7 @@ import com.flowpowered.events.Cause;
 import org.spout.api.geo.cuboid.Block;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 public interface AreaBlockAccess extends AreaBlockSource {
 	/**

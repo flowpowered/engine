@@ -34,9 +34,9 @@ import org.spout.engine.geo.snapshot.WorldSnapshot;
 import org.spout.engine.util.thread.CopySnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotManager;
 import org.spout.engine.util.thread.snapshotable.SnapshotableLong;
-import org.spout.math.GenericMath;
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
 
 public class SpoutWorld extends BaseComponentOwner implements World, CopySnapshotManager {
     private final SpoutEngine engine;

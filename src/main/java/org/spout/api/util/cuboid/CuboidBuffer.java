@@ -28,7 +28,7 @@ package org.spout.api.util.cuboid;
 
 import org.spout.api.geo.cuboid.Chunk;
 
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * This class implements a Cuboid common methods for a one dimensional array Cuboid Buffer

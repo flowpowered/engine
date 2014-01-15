@@ -33,7 +33,7 @@ import gnu.trove.list.array.TFloatArrayList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
-import org.spout.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2f;
 import org.spout.physics.math.Vector3;
 import org.spout.renderer.api.data.VertexAttribute;
 import org.spout.renderer.api.data.VertexAttribute.DataType;

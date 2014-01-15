@@ -42,8 +42,8 @@ import org.spout.api.material.basic.Air;
 import org.spout.api.material.basic.Solid;
 import org.spout.api.material.block.BlockFace;
 import org.spout.api.material.block.BlockFaces;
-import org.spout.math.GenericMath;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.vector.Vector3f;
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.collision.shape.CollisionShape;
 
@@ -353,7 +353,7 @@ public class BlockMaterial extends Material implements Placeable {
 	}
 
 	/**
-	 * Checks the block to see if it can be created at that position<br> Orientation-specific checks are performed in the {@link #canPlace(org.spout.api.geo.cuboid.Block, short, org.spout.api.material.block.BlockFace, org.spout.math.vector.Vector3f, boolean, org.spout.api.event.Cause)} method<br> Use this method to see if creation is possible at a
+	 * Checks the block to see if it can be created at that position<br> Orientation-specific checks are performed in the {@link #canPlace(org.spout.api.geo.cuboid.Block, short, org.spout.api.material.block.BlockFace, com.flowpowered.math.vector.Vector3f, boolean, org.spout.api.event.Cause)} method<br> Use this method to see if creation is possible at a
 	 * given position when not placed
 	 *
 	 * @param block this Block Material should be created in
@@ -366,7 +366,7 @@ public class BlockMaterial extends Material implements Placeable {
 	}
 
 	/**
-	 * Creates this Block Material at a block in the world<br> Orientation-specific changes are performed in the {@link #onPlacement(org.spout.api.geo.cuboid.Block, short, org.spout.api.material.block.BlockFace, org.spout.math.vector.Vector3f, boolean, org.spout.api.event.Cause)} method<br> Use this method to create the block at a given position
+	 * Creates this Block Material at a block in the world<br> Orientation-specific changes are performed in the {@link #onPlacement(org.spout.api.geo.cuboid.Block, short, org.spout.api.material.block.BlockFace, com.flowpowered.math.vector.Vector3f, boolean, org.spout.api.event.Cause)} method<br> Use this method to create the block at a given position
 	 * when not placed
 	 *
 	 * @param block to create this Block Material in

@@ -23,7 +23,7 @@
  */
 package org.spout.engine.render.effect;
 
-import org.spout.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2f;
 import org.spout.renderer.api.data.Uniform;
 import org.spout.renderer.api.data.Uniform.IntUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;

@@ -43,7 +43,7 @@ import org.spout.api.geo.cuboid.ChunkSnapshot.ExtraData;
 import org.spout.api.geo.cuboid.ChunkSnapshot.SnapshotType;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.material.block.BlockFace;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Represents a cube containing 16x16x16 Blocks

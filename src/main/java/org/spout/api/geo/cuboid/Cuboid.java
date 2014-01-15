@@ -31,7 +31,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.spout.api.geo.World;
 import org.spout.api.geo.WorldSource;
 import org.spout.api.geo.discrete.Point;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Represents a Cuboid shaped volume that is located somewhere in a world.

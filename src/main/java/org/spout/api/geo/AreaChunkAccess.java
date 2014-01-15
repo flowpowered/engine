@@ -29,7 +29,7 @@ package org.spout.api.geo;
 import java.util.List;
 
 import org.spout.api.geo.cuboid.Chunk;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 public interface AreaChunkAccess extends AreaBlockAccess {
 	/**

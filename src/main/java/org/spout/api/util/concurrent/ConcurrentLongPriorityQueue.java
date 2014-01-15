@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.spout.math.GenericMath;
+import com.flowpowered.math.GenericMath;
 
 public class ConcurrentLongPriorityQueue<T extends LongPrioritized> {
 	private final long keyMask;

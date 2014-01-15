@@ -16,7 +16,7 @@ import org.spout.engine.entity.SpoutPlayer;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.render.DeployNatives;
 import org.spout.engine.render.SpoutRenderer;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
     private final AtomicReference<SpoutPlayer> player = new AtomicReference<>();

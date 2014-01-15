@@ -3,7 +3,7 @@ package org.spout.engine.render.model;
 import java.util.concurrent.Future;
 
 import org.spout.engine.render.SpoutRenderer;
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 import org.spout.renderer.api.data.VertexData;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;

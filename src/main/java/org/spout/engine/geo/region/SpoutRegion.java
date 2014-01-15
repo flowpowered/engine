@@ -39,7 +39,7 @@ import org.spout.engine.geo.snapshot.RegionSnapshot;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.scheduler.render.RenderThread;
 import org.spout.engine.util.thread.CompleteAsyncManager;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 

@@ -26,9 +26,9 @@ package org.spout.engine.render.effect;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
-import org.spout.math.GenericMath;
-import org.spout.math.vector.Vector2f;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector3f;
 import org.spout.renderer.api.data.Uniform;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.IntUniform;

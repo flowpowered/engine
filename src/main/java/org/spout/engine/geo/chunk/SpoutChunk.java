@@ -28,8 +28,8 @@ import org.spout.api.util.hashing.NibbleQuadHashed;
 import org.spout.engine.geo.SpoutBlock;
 import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.engine.geo.world.SpoutWorld;
-import org.spout.math.GenericMath;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.vector.Vector3f;
 
 public class SpoutChunk extends Chunk {
 

@@ -43,7 +43,7 @@ import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 import org.spout.engine.geo.chunk.SpoutChunk;
 import org.spout.engine.geo.world.SpoutServerWorld;
 import org.spout.engine.util.thread.LoggingThreadPoolExecutor;
-import org.spout.math.GenericMath;
+import com.flowpowered.math.GenericMath;
 
 public class RegionGenerator implements Named {
 	private final static ExecutorService pool = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() * 2 + 1, "RegionGenerator - async pool");

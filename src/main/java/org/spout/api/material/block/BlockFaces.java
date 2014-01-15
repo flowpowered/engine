@@ -34,7 +34,7 @@ import com.flowpowered.commons.bit.ByteBitMask;
 
 import gnu.trove.map.hash.TByteObjectHashMap;
 
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Contains several BlockFace array constants and functions to operate on them

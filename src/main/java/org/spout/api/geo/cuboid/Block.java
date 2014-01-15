@@ -35,8 +35,8 @@ import org.spout.api.geo.discrete.Point;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.Material;
 import org.spout.api.material.block.BlockFace;
-import org.spout.math.vector.Vector3f;
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
 public interface Block extends WorldSource, ComponentOwner {
 	/**

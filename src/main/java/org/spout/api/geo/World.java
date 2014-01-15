@@ -42,7 +42,7 @@ import org.spout.api.entity.Player;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Represents a World.
@@ -91,7 +91,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	public Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab);
 
 	/**
-     * @see World#spawnEntity(org.spout.math.vector.Vector3f, org.spout.api.geo.LoadOption, org.spout.api.entity.EntityPrefab)
+     * @see World#spawnEntity(com.flowpowered.math.vector.Vector3f, org.spout.api.geo.LoadOption, org.spout.api.entity.EntityPrefab)
      *
 	 * @param point The area in space to spawn
 	 * @param option Whether to not load, load, or load and create the chunk
@@ -101,7 +101,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes);
 
 	/**
-     * @see World#spawnEntity(org.spout.math.vector.Vector3f, org.spout.api.geo.LoadOption, org.spout.api.entity.EntityPrefab)
+     * @see World#spawnEntity(com.flowpowered.math.vector.Vector3f, org.spout.api.geo.LoadOption, org.spout.api.entity.EntityPrefab)
 	 *
 	 * @param points The areas in space to spawn
 	 * @param option Whether to not load, load, or load and create the chunk

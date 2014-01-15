@@ -29,8 +29,8 @@ package org.spout.engine.util.math;
 import org.spout.api.geo.World;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
 
 public class ReactConverter {
 	//Spout -> React

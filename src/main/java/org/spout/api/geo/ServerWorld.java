@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 import org.spout.api.generator.WorldGenerator;
 import org.spout.api.geo.discrete.Transform;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 public interface ServerWorld extends World {
 

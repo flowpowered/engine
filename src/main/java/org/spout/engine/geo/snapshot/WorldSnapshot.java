@@ -39,7 +39,7 @@ import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
 import org.spout.api.geo.World;
 import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.engine.geo.world.SpoutWorld;
-import org.spout.math.vector.Vector3i;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  *

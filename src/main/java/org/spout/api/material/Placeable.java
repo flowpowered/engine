@@ -30,7 +30,7 @@ import com.flowpowered.events.Cause;
 
 import org.spout.api.geo.cuboid.Block;
 import org.spout.api.material.block.BlockFace;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 
 /**
  * An interface defining a {@link Material} that can be placed

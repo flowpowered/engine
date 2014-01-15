@@ -13,8 +13,8 @@ import org.spout.api.io.bytearrayarray.BAAWrapper;
 import org.spout.engine.SpoutEngine;
 import org.spout.engine.filesystem.WorldFiles;
 import org.spout.engine.geo.region.RegionFileManager;
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
 
 public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
     private final WorldGenerator generator;

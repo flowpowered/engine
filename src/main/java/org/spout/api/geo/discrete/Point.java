@@ -39,7 +39,7 @@ import org.spout.api.geo.World;
 import org.spout.api.geo.WorldSource;
 import org.spout.api.geo.cuboid.Block;
 import org.spout.api.geo.cuboid.Chunk;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3f;
 import org.spout.api.geo.cuboid.Region;
 
 /**

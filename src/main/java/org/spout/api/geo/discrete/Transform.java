@@ -35,10 +35,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.spout.api.geo.World;
 import org.spout.api.util.concurrent.SpinLock;
 
-import org.spout.math.imaginary.Quaternionf;
-import org.spout.math.matrix.Matrix3f;
-import org.spout.math.matrix.Matrix4f;
-import org.spout.math.vector.Vector3f;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.matrix.Matrix3f;
+import com.flowpowered.math.matrix.Matrix4f;
+import com.flowpowered.math.vector.Vector3f;
 
 public final class Transform implements Serializable {
 	private static final long serialVersionUID = 2L;
@@ -308,8 +308,8 @@ public final class Transform implements Serializable {
 	}
 
 	/**
-	 * Returns if this Transform is "empty" <p> Empty is defined by Position, {@link Point}, of the transform equaling {@link Point#invalid}, Rotation, {@link org.spout.math.imaginary.Quaternionf}, of the transform equaling
-	 * {@link org.spout.math.imaginary.Quaternionf#IDENTITY}, and Scale, {@link org.spout.math.vector.Vector3f}, equaling {@link org.spout.math.vector.Vector3f#ONE}.
+	 * Returns if this Transform is "empty" <p> Empty is defined by Position, {@link Point}, of the transform equaling {@link Point#invalid}, Rotation, {@link com.flowpowered.math.imaginary.Quaternionf}, of the transform equaling
+	 * {@link com.flowpowered.math.imaginary.Quaternionf#IDENTITY}, and Scale, {@link com.flowpowered.math.vector.Vector3f}, equaling {@link com.flowpowered.math.vector.Vector3f#ONE}.
 	 *
 	 * @return True if empty, false if not
 	 */
