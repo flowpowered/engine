@@ -412,7 +412,6 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
     public void copySnapshotRun(int sequence) {
         // TODO: modified status
         snapshot.update(this);
-        System.out.println("SpoutWorld copySnapshot");
     }
 
     @Override

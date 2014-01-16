@@ -33,6 +33,8 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.cuboid.Region;
 import org.spout.api.material.BlockMaterial;
+import org.spout.api.material.block.BlockFace;
+import org.spout.api.material.block.BlockFaces;
 import org.spout.engine.geo.chunk.SpoutChunk;
 
 /**
@@ -99,7 +101,8 @@ public class ChunkSnapshot {
                 // Get the chunk from the current region
                 return getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
             }
-            return this.getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ).getChunk(otherChunkX, otherChunkY, otherChunkZ);
+            RegionSnapshot other = getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
+            return other == null ? null : other.getChunk(otherChunkX, otherChunkY, otherChunkZ);
         } finally {
             lock.unlock();
         }
@@ -151,11 +154,31 @@ public class ChunkSnapshot {
                 blocks.getDataArray(blockData);
                 blocks.resetDirtyArrays();
                 updateNumber++;
+                touchNeighbors();
                 return true;
             }
             return false;
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void touch() {
+        final Lock lock = this.lock.writeLock();
+        lock.lock();
+        try {
+            updateNumber++;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void touchNeighbors() {
+        for (BlockFace face : BlockFaces.NESWBT) {
+            ChunkSnapshot rel = getRelativeChunk(face.getIntOffset());
+            if (rel != null) {
+                rel.touch();
+            }
         }
     }
 

@@ -10,12 +10,14 @@ import org.spout.api.entity.Entity;
 import org.spout.api.entity.Player;
 import org.spout.api.geo.LoadOption;
 import org.spout.api.geo.World;
+import org.spout.api.generator.FlatWorldGenerator;
 import org.spout.api.generator.SolidWorldGenerator;
 import org.spout.api.material.BlockMaterial;
 import org.spout.engine.entity.SpoutPlayer;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.render.DeployNatives;
 import org.spout.engine.render.SpoutRenderer;
+
 import com.flowpowered.math.vector.Vector3f;
 
 public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
@@ -38,7 +40,7 @@ public class SpoutSingleplayer extends SpoutServer implements Singleplayer {
             return;
         }
         super.init();
-        SpoutWorld loadedWorld = getWorldManager().loadWorld("fallback", new SolidWorldGenerator(BlockMaterial.SOLID_BLUE));
+        SpoutWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
         activeWorld.set(loadedWorld);
         SpoutPlayer player = new SpoutPlayer("Spout");
         this.player.set(player);

@@ -38,6 +38,7 @@ import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
 import com.flowpowered.math.vector.Vector3i;
 
 import org.spout.api.geo.World;
+import org.spout.api.geo.cuboid.Region;
 import org.spout.engine.geo.region.SpoutRegion;
 import org.spout.engine.geo.world.SpoutWorld;
 
@@ -108,15 +109,19 @@ public class WorldSnapshot {
         }
     }
 
-    public RegionSnapshot getChunk(Vector3i position) {
-        return getRegion(position.getX(), position.getY(), position.getZ());
+    public ChunkSnapshot getChunk(Vector3i position) {
+        return getChunk(position.getX(), position.getY(), position.getZ());
     }
 
-    public RegionSnapshot getChunk(int x, int y, int z) {
+    public ChunkSnapshot getChunk(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
-            return regions.get(x, y, z);
+            RegionSnapshot get = regions.get(x >> Region.CHUNKS.BITS, y >> Region.CHUNKS.BITS, z >> Region.CHUNKS.BITS);
+            if (get == null) {
+                return null;
+            }
+            return get.getChunk(x, y, z);
         } finally {
             lock.unlock();
         }

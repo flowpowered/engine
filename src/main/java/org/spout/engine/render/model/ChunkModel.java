@@ -18,8 +18,8 @@ import org.spout.renderer.api.model.Model;
  */
 public class ChunkModel extends Model {
     private final SpoutRenderer renderer;
-    private Future<VertexData> mesh;
-    private boolean complete = false;
+    private volatile Future<VertexData> mesh;
+    private volatile boolean complete = false;
     private ChunkModel previous;
 
     public ChunkModel(SpoutRenderer renderer, Vector3i position, Future<VertexData> mesh) {
@@ -40,7 +40,6 @@ public class ChunkModel extends Model {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-            mesh = null;
             // If the chunk mesher returned a mesh. It may not return one if the chunk has no mesh (completely invisible)
             if (vertexData != null) {
                 // Create the vertex array from the mesh
@@ -57,6 +56,7 @@ public class ChunkModel extends Model {
             }
             // Set the model as complete
             complete = true;
+            mesh = null;
         }
         if (!isVisible()) {
             return;
@@ -103,8 +103,10 @@ public class ChunkModel extends Model {
             complete = false;
         } else {
             // Else, the mesh is still in progress, cancel that
-            mesh.cancel(false);
-            mesh = null;
+            if (mesh != null) {
+                mesh.cancel(false);
+                mesh = null;
+            }
             // Also destroy and discard the previous model if we have one
             if (previous != null) {
                 previous.destroy();

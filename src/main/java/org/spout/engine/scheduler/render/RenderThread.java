@@ -24,6 +24,8 @@ import org.spout.api.Client;
 import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.geo.discrete.Point;
 import org.spout.api.geo.discrete.Transform;
+import org.spout.api.material.block.BlockFace;
+import org.spout.api.material.block.BlockFaces;
 import org.spout.engine.SpoutSingleplayer;
 import org.spout.engine.geo.snapshot.ChunkSnapshot;
 import org.spout.engine.geo.snapshot.RegionSnapshot;
@@ -47,7 +49,6 @@ public class RenderThread extends TickingElement {
     private final InputThread input;
     private final ParallelChunkMesher mesher;
     // TEST CODE
-    private final List<ChunkModel> modelsToAdd = new ArrayList<>();
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
@@ -176,22 +177,6 @@ public class RenderThread extends TickingElement {
             // TODO: recycle the vertex array?
             model.destroy();
         }
-    }
-
-    public void addChunkModel(ChunkModel model) {
-        modelsToAdd.add(model);
-    }
-
-    public void updateChunkModels() {
-        for (ChunkModel model : modelsToAdd) {
-            addChunkModelToRender(model);
-        }
-        modelsToAdd.clear();
-    }
-
-    private void addChunkModelToRender(ChunkModel model) {
-        model.setRotation(Quaternionf.IDENTITY);
-        renderer.addSolidModel(model);
     }
 
     private static final float MOUSE_SENSITIVITY = 0.08f;
