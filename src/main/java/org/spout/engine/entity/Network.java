@@ -230,7 +230,7 @@ public class Network {
 		int cx = p.getChunkX();
 		int cy = p.getChunkY();
 		int cz = p.getChunkZ();
-		Chunk center = p.getChunk(LoadOption.LOAD_GEN);
+		Chunk center = p.getChunk(LOAD_GEN_NOWAIT);
 
 		HashSet<Chunk> observing = new HashSet<>((syncDistance * syncDistance * syncDistance * 3) / 2);
 		Iterator<Vector3i> itr = liveObserverIterator.get();
@@ -240,7 +240,7 @@ public class Network {
 		observeChunksFailed = false;
 		while (itr.hasNext()) {
 			Vector3i v = itr.next();
-			Chunk chunk = center == null ? w.getChunk(v.getX(), v.getY(), v.getZ(), LoadOption.LOAD_GEN) : center.getRelative(v.getX() - cx, v.getY() - cy, v.getZ() - cz, LoadOption.LOAD_GEN);
+			Chunk chunk = center == null ? w.getChunk(v.getX(), v.getY(), v.getZ(), LOAD_GEN_NOWAIT) : center.getRelative(v.getX() - cx, v.getY() - cy, v.getZ() - cz, LOAD_GEN_NOWAIT);
 			if (chunk != null) {
 				chunk.refreshObserver(entity);
 				observing.add(chunk);

@@ -80,9 +80,6 @@ public class RenderThread extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        if (Display.isCloseRequested()) {
-            scheduler.stop();
-        }
         handleInput(dt / 1e9f);
         updateChunkModels(((SpoutWorld) client.getWorld()).getSnapshot());
         updateLight(client.getWorld().getAge());
@@ -215,29 +212,28 @@ public class RenderThread extends TickingElement {
             final Vector3f right = camera.getRight();
             final Vector3f up = camera.getUp();
             final Vector3f forward = camera.getForward();
-            Vector3f position = camera.getPosition();
+            Vector3f translation = Vector3f.ZERO;
             final float speed = CAMERA_SPEED * 60 * dt;
             if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-                position = position.add(forward.mul(speed));
+                translation = translation.add(forward.mul(speed));
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-                position = position.add(forward.mul(-speed));
+                translation = translation.add(forward.mul(-speed));
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
-                position = position.add(right.mul(-speed));
+                translation = translation.add(right.mul(-speed));
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
-                position = position.add(right.mul(speed));
+                translation = translation.add(right.mul(speed));
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
-                position = position.add(up.mul(speed));
+                translation = translation.add(up.mul(speed));
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-                position = position.add(up.mul(-speed));
+                translation = translation.add(up.mul(-speed));
             }
-            Transform transform = ((SpoutSingleplayer) client).getTestEntity().getPhysics().getSnapshottedTransform();
-            transform.setPosition(new Point(position, transform.getPosition().getWorld()));
-            camera.setPosition(position);
+            ((SpoutSingleplayer) client).getTestEntity().getPhysics().translate(translation);
+            camera.setPosition(camera.getPosition().add(translation));
         }
     }
 

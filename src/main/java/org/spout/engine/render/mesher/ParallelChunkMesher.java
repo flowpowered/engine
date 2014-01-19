@@ -35,6 +35,8 @@ import org.spout.engine.geo.snapshot.ChunkSnapshot;
 import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 import org.spout.engine.render.SpoutRenderer;
 import org.spout.engine.render.model.ChunkModel;
+import org.spout.engine.scheduler.MarkedNamedThreadFactory;
+import org.spout.engine.util.thread.LoggingThreadPoolExecutor;
 import org.spout.renderer.api.data.VertexData;
 
 /**
@@ -57,9 +59,8 @@ public class ParallelChunkMesher {
     public ParallelChunkMesher(SpoutRenderer renderer, ChunkMesher mesher) {
         this.renderer = renderer;
         this.mesher = mesher;
-        this.executor = new ThreadPoolExecutor(4, 4,
-                                      60L, TimeUnit.SECONDS,
-                                      new LinkedBlockingQueue<Runnable>());
+        this.executor = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(4, "ParallelChunkMesher");
+        executor.setKeepAliveTime(60, TimeUnit.SECONDS);
         executor.allowCoreThreadTimeOut(true);
     }
 
