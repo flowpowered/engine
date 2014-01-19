@@ -36,6 +36,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.flowpowered.commons.map.TripleIntObjectMap;
 import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
 import com.flowpowered.math.vector.Vector3i;
+import gnu.trove.map.TObjectLongMap;
+import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.spout.api.geo.World;
 import org.spout.api.geo.cuboid.Region;
@@ -47,6 +49,7 @@ import org.spout.engine.geo.world.SpoutWorld;
  */
 public class WorldSnapshot {
     private final TripleIntObjectMap<RegionSnapshot> regions = new TTripleInt21ObjectHashMap<>();
+    private final TObjectLongMap<RegionSnapshot> lastUpdate = new TObjectLongHashMap<>();
     private final UUID id;
     private final String name;
     private long time;
@@ -167,10 +170,17 @@ public class WorldSnapshot {
                 validRegions.add(base);
             }
             for (Iterator<RegionSnapshot> iterator = regions.valueCollection().iterator(); iterator.hasNext(); ) {
-                final Vector3i position = iterator.next().getBase();
+                RegionSnapshot next = iterator.next();
+                final Vector3i position = next.getBase();
                 if (!validRegions.contains(position)) {
                     iterator.remove();
+                    lastUpdate.remove(next);
                     changed = true;
+                } else {
+                    if (lastUpdate.get(next) < next.getUpdateNumber()) {
+                        lastUpdate.put(next, next.getUpdateNumber());
+                        changed = true;
+                    }
                 }
             }
             time = current.getAge();

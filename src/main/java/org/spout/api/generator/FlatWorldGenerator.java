@@ -27,7 +27,6 @@
 package org.spout.api.generator;
 
 import org.spout.api.geo.World;
-import org.spout.api.geo.cuboid.Chunk;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
 
@@ -47,9 +46,13 @@ public class FlatWorldGenerator implements WorldGenerator {
 
 	@Override
 	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-		if (blockData.getBase().getY() < 0) {
+        int flooredY = blockData.getBase().getFloorY();
+		if (flooredY < 0) {
+            blockData.setHorizontalLayer(flooredY, (blockData.getSize().getFloorY() / 2), material);
 			blockData.flood(material);
-		}
+		} else {
+            blockData.flood(BlockMaterial.AIR);
+        }
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.flowpowered.commons.Named;
+import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
 
 import org.spout.api.Spout;
@@ -68,6 +69,7 @@ public class MainThread extends TickingElement {
 	//private final List<AsyncManager> asyncManagers = new ConcurrentList<>();
 	// scheduler executor service
 	protected final ExecutorService executorService;
+    private final TPSMonitor tpsMonitor = new TPSMonitor();
 
     public MainThread(SpoutScheduler scheduler) {
         super("MainThread", 20);
@@ -78,6 +80,7 @@ public class MainThread extends TickingElement {
 
     @Override
     public void onStart() {
+        tpsMonitor.start();
     }
 
     @Override
@@ -161,6 +164,7 @@ public class MainThread extends TickingElement {
         doFinalizeTick();
 
         doCopySnapshot();
+        tpsMonitor.update();
     }
 
 
@@ -307,4 +311,7 @@ public class MainThread extends TickingElement {
         }
 	}
 
+    public int getTPS() {
+        return tpsMonitor.getTPS();
+    }
 }

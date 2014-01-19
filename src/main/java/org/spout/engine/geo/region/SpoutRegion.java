@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
+import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.api.Spout;
 import org.spout.api.entity.Entity;
@@ -22,7 +23,6 @@ import org.spout.api.geo.discrete.Transform;
 import org.spout.api.io.bytearrayarray.BAAWrapper;
 import org.spout.api.material.BlockMaterial;
 import org.spout.api.material.block.BlockFace;
-import org.spout.api.material.block.BlockFaces;
 import org.spout.api.scheduler.TaskManager;
 import org.spout.api.scheduler.TickStage;
 import org.spout.api.util.cuboid.CuboidBlockMaterialBuffer;
@@ -33,13 +33,10 @@ import org.spout.engine.entity.SpoutEntitySnapshot;
 import org.spout.engine.filesystem.ChunkDataForRegion;
 import org.spout.engine.filesystem.ChunkFiles;
 import org.spout.engine.geo.chunk.SpoutChunk;
-import org.spout.engine.geo.snapshot.ChunkSnapshot;
-import org.spout.engine.geo.snapshot.ChunkSnapshotGroup;
 import org.spout.engine.geo.snapshot.RegionSnapshot;
 import org.spout.engine.geo.world.SpoutWorld;
 import org.spout.engine.scheduler.render.RenderThread;
 import org.spout.engine.util.thread.CompleteAsyncManager;
-import com.flowpowered.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 
@@ -67,8 +64,8 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
     private final RegionSnapshot snapshot;
     private final RenderThread render;
 
-    public SpoutRegion(SpoutEngine engine, SpoutWorld world, float x, float y, float z, BAAWrapper chunkStore, RenderThread render) {
-        super(world, x, y, z);
+    public SpoutRegion(SpoutEngine engine, SpoutWorld world, int x, int y, int z, BAAWrapper chunkStore, RenderThread render) {
+        super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.engine = engine;
         this.generator = new RegionGenerator(this, 4);
         this.chunkStore = chunkStore;
@@ -121,7 +118,7 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
 	}
 
     @Override
-    public SpoutChunk getChunk(int x, int y, int z, final LoadOption loadopt) {
+    public SpoutChunk getChunk(final int x, final int y, final int z, final LoadOption loadopt) {
         // If we're not waiting, then we don't care because it's async anyways
         if (loadopt.isWait()) {
             if (loadopt.generateIfNeeded()) {
@@ -131,11 +128,11 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
             }
         }
 
-        x &= CHUNKS.MASK;
-        y &= CHUNKS.MASK;
-        z &= CHUNKS.MASK;
+        final int localX = x & CHUNKS.MASK;
+        final int localY = y & CHUNKS.MASK;
+        final int localZ = z & CHUNKS.MASK;
 
-        final SpoutChunk chunk = chunks.get()[getChunkIndex(x, y, z)];
+        final SpoutChunk chunk = chunks.get()[getChunkIndex(localX, localY, localZ)];
         if (chunk != null) {
             checkChunkLoaded(chunk, loadopt);
             return chunk;
@@ -149,13 +146,10 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
             return loadOrGenChunkImmediately(x, y, z, loadopt);
         }
 
-        final int finalX = x;
-        final int finalY = y;
-        final int finalZ = z;
         engine.getScheduler().runCoreAsyncTask(new Runnable() {
             @Override
             public void run() {
-                loadOrGenChunkImmediately(finalX, finalY, finalZ, loadopt);
+                loadOrGenChunkImmediately(x, y, z, loadopt);
             }
         });
         return null;
@@ -163,24 +157,27 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
 
     // If loadopt.isWait(), this method is run synchronously and so is any further generation
     // If !loadopt.isWait(), this method is run by a runnable, because the loading is taxing; any further generation is also run in its own Runnable
-	private SpoutChunk loadOrGenChunkImmediately(int x, int y, int z, final LoadOption loadopt) {
-		SpoutChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(x, y, z) : null;
+	private SpoutChunk loadOrGenChunkImmediately(int worldX, int worldY, int worldZ, final LoadOption loadopt) {
+        final int localX = worldX & CHUNKS.MASK;
+        final int localY = worldY & CHUNKS.MASK;
+        final int localZ = worldZ & CHUNKS.MASK;
+		SpoutChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(localX, localY, localZ) : null;
 
 		if (newChunk != null || !loadopt.generateIfNeeded()) {
             return newChunk;
 		}
 
-        generator.generateChunk(x, y, z, loadopt.isWait());
+        generator.generateChunk(worldX, worldY, worldZ, loadopt.isWait());
         if (!loadopt.isWait()) {
             return null;
         }
-        final SpoutChunk generatedChunk = live.get()[getChunkIndex(x, y, z)];
+        final SpoutChunk generatedChunk = live.get()[getChunkIndex(localX, localY, localZ)];
         if (generatedChunk != null) {
             checkChunkLoaded(generatedChunk, loadopt);
             return generatedChunk;
         }
         Spout.getLogger().severe("Chunk failed to generate!  (" + loadopt + ")");
-        Spout.getLogger().info("Region " + this + ", chunk " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z));
+        Spout.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
         Thread.dumpStack();
         return null;
 	}

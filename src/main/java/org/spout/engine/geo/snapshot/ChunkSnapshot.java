@@ -154,7 +154,7 @@ public class ChunkSnapshot {
                 blocks.getDataArray(blockData);
                 blocks.resetDirtyArrays();
                 updateNumber++;
-                touchNeighbors();
+                //touchNeighbors();
                 return true;
             }
             return false;

@@ -55,6 +55,7 @@ import org.spout.api.render.Renderer;
 import org.spout.engine.render.effect.BlurEffect;
 import org.spout.engine.render.effect.SSAOEffect;
 import org.spout.engine.render.effect.ShadowMappingEffect;
+import org.spout.engine.scheduler.MainThread;
 import org.spout.engine.scheduler.SpoutScheduler;
 import org.spout.renderer.api.Action.RenderModelsAction;
 import org.spout.renderer.api.Camera;
@@ -155,8 +156,11 @@ public class SpoutRenderer implements Renderer {
     // FPS MONITOR
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
+    private StringModel tpsMonitorModel;
     private StringModel positionModel;
     private boolean fpsMonitorStarted = false;
+
+    private MainThread mainThread;
 
     public SpoutRenderer() {
         setGLVersion(GLVersion.GL32);
@@ -165,7 +169,9 @@ public class SpoutRenderer implements Renderer {
     /**
      * Creates the OpenGL context and initializes the internal resources for the renderer
      */
-    public void init() {
+    public void init(MainThread mainThread) {
+        this.mainThread = mainThread;
+
         initContext();
         initEffects();
         initPrograms();
@@ -743,13 +749,18 @@ public class SpoutRenderer implements Renderer {
         sandboxModel.setString("Client - WIP");
         guiRenderList.add(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
+        final StringModel tpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
+        tpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.255, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
+        tpsModel.setString("TPS: " + mainThread.getTPS());
         guiRenderList.add(fpsModel);
+        guiRenderList.add(tpsModel);
         fpsMonitorModel = fpsModel;
+        tpsMonitorModel = tpsModel;
 
         final StringModel posModel = sandboxModel.getInstance();
-        posModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.255, -0.1));
+        posModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.225, -0.1));
         posModel.setString("Position: " + getCamera().getPosition().toInt().toString() + " Rotation: " + getCamera().getRotation().toString());
         guiRenderList.add(posModel);
         positionModel = posModel;
@@ -790,6 +801,7 @@ public class SpoutRenderer implements Renderer {
     private void updateHUD() {
         fpsMonitor.update();
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
+        tpsMonitorModel.setString("TPS: " + mainThread.getTPS());
 
         positionModel.setString("Position: " + getCamera().getPosition().toInt().toString() + " Rotation: " + getCamera().getRotation().toString());
     }

@@ -58,7 +58,7 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 	private final int chunkY;
 	private final int chunkZ;
 
-	public Region(World world, float x, float y, float z) {
+	public Region(World world, int x, int y, int z) {
 		super(new Point(world, x, y, z), BLOCKS.SIZE);
 		this.blockX = super.getX() << BLOCKS.BITS;
 		this.blockY = super.getY() << BLOCKS.BITS;

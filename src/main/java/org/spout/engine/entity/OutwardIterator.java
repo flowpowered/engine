@@ -54,7 +54,6 @@ public class OutwardIterator implements Iterator<Vector3i>, Serializable {
 		this(x, y, z, Integer.MAX_VALUE);
 	}
 
-	// TODO: make maxDistance of -1 make hasNext false
 	public OutwardIterator(int x, int y, int z, int maxDistance) {
         current = new Vector3i(x, y, z);
 		center = new Vector3i(x, y, z);

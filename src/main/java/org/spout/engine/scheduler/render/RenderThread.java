@@ -67,7 +67,7 @@ public class RenderThread extends TickingElement {
         renderer.setGLVersion(GLVersioned.GLVersion.GL30);
         renderer.getCamera().setPosition(new Vector3f(0, 5, 0));
         renderer.setSolidColor(new Color(0, 200, 0));
-        renderer.init();
+        renderer.init(((SpoutScheduler) client.getScheduler()).getMainThread());
 
         input.subscribeToKeyboard();
         input.getKeyboardQueue().add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
@@ -115,22 +115,23 @@ public class RenderThread extends TickingElement {
             return;
         }
         // Else, we need to update the chunk models
+        // Remove chunks we don't need anymore
+        for (Iterator<Map.Entry<Vector3i, ChunkModel>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext();) {
+            final Map.Entry<Vector3i, ChunkModel> chunkModel = iterator.next();
+            final Vector3i position = chunkModel.getKey();
+            // If a model is not in the world chunk collection, we remove
+            if (world.getChunk(position) == null) {
+                final ChunkModel model = chunkModel.getValue();
+                // Remove the model, destroying it
+                removeChunkModel(model, true);
+                // Finally, remove the chunk from the collections
+                iterator.remove();
+                chunkLastUpdateNumbers.remove(position);
+            }
+        }
         final Map<Vector3i, RegionSnapshot> regions = world.getRegions();
         for (RegionSnapshot region : regions.values()) {
-            // Remove chunks we don't need anymore
-            for (Iterator<Map.Entry<Vector3i, ChunkModel>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext();) {
-                final Map.Entry<Vector3i, ChunkModel> chunkModel = iterator.next();
-                final Vector3i position = chunkModel.getKey();
-                // If a model is not in the world chunk collection, we remove
-                if (region.getChunk(position) == null) {
-                    final ChunkModel model = chunkModel.getValue();
-                    // Remove the model, destroying it
-                    removeChunkModel(model, true);
-                    // Finally, remove the chunk from the collections
-                    iterator.remove();
-                    chunkLastUpdateNumbers.remove(position);
-                }
-            }
+
             // Next go through all the chunks, and update the chunks that are out of date
             for (ChunkSnapshot chunk : region.getChunks()) {
                 if (chunk == null) {
@@ -162,7 +163,7 @@ public class RenderThread extends TickingElement {
     private void addChunkModel(ChunkSnapshot chunk, ChunkModel previous) {
         final ChunkModel model = mesher.queue(chunk);
         final Vector3i position = chunk.getPosition();
-        model.setPosition(position.mul(16).toFloat());
+        model.setPosition(position.toFloat());
         model.setRotation(Quaternionf.IDENTITY);
         // The previous model is kept to prevent frames with missing chunks because they're being meshed
         model.setPrevious(previous);

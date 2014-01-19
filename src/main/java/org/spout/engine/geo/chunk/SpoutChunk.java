@@ -49,7 +49,7 @@ public class SpoutChunk extends Chunk {
 	protected final AtomicBlockStore blockStore;
 
     public SpoutChunk(SpoutRegion region, World world, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
-        super(world, x, y, z);
+        super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.region = region;
         this.dataMap = new ManagedHashMap();
         this.generationIndex = generationIndex;
@@ -113,7 +113,7 @@ public class SpoutChunk extends Chunk {
 
     @Override
     public boolean isLoaded() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     @Override

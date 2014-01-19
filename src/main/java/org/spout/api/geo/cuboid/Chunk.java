@@ -337,9 +337,9 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
         final int regionX = getRegion().getX();
         final int regionY = getRegion().getY();
         final int regionZ = getRegion().getZ();
-        final int otherRegionX = otherChunkX / Region.CHUNKS.SIZE;
-        final int otherRegionY = otherChunkY / Region.CHUNKS.SIZE;
-        final int otherRegionZ = otherChunkZ / Region.CHUNKS.SIZE;
+        final int otherRegionX = otherChunkX >> Region.CHUNKS.BITS;
+        final int otherRegionY = otherChunkY >> Region.CHUNKS.BITS;
+        final int otherRegionZ = otherChunkZ >> Region.CHUNKS.BITS;
         if (regionX == otherRegionX && regionZ == otherRegionZ && regionY == otherRegionY) {
             // Get the chunk from the current region
             return getRegion().getChunk(otherChunkX - otherRegionX, otherChunkY - otherRegionY, otherChunkZ - otherRegionZ, opt);
