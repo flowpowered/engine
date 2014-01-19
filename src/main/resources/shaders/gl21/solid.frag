@@ -10,6 +10,7 @@ uniform vec4 modelColor;
 uniform float diffuseIntensity;
 uniform float specularIntensity;
 uniform float ambientIntensity;
+uniform float shininess;
 
 void main() {
     gl_FragData[0] = modelColor;
@@ -18,7 +19,7 @@ void main() {
 
     gl_FragData[2] = gl_FragData[1];
 
-    gl_FragData[3] = vec4(diffuseIntensity, specularIntensity, ambientIntensity, 1);
+    gl_FragData[3] = vec4(diffuseIntensity, specularIntensity, ambientIntensity, shininess);
 
     gl_FragData[4] = vec4((positionClip.xy / positionClip.w - previousPositionClip.xy / previousPositionClip.w) * 0.5, 0, 1);
 }

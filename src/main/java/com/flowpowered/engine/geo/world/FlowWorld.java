@@ -55,13 +55,24 @@ import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
+import com.flowpowered.engine.util.thread.FinalizeManager;
+import com.flowpowered.engine.util.thread.StartTickManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLong;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 
-public class FlowWorld extends BaseComponentOwner implements World, CopySnapshotManager {
+public class FlowWorld extends BaseComponentOwner implements World, StartTickManager, CopySnapshotManager {
+    // TEST CODE
+    /**
+     * Number of milliseconds in a day.
+     */
+    public static final long MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+    /**
+     * The duration of a day in the game, in real life, in milliseconds.
+     */
+    public static final long GAME_DAY_IRL = 1000 * 60;
     private final FlowEngine engine;
     private final String name;
     private final UUID uid;
@@ -417,6 +428,13 @@ public class FlowWorld extends BaseComponentOwner implements World, CopySnapshot
     }
 
     @Override
+    public void startTickRun(int stage, long delta) {
+        if (stage == 0) {
+            age.set((long) (age.get() + (delta / 1000000d * (MILLIS_IN_DAY / GAME_DAY_IRL))));
+        }
+    }
+
+    @Override
     public void copySnapshotRun(int sequence) {
         // TODO: modified status
         snapshot.update(this);
@@ -439,7 +457,7 @@ public class FlowWorld extends BaseComponentOwner implements World, CopySnapshot
     public void setExecutionThread(Thread t) {
     }
 
-    private static ShortBitMask STAGES = TickStage.allOf(TickStage.SNAPSHOT);
+    private static ShortBitMask STAGES = TickStage.allOf(TickStage.STAGE1, TickStage.SNAPSHOT);
     @Override
     public ShortBitMask getTickStages() {
         return STAGES;

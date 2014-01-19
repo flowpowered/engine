@@ -16,9 +16,10 @@ uniform vec4 modelColor;
 uniform float diffuseIntensity;
 uniform float specularIntensity;
 uniform float ambientIntensity;
+uniform float shininess;
 
 void main() {
-    vec3 forwardNormalView = faceforward(normalView, lightDirectionView, normalView);
+    vec3 forwardNormalView = normalize(faceforward(normalView, lightDirectionView, normalView));
 
     float ambientTerm = ambientIntensity;
 
@@ -28,7 +29,7 @@ void main() {
 
     float specularTerm;
     if (normalDotLight > 0) {
-        specularTerm = pow(max(0, dot(reflect(-lightDirectionView, forwardNormalView), normalize(positionView))), 20);
+        specularTerm = pow(max(0, dot(reflect(-lightDirectionView, forwardNormalView), normalize(positionView))), shininess * 100);
     } else {
         specularTerm = 0;
     }

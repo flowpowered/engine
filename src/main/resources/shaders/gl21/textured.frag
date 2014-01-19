@@ -17,6 +17,7 @@ uniform sampler2D normals;
 uniform sampler2D specular;
 uniform float diffuseIntensity;
 uniform float ambientIntensity;
+uniform float shininess;
 
 void main() {
     gl_FragData[0] = texture2D(diffuse, textureUV);
@@ -27,7 +28,7 @@ void main() {
     gl_FragData[2] = vec4((normalView + 1) / 2, 1);
 
     float specularIntensity = texture2D(specular, textureUV).r;
-    gl_FragData[3] = vec4(diffuseIntensity, specularIntensity, ambientIntensity, 1);
+    gl_FragData[3] = vec4(diffuseIntensity, specularIntensity, ambientIntensity, shininess);
 
     gl_FragData[4] = vec4((positionClip.xy / positionClip.w - previousPositionClip.xy / previousPositionClip.w) * 0.5, 0, 1);
 }

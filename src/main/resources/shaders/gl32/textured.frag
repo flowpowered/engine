@@ -15,7 +15,7 @@ in mat3 tangentMatrix;
 layout(location = 0) out vec4 outputColor;
 layout(location = 1) out vec4 outputNormal;
 layout(location = 2) out vec4 outputVertexNormal;
-layout(location = 3) out vec3 outputMaterial;
+layout(location = 3) out vec4 outputMaterial;
 layout(location = 4) out vec2 outputVelocity;
 
 uniform sampler2D diffuse;
@@ -23,6 +23,7 @@ uniform sampler2D normals;
 uniform sampler2D specular;
 uniform float diffuseIntensity;
 uniform float ambientIntensity;
+uniform float shininess;
 
 void main() {
     outputColor = texture(diffuse, textureUV);
@@ -33,7 +34,7 @@ void main() {
     outputVertexNormal = vec4((normalView + 1) / 2, 1);
 
     float specularIntensity = texture(specular, textureUV).r;
-    outputMaterial = vec3(diffuseIntensity, specularIntensity, ambientIntensity);
+    outputMaterial = vec4(diffuseIntensity, specularIntensity, ambientIntensity, shininess);
 
     outputVelocity = (positionClip.xy / positionClip.w - previousPositionClip.xy / previousPositionClip.w) * 0.5;
 }

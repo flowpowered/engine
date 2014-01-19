@@ -33,7 +33,7 @@ void main() {
 
     float occlusion = texture2D(occlusions, textureUV).r;
     float shadow = texture2D(shadows, textureUV).r;
-    vec3 material = texture2D(materials, textureUV).rgb;
+    vec4 material = texture2D(materials, textureUV);
 
     float ambientTerm = material.z * occlusion;
     float diffuseTerm = 0;
@@ -46,7 +46,7 @@ void main() {
         diffuseTerm = material.x * shadow * normalDotLight;
 
         if (normalDotLight > 0) {
-            specularTerm = material.y * shadow * pow(max(0, dot(reflect(-lightDirectionView, normalView), normalize(viewRay))), 20);
+            specularTerm = material.y * shadow * pow(max(0, dot(reflect(-lightDirectionView, normalView), normalize(viewRay))), material.w * 100);
         }
     }
 

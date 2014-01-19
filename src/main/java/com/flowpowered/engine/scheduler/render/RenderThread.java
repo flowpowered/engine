@@ -24,13 +24,12 @@
 package com.flowpowered.engine.scheduler.render;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
@@ -41,7 +40,6 @@ import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.Display;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
@@ -63,12 +61,13 @@ import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.input.KeyboardEvent;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned;
-import org.spout.renderer.api.data.Color;
 
 public class RenderThread extends TickingElement {
+    public static final int FPS = 60;
     private final Client client;
     private final FlowScheduler scheduler;
     private final FlowRenderer renderer;
+    private final ViewFrustum frustum;
     private final InputThread input;
     private final ParallelChunkMesher mesher;
     // TEST CODE
@@ -77,18 +76,18 @@ public class RenderThread extends TickingElement {
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
     public RenderThread(Client client, FlowScheduler scheduler) {
-        super("RenderThread", 60);
+        super("RenderThread", FPS);
         this.client = client;
         this.scheduler = scheduler;
         this.renderer = new FlowRenderer();
+        this.frustum = new ViewFrustum();
         this.input = scheduler.getInputThread();
-        this.mesher = new ParallelChunkMesher(renderer, new StandardChunkMesher());
+        this.mesher = new ParallelChunkMesher(this, new StandardChunkMesher());
     }
 
     @Override
     public void onStart() {
-        renderer.setGLVersion(GLVersioned.GLVersion.GL30);
-        renderer.setSolidColor(new Color(0, 200, 0));
+        renderer.setGLVersion(GLVersioned.GLVersion.GL32);
         renderer.init(((FlowScheduler) client.getScheduler()).getMainThread());
 
         input.subscribeToKeyboard();
@@ -97,6 +96,9 @@ public class RenderThread extends TickingElement {
 
     @Override
     public void onStop() {
+        mesher.shutdown();
+        // Updating with a null world will clear all models
+        updateChunkModels(null);
         renderer.dispose();
     }
 
@@ -116,7 +118,7 @@ public class RenderThread extends TickingElement {
         return mesher;
     }
 
-    // TODO: not thread safe
+    // TODO: not thread safe; WorldSnapshot could update in the middle of this
     private void updateChunkModels(WorldSnapshot world) {
         // If we have no world, remove all chunks
         if (world == null) {
@@ -156,8 +158,10 @@ public class RenderThread extends TickingElement {
                 if (chunk == null) {
                     continue;
                 }
-                // If the chunk model is out of date
-                if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
+                // If the chunk model is out of date and visible
+                // TODO: only add models for visible chunks
+                if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())
+                        ) {//&& isChunkVisible(chunk.getPosition())) {
                     final Vector3i position = chunk.getPosition();
                     // If we have a previous model remove it to be replaced
                     final ChunkModel previous = chunkModels.get(position);
@@ -174,8 +178,8 @@ public class RenderThread extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
-        if (renderer.getModels().size() > chunkModels.size()) {
-            System.out.println("There are more models in the renderer (" + renderer.getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        if (renderer.getRenderModelsStage().getModels().size() > chunkModels.size()) {
+            System.out.println("There are more models in the renderer (" + renderer.getRenderModelsStage().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
@@ -192,7 +196,7 @@ public class RenderThread extends TickingElement {
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.removeModel(model);
+        renderer.getRenderModelsStage().removeModel(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
@@ -217,7 +221,7 @@ public class RenderThread extends TickingElement {
             // If the mouse grabbed state has changed from the keyboard events, update the mouse grabbed state
             if (mouseGrabbed != mouseGrabbedBefore) {
                 input.setMouseGrabbed(mouseGrabbed);
-                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will ignored
+                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will be ignored
                 if (mouseGrabbed) {
                     mouseX = input.getMouseX();
                     mouseY = input.getMouseY();
@@ -230,7 +234,7 @@ public class RenderThread extends TickingElement {
             // TODO: Update the camera position to match the player
 
             // TEST CODE!
-            final Camera camera = renderer.getCamera();
+            final Camera camera = renderer.getRenderModelsStage().getCamera();
             final Vector3f right = camera.getRight();
             final Vector3f up = camera.getUp();
             final Vector3f forward = camera.getForward();
@@ -258,6 +262,8 @@ public class RenderThread extends TickingElement {
                 ((FlowSingleplayer) client).getTestEntity().getPhysics().translate(translation);
                 camera.setPosition(camera.getPosition().add(translation));
             }
+            // Update the frustrum to match the camera
+            frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         }
     }
 
@@ -292,7 +298,7 @@ public class RenderThread extends TickingElement {
         cameraYaw %= 360;
         final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
         // Set the new camera rotation
-        renderer.getCamera().setRotation(pitch.mul(yaw));
+        renderer.getRenderModelsStage().getCamera().setRotation(pitch.mul(yaw));
         // Update the last mouse x and y
         this.mouseX = mouseX;
         this.mouseY = mouseY;
@@ -314,9 +320,45 @@ public class RenderThread extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
-        final Vector3f position = renderer.getCamera().getPosition();
+        final Vector3f position = renderer.getRenderModelsStage().getCamera().getPosition();
         renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
         // TODO: lower light intensity at night
     }
 
+    private static final Vector3f[] CHUNK_VERTICES;
+    static {
+        CHUNK_VERTICES = new Vector3f[8];
+        CHUNK_VERTICES[0] = new Vector3f(0, 0, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[1] = new Vector3f(Chunk.BLOCKS.SIZE, 0, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[2] = new Vector3f(Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[3] = new Vector3f(0, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
+        CHUNK_VERTICES[4] = new Vector3f(0, 0, 0);
+        CHUNK_VERTICES[5] = new Vector3f(Chunk.BLOCKS.SIZE, 0, 0);
+        CHUNK_VERTICES[6] = new Vector3f(Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, 0);
+        CHUNK_VERTICES[7] = new Vector3f(0, Chunk.BLOCKS.SIZE, 0);
+    }
+
+    /**
+     * Returns true if the chunk is visible, using the default chunk size and the position in world coordinates.
+     *
+     * @param position The position, in world coordinates
+     * @return Whether or not the chunk is visible
+     */
+    public boolean isChunkVisible(Vector3i position) {
+        return frustum.intersectsCuboid(CHUNK_VERTICES, position.getX(), position.getY(), position.getZ());
+    }
+
+    /**
+     * Returns true if the chunk is visible, using the default chunk size and the position in world coordinates.
+     *
+     * @param position The position, in world coordinates
+     * @return Whether or not the chunk is visible
+     */
+    public boolean isChunkVisible(Vector3f position) {
+        // It's hard to look right
+        // at the world baby
+        // But here's my frustum
+        // so cull me maybe?
+        return frustum.intersectsCuboid(CHUNK_VERTICES, position);
+    }
 }

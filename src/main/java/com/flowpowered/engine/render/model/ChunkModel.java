@@ -26,8 +26,8 @@ package com.flowpowered.engine.render.model;
 import java.util.concurrent.Future;
 
 import com.flowpowered.math.vector.Vector3i;
+import com.flowpowered.engine.scheduler.render.RenderThread;
 
-import com.flowpowered.engine.render.FlowRenderer;
 import org.spout.renderer.api.data.VertexData;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
@@ -39,12 +39,12 @@ import org.spout.renderer.api.model.Model;
  * ParallelChunkMesher.ChunkModel#destroy()} to dispose of it completely. This will also cancel the meshing if it's in progress, and destroy the previous model.
  */
 public class ChunkModel extends Model {
-    private final FlowRenderer renderer;
+    private final RenderThread renderer;
     private volatile Future<VertexData> mesh;
     private volatile boolean complete = false;
     private ChunkModel previous;
 
-    public ChunkModel(FlowRenderer renderer, Vector3i position, Future<VertexData> mesh) {
+    public ChunkModel(RenderThread renderer, Vector3i position, Future<VertexData> mesh) {
         this.renderer = renderer;
         this.mesh = mesh;
     }
@@ -63,7 +63,7 @@ public class ChunkModel extends Model {
             // If the chunk mesher returned a mesh. It may not return one if the chunk has no mesh (completely invisible)
             if (vertexData != null) {
                 // Create the vertex array from the mesh
-                final VertexArray vertexArray = renderer.getGLFactory().createVertexArray();
+                final VertexArray vertexArray = renderer.getRenderer().getGLFactory().createVertexArray();
                 vertexArray.setData(vertexData);
                 vertexArray.create();
                 // Set it for rendering
@@ -78,28 +78,19 @@ public class ChunkModel extends Model {
             complete = true;
             mesh = null;
         }
-        if (!isVisible()) {
+        if (!renderer.isChunkVisible(getPosition())) {
             return;
         }
         // If we have a vertex array, we can render
         if (complete) {
             // Only render if the model has a vertex array and we're visible
-            if (getVertexArray() != null && isVisible()) {
+            if (getVertexArray() != null) {
                 super.render();
             }
-        } else if (previous != null && isVisible()) {
+        } else if (previous != null) {
             // Else, fall back on the previous model if we have one and we're visible
             previous.render();
         }
-    }
-
-    private boolean isVisible() {
-        // It's hard to look right
-        // at the world baby
-        // But here's my frustum
-        // so cull me maybe?
-        return true;
-        // TODO frustrum
     }
 
     /**
@@ -133,10 +124,5 @@ public class ChunkModel extends Model {
                 previous = null;
             }
         }
-    }
-
-    public void remove() {
-        renderer.removeModel(this);
-        destroy();
     }
 }

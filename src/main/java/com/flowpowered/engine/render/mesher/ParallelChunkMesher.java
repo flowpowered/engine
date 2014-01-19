@@ -32,8 +32,8 @@ import com.flowpowered.api.model.mesher.ChunkMesher;
 import com.flowpowered.api.model.mesh.Mesh;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshotGroup;
-import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.model.ChunkModel;
+import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
 import org.spout.renderer.api.data.VertexData;
 
@@ -45,7 +45,7 @@ import org.spout.renderer.api.data.VertexData;
  * @see ChunkModel
  */
 public class ParallelChunkMesher {
-    private final FlowRenderer renderer;
+    private final RenderThread renderer;
     private final ChunkMesher mesher;
     private final ThreadPoolExecutor executor;
 
@@ -54,8 +54,8 @@ public class ParallelChunkMesher {
      *
      * @param mesher The chunk mesher
      */
-    public ParallelChunkMesher(FlowRenderer renderer, ChunkMesher mesher) {
-        this.renderer = renderer;
+    public ParallelChunkMesher(RenderThread renderThread, ChunkMesher mesher) {
+        this.renderer = renderThread;
         this.mesher = mesher;
         this.executor = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(4, "ParallelChunkMesher");
         executor.setKeepAliveTime(60, TimeUnit.SECONDS);
