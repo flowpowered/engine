@@ -31,7 +31,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.scheduler.Worker;
-import com.flowpowered.api.util.future.SimpleFuture;
+import com.flowpowered.commons.future.SimpleFuture;
 
 public class SpoutWorker implements Worker, Runnable {
 	@SuppressWarnings ("rawtypes")

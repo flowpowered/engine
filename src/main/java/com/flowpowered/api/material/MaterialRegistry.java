@@ -26,8 +26,6 @@
  */
 package com.flowpowered.api.material;
 
-import com.flowpowered.commons.store.MemoryStore;
-
 import java.io.File;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,8 +34,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.flowpowered.api.Server;
 import com.flowpowered.api.Spout;
 import com.flowpowered.api.material.block.BlockFullState;
-import com.flowpowered.api.store.BinaryFileStore;
 import com.flowpowered.api.util.SyncedStringMap;
+import com.flowpowered.commons.store.BinaryFileStore;
+import com.flowpowered.commons.store.MemoryStore;
 import com.flowpowered.math.GenericMath;
 
 /**

@@ -30,7 +30,8 @@ import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.Material;
-import com.flowpowered.api.util.hashing.ShortPairHashed;
+
+import com.flowpowered.commons.hashing.ShortPairHashed;
 
 /**
  * Represents an immutable snapshot of the state of a block

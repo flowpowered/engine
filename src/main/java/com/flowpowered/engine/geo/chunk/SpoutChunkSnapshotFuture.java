@@ -30,7 +30,7 @@ import com.flowpowered.api.geo.cuboid.ChunkSnapshot;
 import com.flowpowered.api.geo.cuboid.ChunkSnapshot.EntityType;
 import com.flowpowered.api.geo.cuboid.ChunkSnapshot.ExtraData;
 import com.flowpowered.api.geo.cuboid.ChunkSnapshot.SnapshotType;
-import com.flowpowered.api.util.future.SimpleFuture;
+import com.flowpowered.commons.future.SimpleFuture;
 
 public class SpoutChunkSnapshotFuture extends SimpleFuture<ChunkSnapshot> implements Runnable {
 	private final SpoutChunk chunk;

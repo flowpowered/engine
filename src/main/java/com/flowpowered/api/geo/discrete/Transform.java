@@ -28,12 +28,12 @@ package com.flowpowered.api.geo.discrete;
 
 import java.io.Serializable;
 
-import com.flowpowered.commons.StringUtil;
-
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.util.concurrent.SpinLock;
+
+import com.flowpowered.commons.StringUtil;
+import com.flowpowered.commons.concurrent.SpinLock;
 
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
