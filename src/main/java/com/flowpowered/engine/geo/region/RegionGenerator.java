@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.geo.region;
 
@@ -36,19 +33,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.flowpowered.commons.Named;
 import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
-import com.flowpowered.engine.geo.world.SpoutServerWorld;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
 import com.flowpowered.math.GenericMath;
 
 public class RegionGenerator implements Named {
 	private final static ExecutorService pool = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() * 2 + 1, "RegionGenerator - async pool");
-	private final SpoutRegion region;
-	private final SpoutServerWorld world;
+	private final FlowRegion region;
+	private final FlowServerWorld world;
 	private final Lock[][][] sectionLocks;
 	private final AtomicReference<GenerateState>[][][] generatedChunks;
 	private final int shift;
@@ -60,7 +57,7 @@ public class RegionGenerator implements Named {
 	private final int baseChunkZ;
 
 	@SuppressWarnings ("unchecked")
-	public RegionGenerator(SpoutRegion region, int width) {
+	public RegionGenerator(FlowRegion region, int width) {
 		if (GenericMath.roundUpPow2(width) != width || width > Region.CHUNKS.SIZE || width < 0) {
 			throw new IllegalArgumentException("Width must be a power of 2 and can't be more than one region width");
 		}
@@ -83,7 +80,7 @@ public class RegionGenerator implements Named {
 
 		this.shift = GenericMath.multiplyToShift(width);
 		this.region = region;
-		this.world = (SpoutServerWorld) region.getWorld();
+		this.world = (FlowServerWorld) region.getWorld();
 		this.baseChunkX = region.getChunkX();
 		this.baseChunkY = region.getChunkY();
 		this.baseChunkZ = region.getChunkZ();
@@ -145,7 +142,7 @@ public class RegionGenerator implements Named {
 			int generationIndex = generationCounter.getAndIncrement();
 
 			while (generationIndex == -1) {
-				Spout.getLogger().info("Ran out of generation index ids, starting again");
+				Flow.getLogger().info("Ran out of generation index ids, starting again");
 				generationIndex = generationCounter.getAndIncrement();
 			}
 
@@ -160,7 +157,7 @@ public class RegionGenerator implements Named {
 			final CuboidBlockMaterialBuffer buffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift);
 			world.getGenerator().generate(buffer, world);
 
-			SpoutChunk[][][] chunks = new SpoutChunk[width][width][width];
+			FlowChunk[][][] chunks = new FlowChunk[width][width][width];
 			for (int xx = 0; xx < width; xx++) {
 				chunkInWorldX = baseChunkX + chunkXLocal + xx;
 				for (int zz = 0; zz < width; zz++) {
@@ -169,7 +166,7 @@ public class RegionGenerator implements Named {
 						chunkInWorldY = baseChunkY + chunkYLocal + yy;
 						final CuboidBlockMaterialBuffer chunkBuffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
 						chunkBuffer.write(buffer);
-						SpoutChunk newChunk = new SpoutChunk(region, world, chunkInWorldX, chunkInWorldY, chunkInWorldZ, generationIndex, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, chunkBuffer.getRawId(), chunkBuffer.getRawData()));
+						FlowChunk newChunk = new FlowChunk(region, world, chunkInWorldX, chunkInWorldY, chunkInWorldZ, generationIndex, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, chunkBuffer.getRawId(), chunkBuffer.getRawData()));
 						chunks[xx][yy][zz] = newChunk;
 					}
 
@@ -204,7 +201,7 @@ public class RegionGenerator implements Named {
 						done = true;
 						break;
 					}
-					Spout.getLogger().info("Waited 10 seconds for region generator pool to shutdown");
+					Flow.getLogger().info("Waited 10 seconds for region generator pool to shutdown");
 				} catch (InterruptedException e) {
 					interrupted = true;
 				}

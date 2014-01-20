@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,24 +55,22 @@ public class ChunkSnapshotGroup {
     }
 
     /**
-     * Returns the material at the position, looking at the directly neighbouring chunks if the position is outside the chunk. Will return {@link
-     * org.spoutcraft.client.universe.block.material.Materials#AIR} if the neighbour is missing.
+     * Returns the material at the position, looking at the directly neighbouring chunks if the position is outside the chunk.
      *
      * @param position The position to lookup the material at
-     * @return The material
+     * @return The material or null if missing
      */
     public BlockMaterial getMaterial(Vector3i position) {
         return getMaterial(position.getX(), position.getY(), position.getZ());
     }
 
     /**
-     * Returns the material at the position, looking at the directly neighbouring chunks if the position is outside the chunk. Will return {@link
-     * org.spoutcraft.client.universe.block.material.Materials#AIR} if the neighbour is missing.
+     * Returns the material at the position, looking at the directly neighbouring chunks if the position is outside the chunk.
      *
      * @param x The x coordinate of the position
      * @param y The y coordinate of the position
      * @param z The z coordinate of the position
-     * @return The material
+     * @return The material or null if missing
      */
     public BlockMaterial getMaterial(int x, int y, int z) {
         if (x < 0) {

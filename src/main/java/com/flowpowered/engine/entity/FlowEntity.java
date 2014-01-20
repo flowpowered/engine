@@ -1,3 +1,26 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.entity;
 
 import java.util.Collection;
@@ -16,19 +39,19 @@ import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
-import com.flowpowered.engine.geo.region.SpoutRegion;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.region.FlowRegion;
 
-public class SpoutEntity implements Entity {
+public class FlowEntity implements Entity {
     private final int id;
-    private SpoutPhysics physics;
+    private FlowPhysics physics;
     private ManagedHashMap data;
 
     private Network network;
 
-    public SpoutEntity(int id, Transform transform) {
+    public FlowEntity(int id, Transform transform) {
         this.id = id;
-        this.physics = new SpoutPhysics(this);
+        this.physics = new FlowPhysics(this);
         this.physics.setTransform(transform);
         this.physics.copySnapshot();
         this.data = new ManagedHashMap();
@@ -71,15 +94,15 @@ public class SpoutEntity implements Entity {
     }
 
     @Override
-    public SpoutChunk getChunk() {
+    public FlowChunk getChunk() {
         Chunk chunk = physics.getPosition().getChunk(LoadOption.NO_LOAD);
-        return (SpoutChunk) chunk;
+        return (FlowChunk) chunk;
     }
 
     @Override
-    public SpoutRegion getRegion() {
+    public FlowRegion getRegion() {
         Region region = physics.getPosition().getRegion(LoadOption.LOAD_GEN);
-        return (SpoutRegion) region;
+        return (FlowRegion) region;
     }
 
     @Override
@@ -153,8 +176,8 @@ public class SpoutEntity implements Entity {
     }
 
     void finalizeRun() {
-        SpoutRegion regionLive = getRegion();
-        SpoutRegion regionSnapshot = (SpoutRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN);
+        FlowRegion regionLive = getRegion();
+        FlowRegion regionSnapshot = (FlowRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN);
 		//Move entity from Region A to Region B
         if (regionSnapshot != regionLive) {
             boolean activated = physics.isActivated();

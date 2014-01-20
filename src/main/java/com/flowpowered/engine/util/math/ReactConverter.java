@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.util.math;
 
@@ -33,37 +30,37 @@ import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 
 public class ReactConverter {
-	//Spout -> React
-	public static org.spout.physics.math.Vector3 toReactVector3(final Vector3f spoutVector3) {
-		return new org.spout.physics.math.Vector3(spoutVector3.getX(), spoutVector3.getY(), spoutVector3.getZ());
+	//Flow -> React
+	public static org.spout.physics.math.Vector3 toReactVector3(final Vector3f flowVector3) {
+		return new org.spout.physics.math.Vector3(flowVector3.getX(), flowVector3.getY(), flowVector3.getZ());
 	}
 
 	public static org.spout.physics.math.Vector3 toReactVector3(final float x, final float y, final float z) {
 		return new org.spout.physics.math.Vector3(x, y, z);
 	}
 
-	public static org.spout.physics.math.Quaternion toReactQuaternion(final Quaternionf spoutQuaternion) {
-		return new org.spout.physics.math.Quaternion(spoutQuaternion.getX(), spoutQuaternion.getY(), spoutQuaternion.getZ(), spoutQuaternion.getW());
+	public static org.spout.physics.math.Quaternion toReactQuaternion(final Quaternionf flowQuaternion) {
+		return new org.spout.physics.math.Quaternion(flowQuaternion.getX(), flowQuaternion.getY(), flowQuaternion.getZ(), flowQuaternion.getW());
 	}
 
 	public static org.spout.physics.math.Quaternion toReactQuaternion(final float w, final float x, final float y, final float z) {
 		return new org.spout.physics.math.Quaternion(x, y, z, w);
 	}
 
-	public static org.spout.physics.math.Transform toReactTransform(final Transform spoutTransform) {
-		return new org.spout.physics.math.Transform(toReactVector3(spoutTransform.getPosition()), toReactQuaternion(spoutTransform.getRotation()));
+	public static org.spout.physics.math.Transform toReactTransform(final Transform flowTransform) {
+		return new org.spout.physics.math.Transform(toReactVector3(flowTransform.getPosition()), toReactQuaternion(flowTransform.getRotation()));
 	}
 
-	//React -> Spout
-	public static Vector3f toSpoutVector3(final org.spout.physics.math.Vector3 reactVector3) {
+	//React -> Flow
+	public static Vector3f toFlowVector3(final org.spout.physics.math.Vector3 reactVector3) {
 		return new Vector3f(reactVector3.getX(), reactVector3.getY(), reactVector3.getZ());
 	}
 
-	public static Quaternionf toSpoutQuaternion(final org.spout.physics.math.Quaternion reactQuaternion) {
+	public static Quaternionf toFlowQuaternion(final org.spout.physics.math.Quaternion reactQuaternion) {
 		return new Quaternionf(reactQuaternion.getX(), reactQuaternion.getY(), reactQuaternion.getZ(), reactQuaternion.getW());
 	}
 
-	public static Transform toSpoutTransform(final org.spout.physics.math.Transform reactTransform, final World world, final Vector3f scale) {
-		return new Transform(new Point(toSpoutVector3(reactTransform.getPosition()), world), new Quaternionf(toSpoutQuaternion(reactTransform.getOrientation())), scale);
+	public static Transform toFlowTransform(final org.spout.physics.math.Transform reactTransform, final World world, final Vector3f scale) {
+		return new Transform(new Point(toFlowVector3(reactTransform.getPosition()), world), new Quaternionf(toFlowQuaternion(reactTransform.getOrientation())), scale);
 	}
 }

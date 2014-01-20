@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,19 +33,19 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import com.flowpowered.engine.scheduler.SpoutScheduler;
+import com.flowpowered.engine.scheduler.FlowScheduler;
 
 /**
  *
  */
 public class InputThread extends TickingElement {
     private static final int TPS = 60;
-    private final SpoutScheduler scheduler;
+    private final FlowScheduler scheduler;
     private boolean mouseCreated = false, keyboardCreated = false;
     private final SubscribableQueue<KeyboardEvent> keyboardQueue = new SubscribableQueue<>(false);
     private final SubscribableQueue<MouseEvent> mouseQueue = new SubscribableQueue<>(false);
 
-    public InputThread(SpoutScheduler scheduler) {
+    public InputThread(FlowScheduler scheduler) {
         super("input", TPS);
         this.scheduler = scheduler;
     }

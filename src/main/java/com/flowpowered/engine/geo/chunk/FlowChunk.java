@@ -1,3 +1,26 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.geo.chunk;
 
 import java.util.List;
@@ -22,15 +45,15 @@ import static com.flowpowered.api.geo.cuboid.Chunk.BLOCKS;
 import com.flowpowered.api.geo.cuboid.ChunkSnapshot;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
-import com.flowpowered.engine.geo.SpoutBlock;
-import com.flowpowered.engine.geo.region.SpoutRegion;
-import com.flowpowered.engine.geo.world.SpoutWorld;
+import com.flowpowered.engine.geo.FlowBlock;
+import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
 
-public class SpoutChunk extends Chunk {
+public class FlowChunk extends Chunk {
 
-    private final SpoutRegion region;
+    private final FlowRegion region;
 	/**
 	 * Data map and Datatable associated with it
 	 */
@@ -45,7 +68,7 @@ public class SpoutChunk extends Chunk {
 	 */
 	protected final AtomicBlockStore blockStore;
 
-    public SpoutChunk(SpoutRegion region, World world, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
+    public FlowChunk(FlowRegion region, World world, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
         super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.region = region;
         this.dataMap = new ManagedHashMap();
@@ -104,7 +127,7 @@ public class SpoutChunk extends Chunk {
     }
 
     @Override
-    public SpoutRegion getRegion() {
+    public FlowRegion getRegion() {
         return region;
     }
 
@@ -224,17 +247,17 @@ public class SpoutChunk extends Chunk {
     }
 
 	@Override
-	public SpoutBlock getBlock(int x, int y, int z) {
-		return new SpoutBlock((SpoutWorld) getWorld(), x, y, z);
+	public FlowBlock getBlock(int x, int y, int z) {
+		return new FlowBlock((FlowWorld) getWorld(), x, y, z);
 	}
 
 	@Override
-	public SpoutBlock getBlock(float x, float y, float z) {
+	public FlowBlock getBlock(float x, float y, float z) {
 		return this.getBlock(GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
 	}
 
 	@Override
-	public SpoutBlock getBlock(Vector3f position) {
+	public FlowBlock getBlock(Vector3f position) {
 		return this.getBlock(position.getX(), position.getY(), position.getZ());
 	}
 

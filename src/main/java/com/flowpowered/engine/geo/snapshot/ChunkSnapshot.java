@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.material.block.BlockFaces;
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
 
 /**
  *
@@ -140,7 +140,7 @@ public class ChunkSnapshot {
      * @param current The current chunk to update from
      * @return Whether or not the snapshot state has changed
      */
-    public boolean update(SpoutChunk current) {
+    public boolean update(FlowChunk current) {
         if (!current.getBase().toInt().equals(base) || !current.getWorld().getUID().equals(world.getID())) {
             throw new IllegalArgumentException("Cannot accept a chunk from another position or world");
         }

@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.entity;
 
@@ -31,7 +28,7 @@ import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.geo.region.SpoutRegion;
+import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
@@ -41,10 +38,10 @@ import org.spout.physics.body.RigidBodyMaterial;
 import org.spout.physics.collision.shape.CollisionShape;
 
 /**
- * The Spout implementation of {@link com.flowpowered.api.component.entity.SpoutPhysics}. <p/> //TODO: Physics rotation setters
+ * The Flow implementation of {@link Physics}. <p/> //TODO: Physics rotation setters
  */
-public class SpoutPhysics extends Physics {
-	//Spout
+public class FlowPhysics extends Physics {
+	//Flow
 	private final Transform snapshot = new Transform();
 	private final Transform live = new Transform();
 	//React
@@ -57,12 +54,12 @@ public class SpoutPhysics extends Physics {
 	private boolean isMobile = true;
 	private boolean isGhost = false;
 
-    public SpoutPhysics(Entity entity) {
+    public FlowPhysics(Entity entity) {
         super(entity);
     }
 
 	@Override
-	public SpoutPhysics activate(final float mass, final CollisionShape shape, final boolean isGhost, final boolean isMobile) {
+	public FlowPhysics activate(final float mass, final CollisionShape shape, final boolean isGhost, final boolean isMobile) {
 		if (mass < 1f) {
 			throw new IllegalArgumentException("Cannot activate physics with mass less than 1f");
 		}
@@ -70,19 +67,19 @@ public class SpoutPhysics extends Physics {
 			throw new IllegalArgumentException("Cannot activate physics with a null shape");
 		}
 		if (body != null) {
-			((SpoutRegion) entity.getRegion()).removeBody(body);
+			((FlowRegion) entity.getRegion()).removeBody(body);
 		}
 		this.isGhost = isGhost;
 		this.isMobile = isMobile;
 		this.mass = mass;
 		this.shape = shape;
 		activated = true;
-		activate((SpoutRegion) entity.getRegion());
+		activate((FlowRegion) entity.getRegion());
 
 		return this;
 	}
 
-	public void activate(final SpoutRegion region) {
+	public void activate(final FlowRegion region) {
 		body = region.addBody(live, mass, shape, isGhost, isMobile);
 		body.setMaterial(material);
 		body.setUserPointer(entity);
@@ -91,7 +88,7 @@ public class SpoutPhysics extends Physics {
 	@Override
 	public void deactivate() {
 		if (entity != null && entity.getRegion() != null && body != null) {
-			((SpoutRegion) entity.getRegion()).removeBody(body);
+			((FlowRegion) entity.getRegion()).removeBody(body);
 		}
 		activated = false;
 	}
@@ -112,12 +109,12 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setTransform(Transform transform) {
+	public FlowPhysics setTransform(Transform transform) {
 		return setTransform(transform, true);
 	}
 
 	@Override
-	public SpoutPhysics setTransform(Transform transform, boolean sync) {
+	public FlowPhysics setTransform(Transform transform, boolean sync) {
 		if (transform == null) {
 			throw new IllegalArgumentException("Transform cannot be null!");
 		}
@@ -139,7 +136,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setPosition(Point point) {
+	public FlowPhysics setPosition(Point point) {
 		live.setPosition(point);
 		return this;
 	}
@@ -155,7 +152,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setRotation(Quaternionf rotation) {
+	public FlowPhysics setRotation(Quaternionf rotation) {
 		if (rotation == null) {
 			throw new IllegalArgumentException("rotation cannot be null!");
 		}
@@ -175,7 +172,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setScale(Vector3f scale) {
+	public FlowPhysics setScale(Vector3f scale) {
 		if (scale == null) {
 			throw new IllegalArgumentException("scale cannot be null!");
 		}
@@ -200,13 +197,13 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics translate(Vector3f point) {
+	public FlowPhysics translate(Vector3f point) {
 		live.translate(point);
 		return this;
 	}
 
 	@Override
-	public SpoutPhysics rotate(Quaternionf rotate) {
+	public FlowPhysics rotate(Quaternionf rotate) {
 		if (rotate == null) {
 			throw new IllegalArgumentException("rotate cannot be null!");
 		}
@@ -216,7 +213,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics scale(Vector3f scale) {
+	public FlowPhysics scale(Vector3f scale) {
 		if (scale == null) {
 			throw new IllegalArgumentException("scale cannot be null!");
 		}
@@ -226,17 +223,17 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics impulse(Vector3f impulse, Vector3f offset) {
+	public FlowPhysics impulse(Vector3f impulse, Vector3f offset) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
 	@Override
-	public SpoutPhysics impulse(Vector3f impulse) {
+	public FlowPhysics impulse(Vector3f impulse) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
 	@Override
-	public SpoutPhysics force(Vector3f force, boolean ignoreGravity) {
+	public FlowPhysics force(Vector3f force, boolean ignoreGravity) {
 		if (body == null) {
 			throw new IllegalStateException("Cannot force a null body. If the entity is activated, make sure it is spawned as well");
 		}
@@ -249,12 +246,12 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics force(Vector3f force) {
+	public FlowPhysics force(Vector3f force) {
 		return force(force, false);
 	}
 
 	@Override
-	public SpoutPhysics torque(Vector3f torque) {
+	public FlowPhysics torque(Vector3f torque) {
 		if (body == null) {
 			throw new IllegalStateException("Cannot torque a null body. If the entity is activated, make sure it is spawned as well");
 		}
@@ -263,17 +260,17 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics impulseTorque(Vector3f torque) {
+	public FlowPhysics impulseTorque(Vector3f torque) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
 	@Override
-	public SpoutPhysics dampenMovement(float damp) {
+	public FlowPhysics dampenMovement(float damp) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
 	@Override
-	public SpoutPhysics dampenRotation(float damp) {
+	public FlowPhysics dampenRotation(float damp) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
@@ -283,7 +280,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setMass(float mass) {
+	public FlowPhysics setMass(float mass) {
 		if (!isActivated()) {
 			throw new IllegalStateException("Entities cannot have mass until they are activated");
 		}
@@ -304,7 +301,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setFriction(float friction) {
+	public FlowPhysics setFriction(float friction) {
 		if (friction < 0f || friction > 1f) {
 			throw new IllegalArgumentException("Friction must be between 0f and 1f (inclusive)");
 		}
@@ -318,7 +315,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	@Override
-	public SpoutPhysics setRestitution(float restitution) {
+	public FlowPhysics setRestitution(float restitution) {
 		if (restitution < 0f || restitution > 1f) {
 			throw new IllegalArgumentException("Restitution must be between 0f and 1f (inclusive)");
 		}
@@ -331,11 +328,11 @@ public class SpoutPhysics extends Physics {
 		if (body == null) {
 			throw new IllegalStateException("Cannot get velocity of a null body. If the entity is activated, make sure it is spawned as well");
 		}
-		return ReactConverter.toSpoutVector3(body.getLinearVelocity());
+		return ReactConverter.toFlowVector3(body.getLinearVelocity());
 	}
 
 	@Override
-	public SpoutPhysics setMovementVelocity(Vector3f velocity) {
+	public FlowPhysics setMovementVelocity(Vector3f velocity) {
 		if (body == null) {
 			throw new IllegalStateException("Cannot set velocity of a null body. If the entity is activated, make sure it is spawned as well");
 		}
@@ -351,11 +348,11 @@ public class SpoutPhysics extends Physics {
 		if (body == null) {
 			throw new IllegalStateException("Cannot get rotation velocity of a null body. If the entity is activated, make sure it is spawned as well");
 		}
-		return ReactConverter.toSpoutVector3(body.getAngularVelocity());
+		return ReactConverter.toFlowVector3(body.getAngularVelocity());
 	}
 
 	@Override
-	public SpoutPhysics setRotationVelocity(Vector3f velocity) {
+	public FlowPhysics setRotationVelocity(Vector3f velocity) {
 		if (body == null) {
 			throw new IllegalStateException("Cannot set rotation velocity of a null body. If the entity is activated, make sure it is spawned as well");
 		}
@@ -387,7 +384,7 @@ public class SpoutPhysics extends Physics {
 	}
 
 	/**
-	 * Called before the simulation is polled for an update. <p> This aligns the body's transform with Spout's if someone moves without physics. </p>
+	 * Called before the simulation is polled for an update. <p> This aligns the body's transform with Flow's if someone moves without physics. </p>
 	 */
 	public void onPrePhysicsTick() {
 		if (body == null) {
@@ -398,10 +395,10 @@ public class SpoutPhysics extends Physics {
 	}
 
 	/**
-	 * Called after the simulation was polled for an update. <p> This updates Spout's live with the transform of the body. The render transform is updated with interpolation from the body </p>
+	 * Called after the simulation was polled for an update. <p> This updates Flow's live with the transform of the body. The render transform is updated with interpolation from the body </p>
 	 */
 	public void onPostPhysicsTick(float dt) {
-			final Transform physicsLive = ReactConverter.toSpoutTransform(body.getTransform(), live.getPosition().getWorld(), live.getScale());
+			final Transform physicsLive = ReactConverter.toFlowTransform(body.getTransform(), live.getPosition().getWorld(), live.getScale());
 			if (!live.equals(physicsLive)) {
 				live.set(physicsLive);
 				sync();

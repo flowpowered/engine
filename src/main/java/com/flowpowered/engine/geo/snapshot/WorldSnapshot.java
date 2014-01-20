@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@ import gnu.trove.map.hash.TObjectLongHashMap;
 
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Region;
-import com.flowpowered.engine.geo.region.SpoutRegion;
-import com.flowpowered.engine.geo.world.SpoutWorld;
+import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.world.FlowWorld;
 
 /**
  *
@@ -150,7 +150,7 @@ public class WorldSnapshot {
         }
     }
 
-    public void update(SpoutWorld current) {
+    public void update(FlowWorld current) {
         if (!current.getUID().equals(id)) {
             throw new IllegalArgumentException("Cannot update from a world with another ID");
         }
@@ -159,7 +159,7 @@ public class WorldSnapshot {
         try {
             final Set<Vector3i> validRegions = new HashSet<>();
             boolean changed = false;
-            for (SpoutRegion region : current.getSpoutRegions()) {
+            for (FlowRegion region : current.getFlowRegions()) {
                 final Vector3i base = region.getBase().toInt();
                 RegionSnapshot regionSnapshot = regions.get(base.getX(), base.getY(), base.getZ());
                 if (regionSnapshot == null) {

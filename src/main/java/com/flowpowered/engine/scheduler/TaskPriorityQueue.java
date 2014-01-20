@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.scheduler;
 
@@ -35,7 +32,7 @@ import com.flowpowered.api.util.concurrent.ConcurrentLongPriorityQueue;
 import com.flowpowered.api.util.concurrent.RedirectableConcurrentLinkedQueue;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
-public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<SpoutTask> {
+public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<FlowTask> {
 	private final AsyncManager taskManager;
 
 	public TaskPriorityQueue(AsyncManager manager, long resolution) {
@@ -50,7 +47,7 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<SpoutTask> {
 	 * @param currentTime the current time
 	 * @return the first pending task, or null if no task is pending
 	 */
-	public Queue<SpoutTask> getPendingTask(long currentTime) {
+	public Queue<FlowTask> getPendingTask(long currentTime) {
 		if (Thread.currentThread() != taskManager.getExecutionThread()) {
 			throw new IllegalStateException("getPendingTask() may only be called from the thread that created the TaskPriorityQueue");
 		}
@@ -59,7 +56,7 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<SpoutTask> {
 	}
 
 	@Override
-	public boolean add(SpoutTask task) {
+	public boolean add(FlowTask task) {
 		if (task != null) {
 			if (!task.setQueued()) {
 				throw new UnsupportedOperationException("Task was dead when adding to the queue");
@@ -69,12 +66,12 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<SpoutTask> {
 	}
 
 	@Override
-	public boolean redirect(SpoutTask task) {
+	public boolean redirect(FlowTask task) {
 		return super.add(task);
 	}
 
 	@Override
-	public boolean remove(SpoutTask task) {
+	public boolean remove(FlowTask task) {
 		task.remove();
 		if (!super.remove(task)) {
 			return false;
@@ -89,7 +86,7 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<SpoutTask> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("{");
 		boolean first = true;
-		for (SpoutTask t : getTasks()) {
+		for (FlowTask t : getTasks()) {
 			if (first) {
 				first = false;
 			} else {
@@ -100,13 +97,13 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<SpoutTask> {
 		return sb.append("}").toString();
 	}
 
-	public List<SpoutTask> getTasks() {
-		List<SpoutTask> list = new ArrayList<>();
-		Iterator<RedirectableConcurrentLinkedQueue<SpoutTask>> iq = queueMap.values().iterator();
+	public List<FlowTask> getTasks() {
+		List<FlowTask> list = new ArrayList<>();
+		Iterator<RedirectableConcurrentLinkedQueue<FlowTask>> iq = queueMap.values().iterator();
 		while (iq.hasNext()) {
-			Iterator<SpoutTask> i = iq.next().iterator();
+			Iterator<FlowTask> i = iq.next().iterator();
 			while (i.hasNext()) {
-				SpoutTask t = i.next();
+				FlowTask t = i.next();
 				list.add(t);
 			}
 		}

@@ -1,3 +1,26 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.geo.region;
 
 import java.io.IOException;
@@ -12,7 +35,7 @@ import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
 import com.flowpowered.math.vector.Vector3f;
 
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.geo.LoadOption;
@@ -26,27 +49,27 @@ import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
-import com.flowpowered.engine.SpoutEngine;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
-import com.flowpowered.engine.entity.SpoutEntity;
-import com.flowpowered.engine.entity.SpoutEntitySnapshot;
+import com.flowpowered.engine.entity.FlowEntity;
+import com.flowpowered.engine.entity.FlowEntitySnapshot;
 import com.flowpowered.engine.filesystem.ChunkDataForRegion;
 import com.flowpowered.engine.filesystem.ChunkFiles;
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
-import com.flowpowered.engine.geo.world.SpoutWorld;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.CompleteAsyncManager;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 
-public class SpoutRegion extends Region implements CompleteAsyncManager {
+public class FlowRegion extends Region implements CompleteAsyncManager {
 	private final RegionGenerator generator;
 	/**
 	 * Reference to the persistent ByteArrayArray that stores chunk data
 	 */
 	private final BAAWrapper chunkStore;
-    protected final SpoutEngine engine;
+    protected final FlowEngine engine;
 	/**
 	 * Holds all of the entities to be simulated
 	 */
@@ -55,16 +78,15 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
     /**
      * Chunks used for ticking.
      */
-	protected final AtomicReference<SpoutChunk[]> chunks = new AtomicReference<>(new SpoutChunk[CHUNKS.VOLUME]);
+	protected final AtomicReference<FlowChunk[]> chunks = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
     /**
      * All live chunks. These are not ticked, but can be accessed.
      */
-	protected final AtomicReference<SpoutChunk[]> live = new AtomicReference<>(new SpoutChunk[CHUNKS.VOLUME]);
-    protected volatile boolean chunksModified = false;
+	protected final AtomicReference<FlowChunk[]> live = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
     private final RegionSnapshot snapshot;
     private final RenderThread render;
 
-    public SpoutRegion(SpoutEngine engine, SpoutWorld world, int x, int y, int z, BAAWrapper chunkStore, RenderThread render) {
+    public FlowRegion(FlowEngine engine, FlowWorld world, int x, int y, int z, BAAWrapper chunkStore, RenderThread render) {
         super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.engine = engine;
         this.generator = new RegionGenerator(this, 4);
@@ -109,7 +131,7 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-	protected void checkChunkLoaded(SpoutChunk chunk, LoadOption loadopt) {
+	protected void checkChunkLoaded(FlowChunk chunk, LoadOption loadopt) {
 		if (loadopt.loadIfNeeded()) {
 			//if (!chunk.cancelUnload()) {
 			//	throw new IllegalStateException("Unloaded chunk returned by getChunk");
@@ -118,7 +140,7 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
 	}
 
     @Override
-    public SpoutChunk getChunk(final int x, final int y, final int z, final LoadOption loadopt) {
+    public FlowChunk getChunk(final int x, final int y, final int z, final LoadOption loadopt) {
         // If we're not waiting, then we don't care because it's async anyways
         if (loadopt.isWait()) {
             if (loadopt.generateIfNeeded()) {
@@ -132,7 +154,7 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
         final int localY = y & CHUNKS.MASK;
         final int localZ = z & CHUNKS.MASK;
 
-        final SpoutChunk chunk = chunks.get()[getChunkIndex(localX, localY, localZ)];
+        final FlowChunk chunk = chunks.get()[getChunkIndex(localX, localY, localZ)];
         if (chunk != null) {
             checkChunkLoaded(chunk, loadopt);
             return chunk;
@@ -157,11 +179,11 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
 
     // If loadopt.isWait(), this method is run synchronously and so is any further generation
     // If !loadopt.isWait(), this method is run by a runnable, because the loading is taxing; any further generation is also run in its own Runnable
-	private SpoutChunk loadOrGenChunkImmediately(int worldX, int worldY, int worldZ, final LoadOption loadopt) {
+	private FlowChunk loadOrGenChunkImmediately(int worldX, int worldY, int worldZ, final LoadOption loadopt) {
         final int localX = worldX & CHUNKS.MASK;
         final int localY = worldY & CHUNKS.MASK;
         final int localZ = worldZ & CHUNKS.MASK;
-		SpoutChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(localX, localY, localZ) : null;
+		FlowChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(localX, localY, localZ) : null;
 
 		if (newChunk != null || !loadopt.generateIfNeeded()) {
             return newChunk;
@@ -171,36 +193,36 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
         if (!loadopt.isWait()) {
             return null;
         }
-        final SpoutChunk generatedChunk = live.get()[getChunkIndex(localX, localY, localZ)];
+        final FlowChunk generatedChunk = live.get()[getChunkIndex(localX, localY, localZ)];
         if (generatedChunk != null) {
             checkChunkLoaded(generatedChunk, loadopt);
             return generatedChunk;
         }
-        Spout.getLogger().severe("Chunk failed to generate!  (" + loadopt + ")");
-        Spout.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
+        Flow.getLogger().severe("Chunk failed to generate!  (" + loadopt + ")");
+        Flow.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
         Thread.dumpStack();
         return null;
 	}
 
-    private SpoutChunk loadChunk(int x, int y, int z) {
+    private FlowChunk loadChunk(int x, int y, int z) {
         final InputStream stream = this.getChunkInputStream(x, y, z);
         if (stream != null) {
             try {
                 try {
                     ChunkDataForRegion dataForRegion = new ChunkDataForRegion();
-                    SpoutChunk newChunk = ChunkFiles.loadChunk(this, x, y, z, stream, dataForRegion);
+                    FlowChunk newChunk = ChunkFiles.loadChunk(this, x, y, z, stream, dataForRegion);
                     if (newChunk == null) {
-                        Spout.getLogger().severe("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
+                        Flow.getLogger().severe("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
                         return null;
                     }
-                    SpoutChunk c = setChunk(newChunk, x, y, z, dataForRegion);
+                    FlowChunk c = setChunk(newChunk, x, y, z, dataForRegion);
                     checkChunkLoaded(c, LoadOption.LOAD_ONLY);
                     return c;
                 } finally {
                     stream.close();
                 }
             } catch (IOException e) {
-                Spout.getLogger().log(Level.WARNING, "IOException when loading chunk!", e);
+                Flow.getLogger().log(Level.WARNING, "IOException when loading chunk!", e);
             }
         }
         return null;
@@ -229,10 +251,10 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
 		return key;
 	}
 
-	protected void setGeneratedChunks(SpoutChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
+	protected void setGeneratedChunks(FlowChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
 		while(true) {
-            SpoutChunk[] live = this.live.get();
-            SpoutChunk[] newArray = Arrays.copyOf(live, live.length);
+            FlowChunk[] live = this.live.get();
+            FlowChunk[] newArray = Arrays.copyOf(live, live.length);
             final int width = newChunks.length;
             for (int x = 0; x < width; x++) {
                 for (int z = 0; z < width; z++) {
@@ -246,29 +268,27 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
                 }
             }
             if (this.live.compareAndSet(live, newArray)) {
-                chunksModified = true;
                 //newChunk.queueNew();
                 break;
 			}
         }
 	}
 
-	protected SpoutChunk setChunk(SpoutChunk newChunk, int x, int y, int z, ChunkDataForRegion dataForRegion) {
+	protected FlowChunk setChunk(FlowChunk newChunk, int x, int y, int z, ChunkDataForRegion dataForRegion) {
         final int chunkIndex = getChunkIndex(x, y, z);
         while (true) {
-            SpoutChunk[] live = this.live.get();
-            SpoutChunk old = live[chunkIndex];
+            FlowChunk[] live = this.live.get();
+            FlowChunk old = live[chunkIndex];
             if (old != null) {
                 //newChunk.setUnloadedUnchecked();
                 return old;
             }
-            SpoutChunk[] newArray = Arrays.copyOf(live, live.length);
+            FlowChunk[] newArray = Arrays.copyOf(live, live.length);
             newArray[chunkIndex] = newChunk;
             if (this.live.compareAndSet(live, newArray)) {
-                chunksModified = true;
                 if (dataForRegion != null) {
-					for (SpoutEntitySnapshot snapshot : dataForRegion.loadedEntities) {
-						SpoutEntity entity = EntityManager.createEntity(snapshot.getTransform());
+					for (FlowEntitySnapshot snapshot : dataForRegion.loadedEntities) {
+						FlowEntity entity = EntityManager.createEntity(snapshot.getTransform());
 						entityManager.addEntity(entity);
 					}
 				}
@@ -473,12 +493,8 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
     @Override
     public void copySnapshotRun(int sequence) {
         entityManager.copyAllSnapshots();
-        if (chunksModified) {
-            chunks.set(live.get());
-            snapshot.update(this);
-            chunksModified = false;
-        }
-
+        chunks.set(live.get());
+        snapshot.update(this);
     }
 
     @Override
@@ -538,12 +554,12 @@ public class SpoutRegion extends Region implements CompleteAsyncManager {
     }
 
     @Override
-    public SpoutWorld getWorld() {
-        return (SpoutWorld) super.getWorld();
+    public FlowWorld getWorld() {
+        return (FlowWorld) super.getWorld();
     }
 
-    public SpoutChunk[] getChunks() {
-        SpoutChunk[] get = chunks.get();
+    public FlowChunk[] getChunks() {
+        FlowChunk[] get = chunks.get();
         return Arrays.copyOf(get, get.length);
     }
 

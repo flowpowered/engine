@@ -1,3 +1,26 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.geo.world;
 
 import java.io.File;
@@ -10,14 +33,14 @@ import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
-import com.flowpowered.engine.SpoutEngine;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.filesystem.WorldFiles;
 import com.flowpowered.engine.geo.region.RegionFileManager;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.engine.filesystem.SpoutFileSystem;
+import com.flowpowered.engine.filesystem.FlowFileSystem;
 
-public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
+public class FlowServerWorld extends FlowWorld implements ServerWorld {
     private final WorldGenerator generator;
     private final long seed;
 	/**
@@ -29,20 +52,20 @@ public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
 	 */
 	private final RegionFileManager regionFileManager;
 
-    public SpoutServerWorld(SpoutEngine engine, String name, UUID uid, long age, WorldGenerator generator, long seed) {
+    public FlowServerWorld(FlowEngine engine, String name, UUID uid, long age, WorldGenerator generator, long seed) {
         super(engine, name, uid, age);
         this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
         this.generator = generator;
         this.seed = seed;
-        this.regionFileManager = new RegionFileManager(new File(SpoutFileSystem.WORLDS_DIRECTORY, name));
+        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name));
     }
 
-    public SpoutServerWorld(SpoutEngine engine, String name, WorldGenerator generator) {
+    public FlowServerWorld(FlowEngine engine, String name, WorldGenerator generator) {
         super(engine, name);
         this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
         this.generator = generator;
         this.seed = new Random().nextLong();
-        this.regionFileManager = new RegionFileManager(new File(SpoutFileSystem.WORLDS_DIRECTORY, name));
+        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name));
     }
 
     @Override

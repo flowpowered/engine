@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ import com.flowpowered.engine.render.effect.BlurEffect;
 import com.flowpowered.engine.render.effect.SSAOEffect;
 import com.flowpowered.engine.render.effect.ShadowMappingEffect;
 import com.flowpowered.engine.scheduler.MainThread;
-import com.flowpowered.engine.scheduler.SpoutScheduler;
+import com.flowpowered.engine.scheduler.FlowScheduler;
 import org.spout.renderer.api.Action.RenderModelsAction;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;
@@ -99,7 +99,7 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
  * The default renderer. Support OpenGL 2.1 and 3.2. Can render fully textured models with normal and specular mapping, ambient occlusion (SSAO), shadow mapping, Phong shading, motion blur and edge
  * detection anti-aliasing. The default OpenGL version is 3.2.
  */
-public class SpoutRenderer implements Renderer {
+public class FlowRenderer implements Renderer {
     // CONSTANTS
     private final String WINDOW_TITLE = "Spout";
     private final Vector2f WINDOW_SIZE = new Vector2f(1200, 800);
@@ -162,7 +162,7 @@ public class SpoutRenderer implements Renderer {
 
     private MainThread mainThread;
 
-    public SpoutRenderer() {
+    public FlowRenderer() {
         setGLVersion(GLVersion.GL32);
     }
 
@@ -319,10 +319,10 @@ public class SpoutRenderer implements Renderer {
         final String shaderPath = "/shaders/" + glVersion.toString().toLowerCase() + "/" + name;
         // SHADERS
         final Shader vert = glFactory.createShader();
-        vert.setSource(SpoutRenderer.class.getResourceAsStream(shaderPath + ".vert"));
+        vert.setSource(FlowRenderer.class.getResourceAsStream(shaderPath + ".vert"));
         vert.create();
         final Shader frag = glFactory.createShader();
-        frag.setSource(SpoutRenderer.class.getResourceAsStream(shaderPath + ".frag"));
+        frag.setSource(FlowRenderer.class.getResourceAsStream(shaderPath + ".frag"));
         frag.create();
         // PROGRAM
         final Program program = glFactory.createProgram();
@@ -738,7 +738,7 @@ public class SpoutRenderer implements Renderer {
     private void addHUD() {
         final Font ubuntu;
         try {
-            ubuntu = Font.createFont(Font.TRUETYPE_FONT, SpoutRenderer.class.getResourceAsStream("/fonts/ubuntu-r.ttf"));
+            ubuntu = Font.createFont(Font.TRUETYPE_FONT, FlowRenderer.class.getResourceAsStream("/fonts/ubuntu-r.ttf"));
         } catch (FontFormatException | IOException e) {
             e.printStackTrace();
             return;
@@ -778,7 +778,7 @@ public class SpoutRenderer implements Renderer {
         inverseViewMatrixUniform.set(modelCamera.getViewMatrix().invert());
         lightViewMatrixUniform.set(lightCamera.getViewMatrix());
         lightProjectionMatrixUniform.set(lightCamera.getProjectionMatrix());
-        blurStrengthUniform.set((float) fpsMonitor.getTPS() / SpoutScheduler.TARGET_FPS);
+        blurStrengthUniform.set((float) fpsMonitor.getTPS() / FlowScheduler.TARGET_FPS);
         // RENDER
         pipeline.run(context);
         // UPDATE PREVIOUS FRAME UNIFORMS

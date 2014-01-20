@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,10 @@ import org.spout.renderer.api.data.VertexData;
 import org.spout.renderer.api.util.CausticUtil;
 
 /**
- * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link org.spout.renderer.data.VertexData for
+ * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link VertexData for
  * rendering}.
  *
- * @see org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute
+ * @see MeshAttribute
  */
 public class Mesh {
     private final Map<MeshAttribute, TFloatList> attributes = new EnumMap<>(MeshAttribute.class);
@@ -123,8 +123,8 @@ public class Mesh {
     }
 
     /**
-     * Builds the mesh into a {@link org.spout.renderer.data.VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated (see {@link
-     * org.spoutcraft.client.nterface.mesh.Mesh.MeshAttribute#generateDataIfMissing()}, it will be generated for the build. The generated data will be stored in the attribute float list.
+     * Builds the mesh into a {@link VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated 
+     * (@see MeshAttribute#generateDataIfMissing()), it will be generated for the build. The generated data will be stored in the attribute float list.
      *
      * @return The vertex data for the built mesh
      */

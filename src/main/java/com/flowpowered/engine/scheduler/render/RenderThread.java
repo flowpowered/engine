@@ -1,3 +1,26 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.scheduler.render;
 
 import java.io.File;
@@ -26,16 +49,16 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.material.block.BlockFaces;
-import com.flowpowered.engine.SpoutSingleplayer;
+import com.flowpowered.engine.FlowSingleplayer;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
-import com.flowpowered.engine.geo.world.SpoutWorld;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
-import com.flowpowered.engine.render.SpoutRenderer;
+import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.model.ChunkModel;
-import com.flowpowered.engine.scheduler.SpoutScheduler;
+import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.input.KeyboardEvent;
 import org.spout.renderer.api.Camera;
@@ -44,8 +67,8 @@ import org.spout.renderer.api.data.Color;
 
 public class RenderThread extends TickingElement {
     private final Client client;
-    private final SpoutScheduler scheduler;
-    private final SpoutRenderer renderer;
+    private final FlowScheduler scheduler;
+    private final FlowRenderer renderer;
     private final InputThread input;
     private final ParallelChunkMesher mesher;
     // TEST CODE
@@ -53,11 +76,11 @@ public class RenderThread extends TickingElement {
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
-    public RenderThread(Client client, SpoutScheduler scheduler) {
+    public RenderThread(Client client, FlowScheduler scheduler) {
         super("RenderThread", 60);
         this.client = client;
         this.scheduler = scheduler;
-        this.renderer = new SpoutRenderer();
+        this.renderer = new FlowRenderer();
         this.input = scheduler.getInputThread();
         this.mesher = new ParallelChunkMesher(renderer, new StandardChunkMesher());
     }
@@ -66,7 +89,7 @@ public class RenderThread extends TickingElement {
     public void onStart() {
         renderer.setGLVersion(GLVersioned.GLVersion.GL30);
         renderer.setSolidColor(new Color(0, 200, 0));
-        renderer.init(((SpoutScheduler) client.getScheduler()).getMainThread());
+        renderer.init(((FlowScheduler) client.getScheduler()).getMainThread());
 
         input.subscribeToKeyboard();
         input.getKeyboardQueue().add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
@@ -80,12 +103,12 @@ public class RenderThread extends TickingElement {
     @Override
     public void onTick(long dt) {
         handleInput(dt / 1e9f);
-        updateChunkModels(((SpoutWorld) client.getWorld()).getSnapshot());
+        updateChunkModels(((FlowWorld) client.getWorld()).getSnapshot());
         updateLight(client.getWorld().getAge());
         renderer.render();
     }
 
-    public SpoutRenderer getRenderer() {
+    public FlowRenderer getRenderer() {
         return renderer;
     }
 
@@ -232,7 +255,7 @@ public class RenderThread extends TickingElement {
                 translation = translation.add(up.mul(-speed));
             }
             if (!translation.equals(Vector3f.ZERO)) {
-                ((SpoutSingleplayer) client).getTestEntity().getPhysics().translate(translation);
+                ((FlowSingleplayer) client).getTestEntity().getPhysics().translate(translation);
                 camera.setPosition(camera.getPosition().add(translation));
             }
         }

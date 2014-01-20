@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.api.material;
 
@@ -32,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.Server;
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.material.block.BlockFullState;
 import com.flowpowered.api.util.SyncedStringMap;
 import com.flowpowered.commons.store.BinaryFileStore;
@@ -69,7 +66,7 @@ public abstract class MaterialRegistry {
 		if (setup) {
 			throw new IllegalStateException("Can not setup material registry twice!");
 		}
-        if (Spout.getPlatform().isServer()) {
+        if (Flow.getPlatform().isServer()) {
             setupServer();
         } else {
             setupClient();
@@ -80,7 +77,7 @@ public abstract class MaterialRegistry {
 	}
 
 	private static void setupServer() {
-		File serverItemMap = new File(((Server) Spout.getEngine()).getWorldManager().getWorldFolder(), "materials.dat");
+		File serverItemMap = new File(((Server) Flow.getEngine()).getWorldManager().getWorldFolder(), "materials.dat");
 		BinaryFileStore store = new BinaryFileStore(serverItemMap);
 		materialRegistry = SyncedStringMap.create(null, store, 1, Short.MAX_VALUE, Material.class.getName());
 		if (serverItemMap.exists()) {

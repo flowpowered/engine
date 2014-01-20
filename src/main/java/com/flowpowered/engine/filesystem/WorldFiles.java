@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.filesystem;
 
@@ -41,13 +38,13 @@ import com.flowpowered.commons.sanitation.SafeCast;
 import com.flowpowered.commons.store.BinaryFileStore;
 
 import com.flowpowered.api.Server;
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.nbt.TransformTag;
 import com.flowpowered.api.io.nbt.UUIDTag;
-import com.flowpowered.engine.SpoutEngine;
-import com.flowpowered.engine.geo.world.SpoutServerWorld;
+import com.flowpowered.engine.FlowEngine;
+import com.flowpowered.engine.geo.world.FlowServerWorld;
 
 import org.spout.nbt.ByteArrayTag;
 import org.spout.nbt.ByteTag;
@@ -62,12 +59,12 @@ import org.spout.nbt.util.NBTMapper;
 public class WorldFiles {
     public static final byte WORLD_VERSION = 1;
 
-    public static <E extends SpoutEngine & Server> SpoutServerWorld loadWorld(E engine, WorldGenerator generator, String worldName) {
-        File worldDir = new File(SpoutFileSystem.WORLDS_DIRECTORY, worldName);
+    public static <E extends FlowEngine & Server> FlowServerWorld loadWorld(E engine, WorldGenerator generator, String worldName) {
+        File worldDir = new File(FlowFileSystem.WORLDS_DIRECTORY, worldName);
         worldDir.mkdirs();
         File worldFile = new File(worldDir, "world.dat");
 
-        SpoutServerWorld world = null;
+        FlowServerWorld world = null;
 
         File itemMapFile = new File(worldDir, "materials.dat");
         BinaryFileStore itemStore = new BinaryFileStore(itemMapFile);
@@ -98,29 +95,29 @@ public class WorldFiles {
                 try {
                     ns.close();
                 } catch (IOException e) {
-                    Spout.info("Cannot close world file");
+                    Flow.info("Cannot close world file");
                 }
             }
-            Spout.info("Loading world [{0}]", worldName);
+            Flow.info("Loading world [{0}]", worldName);
             world = loadWorldImpl(engine, worldName, map, generator, itemMap);
         } catch (FileNotFoundException ioe) {
-            Spout.info("Creating new world named [{0}]", worldName);
+            Flow.info("Creating new world named [{0}]", worldName);
 
-            world = new SpoutServerWorld(engine, worldName, generator);
+            world = new FlowServerWorld(engine, worldName, generator);
             world.save();
         } catch (IOException ioe) {
-            Spout.severe("Error reading file for world " + worldName, ioe);
+            Flow.severe("Error reading file for world " + worldName, ioe);
         }
         return world;
     }
 
-    private static SpoutServerWorld loadWorldImpl(SpoutEngine engine, String name, CompoundMap map, WorldGenerator fallbackGenerator, StringToUniqueIntegerMap itemMap) {
+    private static FlowServerWorld loadWorldImpl(FlowEngine engine, String name, CompoundMap map, WorldGenerator fallbackGenerator, StringToUniqueIntegerMap itemMap) {
         byte version = SafeCast.toByte(NBTMapper.toTagValue(map.get("version")), (byte) -1);
         if (version > WORLD_VERSION) {
-            Spout.severe("World version " + version + " exceeds maximum allowed value of " + WORLD_VERSION);
+            Flow.severe("World version " + version + " exceeds maximum allowed value of " + WORLD_VERSION);
             return null;
         } else if (version < WORLD_VERSION) {
-            Spout.severe("Outdated World version " + version);
+            Flow.severe("Outdated World version " + version);
             return null;
         }
 
@@ -132,7 +129,7 @@ public class WorldFiles {
 
         WorldGenerator generator = findGenerator(generatorName, fallbackGenerator);
 
-        SpoutServerWorld world = new SpoutServerWorld(engine, name, uuid, age, generator, seed);
+        FlowServerWorld world = new FlowServerWorld(engine, name, uuid, age, generator, seed);
 
         Transform t = TransformTag.getValue(world, map.get("spawn_position"));
 
@@ -143,7 +140,7 @@ public class WorldFiles {
         try {
             dataMap.deserialize(extraData);
         } catch (IOException e) {
-            Spout.severe("Could not deserialize datatable for world: " + name, e);
+            Flow.severe("Could not deserialize datatable for world: " + name, e);
         }
 
         return world;
@@ -152,14 +149,14 @@ public class WorldFiles {
     private static WorldGenerator findGenerator(String wanted, WorldGenerator given) {
         // TODO: lookup class name
         if (!wanted.equals(given.getClass().getName())) {
-            Spout.severe("World was saved last with the generator: " + wanted + " but is being loaded with: " + given.getClass().getName() + " THIS MAY CAUSE WORLD CORRUPTION!");
+            Flow.severe("World was saved last with the generator: " + wanted + " but is being loaded with: " + given.getClass().getName() + " THIS MAY CAUSE WORLD CORRUPTION!");
         }
         return given;
     }
 
-    public static void saveWorld(SpoutServerWorld world) {
+    public static void saveWorld(FlowServerWorld world) {
 
-        File worldDir = new File(SpoutFileSystem.WORLDS_DIRECTORY, world.getName());
+        File worldDir = new File(FlowFileSystem.WORLDS_DIRECTORY, world.getName());
 
         worldDir.mkdirs();
 
@@ -177,7 +174,7 @@ public class WorldFiles {
             ns = new NBTOutputStream(is, false);
             ns.writeTag(new CompoundTag("world_" + world.getName(), map));
         } catch (IOException ioe) {
-            Spout.severe("Error writing file for world " + world.getName());
+            Flow.severe("Error writing file for world " + world.getName());
         } finally {
             if (ns != null) {
                 try {
@@ -188,7 +185,7 @@ public class WorldFiles {
         }
     }
 
-    private static CompoundMap saveWorldImpl(SpoutServerWorld world) {
+    private static CompoundMap saveWorldImpl(FlowServerWorld world) {
         CompoundMap map = new CompoundMap();
 
         map.put(new ByteTag("version", WORLD_VERSION));

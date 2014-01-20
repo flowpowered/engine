@@ -1,34 +1,31 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.geo;
 
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
-import com.flowpowered.engine.geo.world.SpoutWorld;
-import com.flowpowered.engine.geo.region.SpoutRegion;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.geo.region.FlowRegion;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 
@@ -39,7 +36,7 @@ import com.flowpowered.events.Cause;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.geo.LoadOption;
@@ -52,12 +49,12 @@ import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 
-public class SpoutBlock implements Block {
+public class FlowBlock implements Block {
 	private final int x, y, z;
-	private final WeakReference<? extends SpoutWorld> world;
+	private final WeakReference<? extends FlowWorld> world;
 	private final ChunkReference chunk;
 
-	public SpoutBlock(SpoutWorld world, int x, int y, int z) {
+	public FlowBlock(FlowWorld world, int x, int y, int z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -71,13 +68,13 @@ public class SpoutBlock implements Block {
 	}
 
 	@Override
-	public SpoutChunk getChunk() {
-        return (SpoutChunk) this.chunk.refresh(LoadOption.LOAD_GEN);
+	public FlowChunk getChunk() {
+        return (FlowChunk) this.chunk.refresh(LoadOption.LOAD_GEN);
 	}
 
 	@Override
-	public SpoutWorld getWorld() {
-		SpoutWorld world = this.world.get();
+	public FlowWorld getWorld() {
+		FlowWorld world = this.world.get();
 		if (world == null) {
 			throw new IllegalStateException("The world has been unloaded!");
 		}
@@ -124,7 +121,7 @@ public class SpoutBlock implements Block {
 
 	@Override
 	public Block translate(int dx, int dy, int dz) {
-		return new SpoutBlock(getWorld(), this.x + dx, this.y + dy, this.z + dz);
+		return new FlowBlock(getWorld(), this.x + dx, this.y + dy, this.z + dz);
 	}
 
 	@Override
@@ -152,7 +149,7 @@ public class SpoutBlock implements Block {
 	@Override
 	public boolean setMaterial(BlockMaterial material, int data, Cause<?> cause) {
 		// TODO once stable, remove this
-		if (Spout.getPlatform() != Platform.SERVER) {
+		if (Flow.getPlatform() != Platform.SERVER) {
 			throw new UnsupportedOperationException("Temporary lockdown of setMaterial. Server only!");
 		}
 		return this.getChunk().setBlockMaterial(x, y, z, material, (short) data, cause);
@@ -164,23 +161,23 @@ public class SpoutBlock implements Block {
 	}
 
 	@Override
-	public SpoutBlock setData(BlockMaterial data) {
+	public FlowBlock setData(BlockMaterial data) {
 		return this.setData(data.getData());
 	}
 
 	@Override
-	public SpoutBlock setData(int data) {
+	public FlowBlock setData(int data) {
 		return setData(data, null);
 	}
 
 	@Override
-	public SpoutBlock setData(int data, Cause<?> cause) {
+	public FlowBlock setData(int data, Cause<?> cause) {
 		this.getChunk().setBlockData(this.x, this.y, this.z, (short) data, cause);
 		return this;
 	}
 
 	@Override
-	public SpoutBlock addData(int data) {
+	public FlowBlock addData(int data) {
 		this.getChunk().addBlockData(this.x, this.y, this.z, (short) data, null);
 		return this;
 	}
@@ -226,8 +223,8 @@ public class SpoutBlock implements Block {
 	}
 
 	@Override
-	public SpoutRegion getRegion() {
-		return (SpoutRegion) this.getChunk().getRegion();
+	public FlowRegion getRegion() {
+		return (FlowRegion) this.getChunk().getRegion();
 	}
 
 	@Override

@@ -1,7 +1,7 @@
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.flowpowered.api.geo.cuboid.Region;
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
-import com.flowpowered.engine.geo.region.SpoutRegion;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.math.vector.Vector3i;
 
 /**
@@ -60,7 +60,7 @@ public class RegionSnapshot {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
-            return chunks[SpoutRegion.getChunkKey(x, y, z)];
+            return chunks[FlowRegion.getChunkKey(x, y, z)];
         } finally {
             lock.unlock();
         }
@@ -86,7 +86,7 @@ public class RegionSnapshot {
         }
     }
 
-    public boolean update(SpoutRegion current) {
+    public boolean update(FlowRegion current) {
         if (!current.getBase().toInt().equals(base)) {
             throw new IllegalArgumentException("Cannot update from a region with another ID");
         }
@@ -94,9 +94,9 @@ public class RegionSnapshot {
         lock.lock();
         try {
             boolean changed = false;
-            SpoutChunk[] currentChunks = current.getChunks();
+            FlowChunk[] currentChunks = current.getChunks();
             for (int i = 0; i < Region.CHUNKS.VOLUME; i++) {
-                SpoutChunk currentChunk = currentChunks[i];
+                FlowChunk currentChunk = currentChunks[i];
                 ChunkSnapshot currentSnapshot = chunks[i];
                 if (currentChunk == null && currentSnapshot == null) {
                     continue;

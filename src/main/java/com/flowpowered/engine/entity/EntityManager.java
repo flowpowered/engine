@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.entity;
 
@@ -47,7 +44,7 @@ public class EntityManager {
 	/**
 	 * A map of all the entity ids to the corresponding entities.
 	 */
-	private final SnapshotableHashMap<Integer, SpoutEntity> entities = new SnapshotableHashMap<>(snapshotManager);
+	private final SnapshotableHashMap<Integer, FlowEntity> entities = new SnapshotableHashMap<>(snapshotManager);
 	/**
 	 * The next id to check.
 	 */
@@ -55,14 +52,14 @@ public class EntityManager {
 	/**
 	 * Player listings plus listings of sync'd entities per player
 	 */
-	private final SnapshotableHashMap<Player, ArrayList<SpoutEntity>> players = new SnapshotableHashMap<>(snapshotManager);
+	private final SnapshotableHashMap<Player, ArrayList<FlowEntity>> players = new SnapshotableHashMap<>(snapshotManager);
 
 	/**
 	 * Gets all entities.
 	 *
 	 * @return A collection of entities.
 	 */
-	public Collection<SpoutEntity> getAll() {
+	public Collection<FlowEntity> getAll() {
 		return entities.get().values();
 	}
 
@@ -71,7 +68,7 @@ public class EntityManager {
 	 *
 	 * @return A collection of entities
 	 */
-	public Collection<SpoutEntity> getAllLive() {
+	public Collection<FlowEntity> getAllLive() {
 		return entities.getLive().values();
 	}
 
@@ -90,7 +87,7 @@ public class EntityManager {
 	 * @param id The id.
 	 * @return The entity, or {@code null} if it could not be found.
 	 */
-	public SpoutEntity getEntity(int id) {
+	public FlowEntity getEntity(int id) {
 		return entities.get().get(id);
 	}
 
@@ -99,15 +96,15 @@ public class EntityManager {
 	 *
 	 * @param entity The entity
 	 */
-	public void addEntity(SpoutEntity entity) {
+	public void addEntity(FlowEntity entity) {
 		entities.put(entity.getId(), entity);
 		if (entity instanceof Player) {
-			players.put((Player) entity, new ArrayList<SpoutEntity>());
+			players.put((Player) entity, new ArrayList<FlowEntity>());
 		}
 	}
 
-    public static SpoutEntity createEntity(Transform transform) {
-        return new SpoutEntity(getNextId(), transform);
+    public static FlowEntity createEntity(Transform transform) {
+        return new FlowEntity(getNextId(), transform);
     }
 
 	private static int getNextId() {
@@ -123,7 +120,7 @@ public class EntityManager {
 	 *
 	 * @param entity The entity
 	 */
-	public void removeEntity(SpoutEntity entity) {
+	public void removeEntity(FlowEntity entity) {
 		entities.remove(entity.getId());
 		if (entity instanceof Player) {
 			players.remove((Player) entity);
@@ -134,7 +131,7 @@ public class EntityManager {
 	 * Finalizes the manager at the FINALIZERUN tick stage
 	 */
 	public void finalizeRun() {
-		for (SpoutEntity e : entities.get().values()) {
+		for (FlowEntity e : entities.get().values()) {
 			e.finalizeRun();
 		}
 	}
@@ -143,7 +140,7 @@ public class EntityManager {
 	 * Finalizes the manager at the FINALIZERUN tick stage
 	 */
 	public void preSnapshotRun() {
-		for (SpoutEntity e : entities.get().values()) {
+		for (FlowEntity e : entities.get().values()) {
 			e.preSnapshotRun();
 		}
 	}
@@ -152,14 +149,14 @@ public class EntityManager {
 	 * Snapshots the manager and all the entities managed in the SNAPSHOT tickstage.
 	 */
 	public void copyAllSnapshots() {
-		for (SpoutEntity e : entities.get().values()) {
+		for (FlowEntity e : entities.get().values()) {
 			e.copySnapshot();
 		}
 		snapshotManager.copyAllSnapshots();
 
 		// We want one more tick with for the removed Entities
 		// The next tick works with the snapshotted values which contains has all removed entities with isRemoved true
-		for (SpoutEntity e : entities.get().values()) {
+		for (FlowEntity e : entities.get().values()) {
 			if (e.isRemoved()) {
 				removeEntity(e);
 			}

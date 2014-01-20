@@ -1,6 +1,29 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.geo.world;
 
-import com.flowpowered.engine.geo.region.SpoutRegion;
+import com.flowpowered.engine.geo.region.FlowRegion;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -24,12 +47,12 @@ import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
-import com.flowpowered.engine.SpoutEngine;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
-import com.flowpowered.engine.entity.SpoutEntity;
+import com.flowpowered.engine.entity.FlowEntity;
 import com.flowpowered.engine.geo.region.RegionSource;
-import com.flowpowered.engine.geo.SpoutBlock;
-import com.flowpowered.engine.geo.chunk.SpoutChunk;
+import com.flowpowered.engine.geo.FlowBlock;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
@@ -38,8 +61,8 @@ import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 
-public class SpoutWorld extends BaseComponentOwner implements World, CopySnapshotManager {
-    private final SpoutEngine engine;
+public class FlowWorld extends BaseComponentOwner implements World, CopySnapshotManager {
+    private final FlowEngine engine;
     private final String name;
     private final UUID uid;
     private final SnapshotManager snapshotManager;
@@ -47,17 +70,17 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
     private final RegionSource regionSource;
     private final WorldSnapshot snapshot;
 
-    public SpoutWorld(SpoutEngine engine, String name, UUID uid, long age) {
+    public FlowWorld(FlowEngine engine, String name, UUID uid, long age) {
         this.engine = engine;
         this.name = name;
         this.uid = uid;
         this.snapshotManager = new SnapshotManager();
         this.age = new SnapshotableLong(snapshotManager, age);
-        this.regionSource = new RegionSource(engine, (SpoutServerWorld) this);
+        this.regionSource = new RegionSource(engine, (FlowServerWorld) this);
         this.snapshot = new WorldSnapshot(this);
     }
 
-    public SpoutWorld(SpoutEngine engine, String name) {
+    public FlowWorld(FlowEngine engine, String name) {
         this(engine, name, UUID.randomUUID(), 0);
     }
 
@@ -89,12 +112,12 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
 
     @Override
     public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes) {
-        SpoutRegion region = (SpoutRegion) getRegionFromBlock(point, option);
+        FlowRegion region = (FlowRegion) getRegionFromBlock(point, option);
         if (region == null) {
             return null;
         }
 
-        SpoutEntity entity = EntityManager.createEntity(new Transform(new Point(point, this), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
+        FlowEntity entity = EntityManager.createEntity(new Transform(new Point(point, this), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
 		region.getEntityManager().addEntity(entity);
         return entity;
     }
@@ -109,7 +132,7 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
     }
 
     @Override
-    public SpoutEngine getEngine() {
+    public FlowEngine getEngine() {
         return engine;
     }
 
@@ -228,27 +251,27 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
         return regionSource.getRegions();
     }
 
-    public Collection<SpoutRegion> getSpoutRegions() {
+    public Collection<FlowRegion> getFlowRegions() {
         return (Collection) getRegions();
     }
 
     @Override
-    public SpoutRegion getRegion(int x, int y, int z, LoadOption loadopt) {
+    public FlowRegion getRegion(int x, int y, int z, LoadOption loadopt) {
         return regionSource.getRegion(x, y, z, loadopt);
     }
 
     @Override
-    public SpoutRegion getRegionFromChunk(int x, int y, int z, LoadOption loadopt) {
+    public FlowRegion getRegionFromChunk(int x, int y, int z, LoadOption loadopt) {
         return getRegion(x >> Region.CHUNKS.BITS, y >> Region.CHUNKS.BITS, z >> Region.CHUNKS.BITS, loadopt);
     }
 
     @Override
-    public SpoutRegion getRegionFromBlock(int x, int y, int z, LoadOption loadopt) {
+    public FlowRegion getRegionFromBlock(int x, int y, int z, LoadOption loadopt) {
         return getRegion(x >> Region.BLOCKS.BITS, y >> Region.BLOCKS.BITS, z >> Region.BLOCKS.BITS, loadopt);
     }
 
     @Override
-    public SpoutRegion getRegionFromBlock(Vector3f position, LoadOption loadopt) {
+    public FlowRegion getRegionFromBlock(Vector3f position, LoadOption loadopt) {
         return getRegionFromBlock(position.getFloorX(), position.getFloorY(), position.getFloorZ(), loadopt);
     }
 
@@ -258,8 +281,8 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
     }
 
     @Override
-    public SpoutChunk getChunk(int x, int y, int z, LoadOption loadopt) {
-        SpoutRegion region = getRegionFromChunk(x, y, z, loadopt);
+    public FlowChunk getChunk(int x, int y, int z, LoadOption loadopt) {
+        FlowRegion region = getRegionFromChunk(x, y, z, loadopt);
         if (region == null) {
             return null;
         }
@@ -360,17 +383,17 @@ public class SpoutWorld extends BaseComponentOwner implements World, CopySnapsho
     }
 
 	@Override
-	public SpoutBlock getBlock(int x, int y, int z) {
-		return new SpoutBlock(this, x, y, z);
+	public FlowBlock getBlock(int x, int y, int z) {
+		return new FlowBlock(this, x, y, z);
 	}
 
 	@Override
-	public SpoutBlock getBlock(float x, float y, float z) {
+	public FlowBlock getBlock(float x, float y, float z) {
 		return this.getBlock(GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
 	}
 
 	@Override
-	public SpoutBlock getBlock(Vector3f position) {
+	public FlowBlock getBlock(Vector3f position) {
 		return this.getBlock(position.getX(), position.getY(), position.getZ());
 	}
 

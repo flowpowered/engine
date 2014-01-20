@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.scheduler;
 
@@ -38,7 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.api.scheduler.Task;
 import com.flowpowered.api.scheduler.TaskManager;
@@ -46,9 +43,9 @@ import com.flowpowered.api.scheduler.TaskPriority;
 import com.flowpowered.api.scheduler.Worker;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
-public class SpoutTaskManager implements TaskManager {
-	private final ConcurrentHashMap<SpoutTask, SpoutWorker> activeWorkers = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<Integer, SpoutTask> activeTasks = new ConcurrentHashMap<>();
+public class FlowTaskManager implements TaskManager {
+	private final ConcurrentHashMap<FlowTask, FlowWorker> activeWorkers = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Integer, FlowTask> activeTasks = new ConcurrentHashMap<>();
 	private final TaskPriorityQueue taskQueue;
 	private final AtomicBoolean alive;
 	private final AtomicLong upTime;
@@ -56,16 +53,16 @@ public class SpoutTaskManager implements TaskManager {
 	private final Scheduler scheduler;
 	private final ExecutorService pool = Executors.newFixedThreadPool(20, new MarkedNamedThreadFactory("Scheduler Thread Pool Thread", false));
 
-	public SpoutTaskManager(Scheduler scheduler) {
+	public FlowTaskManager(Scheduler scheduler) {
 		this(scheduler, null, 0L);
 	}
 
-	public SpoutTaskManager(Scheduler scheduler, AsyncManager manager) {
+	public FlowTaskManager(Scheduler scheduler, AsyncManager manager) {
 		this(scheduler, manager, 0L);
 	}
 
-	public SpoutTaskManager(Scheduler scheduler, AsyncManager manager, long age) {
-		this.taskQueue = new TaskPriorityQueue(manager, SpoutScheduler.PULSE_EVERY / 4);
+	public FlowTaskManager(Scheduler scheduler, AsyncManager manager, long age) {
+		this.taskQueue = new TaskPriorityQueue(manager, FlowScheduler.PULSE_EVERY / 4);
 		this.alive = new AtomicBoolean(true);
 		this.upTime = new AtomicLong(age);
 		this.scheduler = scheduler;
@@ -88,7 +85,7 @@ public class SpoutTaskManager implements TaskManager {
 
 	@Override
 	public Task scheduleSyncRepeatingTask(Object plugin, Runnable task, long delay, long period, TaskPriority priority) {
-		return schedule(new SpoutTask(this, scheduler, plugin, task, true, delay, period, priority, false));
+		return schedule(new FlowTask(this, scheduler, plugin, task, true, delay, period, priority, false));
 	}
 
 	@Override
@@ -111,7 +108,7 @@ public class SpoutTaskManager implements TaskManager {
 		if (!alive.get()) {
 			return null;
 		} else {
-			return schedule(new SpoutTask(this, scheduler, plugin, task, false, delay, -1, priority, longLife));
+			return schedule(new FlowTask(this, scheduler, plugin, task, false, delay, -1, priority, longLife));
 		}
 	}
 
@@ -123,13 +120,13 @@ public class SpoutTaskManager implements TaskManager {
 	public void heartbeat(long delta) {
 		long upTime = this.upTime.addAndGet(delta);
 
-		Queue<SpoutTask> q;
+		Queue<FlowTask> q;
 
 		while ((q = taskQueue.poll(upTime)) != null) {
 			boolean checkRequired = !taskQueue.isFullyBelowThreshold(q, upTime);
-			Iterator<SpoutTask> itr = q.iterator();
+			Iterator<FlowTask> itr = q.iterator();
 			while (itr.hasNext()) {
-				SpoutTask currentTask = itr.next();
+				FlowTask currentTask = itr.next();
 				if (checkRequired && currentTask.getPriority() > upTime) {
 					continue;
 				}
@@ -143,7 +140,7 @@ public class SpoutTaskManager implements TaskManager {
 					currentTask.pulse();
 					repeatSchedule(currentTask);
 				} else {
-					Spout.getLogger().info("Async repeating task submitted");
+					Flow.getLogger().info("Async repeating task submitted");
 				}
 			}
 			if (taskQueue.complete(q, upTime)) {
@@ -152,7 +149,7 @@ public class SpoutTaskManager implements TaskManager {
 		}
 	}
 
-	public void cancelTask(SpoutTask task) {
+	public void cancelTask(FlowTask task) {
 		if (task == null) {
 			throw new IllegalArgumentException("Task cannot be null!");
 		}
@@ -163,20 +160,20 @@ public class SpoutTaskManager implements TaskManager {
 			}
 		}
 		if (!task.isSync()) {
-			SpoutWorker worker = activeWorkers.get(task);
+			FlowWorker worker = activeWorkers.get(task);
 			if (worker != null) {
 				worker.interrupt();
 			}
 		}
 	}
 
-	public Task schedule(SpoutTask task) {
+	public Task schedule(FlowTask task) {
 		synchronized (scheduleLock) {
 			if (!addTask(task)) {
 				return task;
 			}
 			if (!task.isSync()) {
-				SpoutWorker worker = new SpoutWorker(task, this);
+				FlowWorker worker = new FlowWorker(task, this);
 				addWorker(worker, task);
 				worker.start(pool);
 			} else {
@@ -186,7 +183,7 @@ public class SpoutTaskManager implements TaskManager {
 		}
 	}
 
-	protected Task repeatSchedule(SpoutTask task) {
+	protected Task repeatSchedule(FlowTask task) {
 		synchronized (scheduleLock) {
 			if (task.isAlive()) {
 				schedule(task);
@@ -197,15 +194,15 @@ public class SpoutTaskManager implements TaskManager {
 		return task;
 	}
 
-	public void addWorker(SpoutWorker worker, SpoutTask task) {
+	public void addWorker(FlowWorker worker, FlowTask task) {
 		activeWorkers.put(task, worker);
 	}
 
-	public boolean removeWorker(SpoutWorker worker, SpoutTask task) {
+	public boolean removeWorker(FlowWorker worker, FlowTask task) {
 		return activeWorkers.remove(task, worker);
 	}
 
-	public boolean addTask(SpoutTask task) {
+	public boolean addTask(FlowTask task) {
 		activeTasks.put(task.getTaskId(), task);
 		if (!alive.get()) {
 			cancelTask(task);
@@ -214,7 +211,7 @@ public class SpoutTaskManager implements TaskManager {
 		return true;
 	}
 
-	public boolean removeTask(SpoutTask task) {
+	public boolean removeTask(FlowTask task) {
 		return activeTasks.remove(task.getTaskId(), task);
 	}
 
@@ -238,8 +235,8 @@ public class SpoutTaskManager implements TaskManager {
 
 	@Override
 	public void cancelTasks(Object plugin) {
-		ArrayList<SpoutTask> tasks = new ArrayList<>(activeTasks.values());
-		for (SpoutTask task : tasks) {
+		ArrayList<FlowTask> tasks = new ArrayList<>(activeTasks.values());
+		for (FlowTask task : tasks) {
 			if (task.getOwner() == plugin) {
 				cancelTask(task);
 			}
@@ -248,8 +245,8 @@ public class SpoutTaskManager implements TaskManager {
 
 	@Override
 	public void cancelAllTasks() {
-		ArrayList<SpoutTask> tasks = new ArrayList<>(activeTasks.values());
-		for (SpoutTask task : tasks) {
+		ArrayList<FlowTask> tasks = new ArrayList<>(activeTasks.values());
+		for (FlowTask task : tasks) {
 			cancelTask(task);
 		}
 	}
@@ -276,9 +273,9 @@ public class SpoutTaskManager implements TaskManager {
 
 	@Override
 	public List<Task> getPendingTasks() {
-		List<SpoutTask> tasks = taskQueue.getTasks();
+		List<FlowTask> tasks = taskQueue.getTasks();
 		List<Task> list = new ArrayList<>(tasks.size());
-		for (SpoutTask t : tasks) {
+		for (FlowTask t : tasks) {
 			list.add(t);
 		}
 		return list;

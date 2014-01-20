@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.entity;
 
@@ -39,7 +36,7 @@ import com.flowpowered.commons.datatable.defaulted.DefaultedKey;
 import com.flowpowered.commons.datatable.defaulted.DefaultedKeyImpl;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
@@ -169,7 +166,7 @@ public class Network {
 	 * @param syncDistance The new sync distance
 	 */
 	public void setSyncDistance(final int syncDistance) {
-		//TODO: Enforce server maximum (but that is set in Spout...)
+		//TODO: Enforce server maximum (but that is set in Flow...)
 		entity.getData().put(SYNC_DISTANCE, syncDistance);
 	}
 
@@ -178,12 +175,12 @@ public class Network {
 	/**
 	 * Called when the owner is set to be synchronized to other NetworkComponents.
 	 *
-	 * TODO: Common logic between Spout and a plugin needing to implement this component? TODO: Add sequence checks to the PhysicsComponent to prevent updates to live?
+	 * TODO: Common logic between Flow and a plugin needing to implement this component? TODO: Add sequence checks to the PhysicsComponent to prevent updates to live?
 	 *
 	 * @param live A copy of the owner's live transform state
 	 */
 	public void finalizeRun(final Transform live) {
-		if (!Spout.getPlatform().isServer()) {
+		if (!Flow.getPlatform().isServer()) {
 			return;
 		}
 		//Entity changed chunks as observer OR observer status changed so update

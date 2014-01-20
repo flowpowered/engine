@@ -1,3 +1,26 @@
+/*
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.flowpowered.engine.scheduler;
 
 import java.util.HashSet;
@@ -15,7 +38,7 @@ import com.flowpowered.commons.Named;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
 
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.scheduler.Worker;
 import com.flowpowered.engine.geo.region.RegionGenerator;
@@ -34,7 +57,7 @@ import com.flowpowered.engine.util.thread.coretasks.PreSnapshotTask;
 import com.flowpowered.engine.util.thread.coretasks.StartTickTask;
 
 public class MainThread extends TickingElement {
-    private final SpoutScheduler scheduler;
+    private final FlowScheduler scheduler;
     private final AtomicLong currentDelta = new AtomicLong(0);
     private final ManagerRunnableFactory[] managerRunnableFactories = new ManagerRunnableFactory[] {
         null,//TickStart has no ManagerRunnableFactory
@@ -71,11 +94,11 @@ public class MainThread extends TickingElement {
 	protected final ExecutorService executorService;
     private final TPSMonitor tpsMonitor = new TPSMonitor();
 
-    public MainThread(SpoutScheduler scheduler) {
+    public MainThread(FlowScheduler scheduler) {
         super("MainThread", 20);
         this.scheduler = scheduler;
         final int nThreads = Runtime.getRuntime().availableProcessors() * 2 + 1;
-		executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "SpoutScheduler - AsyncManager executor service");
+		executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "FlowScheduler - AsyncManager executor service");
     }
 
     @Override
@@ -89,7 +112,7 @@ public class MainThread extends TickingElement {
             RegionGenerator.shutdownExecutorService();
             RegionGenerator.awaitExecutorServiceTermination();
 
-			scheduler.getTaskManager().heartbeat(SpoutScheduler.PULSE_EVERY << 2);
+			scheduler.getTaskManager().heartbeat(FlowScheduler.PULSE_EVERY << 2);
 			scheduler.getTaskManager().shutdown(1L);
 
 			long delay = 2000;
@@ -98,10 +121,10 @@ public class MainThread extends TickingElement {
 				if (workers.isEmpty()) {
 					break;
 				}
-				Spout.info("Unable to shutdown due to async tasks still running");
+				Flow.info("Unable to shutdown due to async tasks still running");
 				for (Worker w : workers) {
 					Object owner = w.getOwner() instanceof Named ? ((Named) w.getOwner()).getName() : w.getOwner();
-                    Spout.info("Task with id of " + w.getTaskId() + " owned by " + owner + " is still running");
+                    Flow.info("Task with id of " + w.getTaskId() + " owned by " + owner + " is still running");
 				}
 				if (delay < 8000) {
 					delay <<= 1;
@@ -158,7 +181,7 @@ public class MainThread extends TickingElement {
         }
 
         if (totalUpdates >= UPDATE_THRESHOLD) {
-            Spout.warn("Block updates per tick of " + totalUpdates + " exceeded the threshold " + UPDATE_THRESHOLD + "; " + dynamicUpdates + " dynamic updates, " + physicsUpdates + " block physics updates and " + lightUpdates + " lighting updates");
+            Flow.warn("Block updates per tick of " + totalUpdates + " exceeded the threshold " + UPDATE_THRESHOLD + "; " + dynamicUpdates + " dynamic updates, " + physicsUpdates + " block physics updates and " + lightUpdates + " lighting updates");
         }
 
         doFinalizeTick();
@@ -184,7 +207,7 @@ public class MainThread extends TickingElement {
 
 		TickStage.setStage(TickStage.GLOBAL_DYNAMIC_BLOCKS);
 
-		long earliestTime = SpoutScheduler.END_OF_THE_WORLD;
+		long earliestTime = FlowScheduler.END_OF_THE_WORLD;
 
 		for (AsyncManager e : managers) {
 			long firstTime = e.getFirstDynamicUpdateTime();
@@ -196,7 +219,7 @@ public class MainThread extends TickingElement {
 		while (passStartUpdates < updates.get() && updates.get() < startUpdates + UPDATE_THRESHOLD) {
 			passStartUpdates = updates.get();
 
-			long threshold = earliestTime + SpoutScheduler.PULSE_EVERY - 1;
+			long threshold = earliestTime + FlowScheduler.PULSE_EVERY - 1;
 
 			dynamicUpdatesTask.setThreshold(threshold);
 
@@ -239,15 +262,15 @@ public class MainThread extends TickingElement {
                             try {
                                 futures.get(i).get();
                             } catch (ExecutionException e) {
-                                Spout.warn("Exception thrown when executing a task in tick stage " + stage, e);
+                                Flow.warn("Exception thrown when executing a task in tick stage " + stage, e);
                             } catch (InterruptedException e) {
-                                Spout.warn("Interrupted when getting future", e);
+                                Flow.warn("Interrupted when getting future", e);
                             }
                         }
                     }
                 });
             } catch (InterruptedException e) {
-                Spout.warn("Main thread interrupted while waiting on tick stage " + stage);
+                Flow.warn("Main thread interrupted while waiting on tick stage " + stage);
             }
         }
     }

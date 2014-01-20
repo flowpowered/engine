@@ -1,28 +1,25 @@
 /*
- * This file is part of Spout.
+ * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2011 Spout LLC <http://www.spout.org/>
- * Spout is licensed under the Spout License Version 1.
+ * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
  *
- * Spout is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * In addition, 180 days after any changes are published, you can use the
- * software, incorporating those changes, under the terms of the MIT license,
- * as described in the Spout License Version 1.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Spout is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License,
- * the MIT license and the Spout License Version 1 along with this program.
- * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
- * License and see <http://spout.in/licensev1> for the full license, including
- * the MIT license.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.flowpowered.engine.geo.region;
 
@@ -35,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.flowpowered.commons.concurrent.TripleIntObjectMap;
 import com.flowpowered.commons.concurrent.TripleIntObjectReferenceArrayMap;
 
-import com.flowpowered.api.Spout;
+import com.flowpowered.api.Flow;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.World;
@@ -43,9 +40,9 @@ import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
-import com.flowpowered.engine.SpoutEngine;
-import com.flowpowered.engine.geo.world.SpoutServerWorld;
-import com.flowpowered.engine.geo.world.SpoutWorld;
+import com.flowpowered.engine.FlowEngine;
+import com.flowpowered.engine.geo.world.FlowServerWorld;
+import com.flowpowered.engine.geo.world.FlowWorld;
 
 public class RegionSource implements Iterable<Region> {
 	private final static int REGION_MAP_BITS = 5;
@@ -53,21 +50,21 @@ public class RegionSource implements Iterable<Region> {
 	/**
 	 * A map of loaded regions, mapped to their x and z values.
 	 */
-	private final TripleIntObjectMap<SpoutRegion> loadedRegions;
+	private final TripleIntObjectMap<FlowRegion> loadedRegions;
 	/**
 	 * World associated with this region source
 	 */
-	private final SpoutWorld world;
-    private final SpoutEngine engine;
+	private final FlowWorld world;
+    private final FlowEngine engine;
 
-	public RegionSource(SpoutEngine engine, SpoutWorld world) {
+	public RegionSource(FlowEngine engine, FlowWorld world) {
         this.engine = engine;
 		this.world = world;
 		loadedRegions = new TripleIntObjectReferenceArrayMap<>(REGION_MAP_BITS);
 	}
 
 	@DelayedWrite
-	public void removeRegion(final SpoutRegion r) {
+	public void removeRegion(final FlowRegion r) {
 		TickStage.checkStage(TickStage.SNAPSHOT);
 
 		if (!r.getWorld().equals(world)) {
@@ -76,11 +73,11 @@ public class RegionSource implements Iterable<Region> {
 
         /*
         if (!r.isEmpty()) {
-            Spout.getLogger().info("Region was not empty when attempting to remove, active chunks returns " + r.getNumLoadedChunks());
+            Flow.getLogger().info("Region was not empty when attempting to remove, active chunks returns " + r.getNumLoadedChunks());
             return;
         }
         if (!r.attemptClose()) {
-            Spout.getLogger().info("Unable to close region file, streams must be open");
+            Flow.getLogger().info("Unable to close region file, streams must be open");
             return;
         }
         */
@@ -89,14 +86,14 @@ public class RegionSource implements Iterable<Region> {
         int z = r.getZ();
         boolean success = loadedRegions.remove(x, y, z, r);
         if (!success) {
-            Spout.getLogger().info("Tried to remove region " + r + " but region removal failed");
+            Flow.getLogger().info("Tried to remove region " + r + " but region removal failed");
             return;
         }
 
         world.getEngine().getScheduler().removeAsyncManager(r);
 
         if (regionsLoaded.decrementAndGet() < 0) {
-            Spout.getLogger().info("Regions loaded dropped below zero");
+            Flow.getLogger().info("Regions loaded dropped below zero");
         }
 	}
 
@@ -110,12 +107,12 @@ public class RegionSource implements Iterable<Region> {
      * @return region
 	 */
 	@LiveRead
-	public SpoutRegion getRegion(int x, int y, int z, LoadOption loadopt) {
+	public FlowRegion getRegion(int x, int y, int z, LoadOption loadopt) {
 		if (loadopt != LoadOption.NO_LOAD) {
 			TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
 		}
 
-		SpoutRegion region = loadedRegions.get(x, y, z);
+		FlowRegion region = loadedRegions.get(x, y, z);
 
 		if (region != null) {
 			return region;
@@ -125,9 +122,9 @@ public class RegionSource implements Iterable<Region> {
 			return null;
 		}
 
-        SpoutServerWorld serverWorld = (SpoutServerWorld) world;
-		region = new SpoutRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
-		SpoutRegion current = loadedRegions.putIfAbsent(x, y, z, region);
+        FlowServerWorld serverWorld = (FlowServerWorld) world;
+		region = new FlowRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
+		FlowRegion current = loadedRegions.putIfAbsent(x, y, z, region);
 
 		if (current != null) {
 			return current;
@@ -146,7 +143,7 @@ public class RegionSource implements Iterable<Region> {
 	 * @return true if exists, false if doesn't exist
 	 */
 	public static boolean regionFileExists(World world, int x, int y, int z) {
-		if (!Spout.getPlatform(). isServer()) {
+		if (!Flow.getPlatform(). isServer()) {
 			return false;
 		}
 		File worldDirectory = ((ServerWorld) world).getDirectory();
