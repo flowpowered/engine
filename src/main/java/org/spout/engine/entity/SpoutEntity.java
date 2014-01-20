@@ -78,7 +78,7 @@ public class SpoutEntity implements Entity {
 
     @Override
     public SpoutRegion getRegion() {
-        Region region = physics.getPosition().getRegion(LoadOption.NO_LOAD);
+        Region region = physics.getPosition().getRegion(LoadOption.LOAD_GEN);
         return (SpoutRegion) region;
     }
 
@@ -153,25 +153,18 @@ public class SpoutEntity implements Entity {
     }
 
     void finalizeRun() {
-		SpoutChunk chunkLive = getChunk();
-		SpoutChunk chunkSnapshot = (SpoutChunk) physics.getSnapshottedTransform().getPosition().getChunk(LoadOption.NO_LOAD);
         SpoutRegion regionLive = getRegion();
-        SpoutRegion regionSnapshot = (SpoutRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.NO_LOAD);
-        EntityManager entityManager = regionSnapshot != null ? regionSnapshot.getEntityManager() : null;
+        SpoutRegion regionSnapshot = (SpoutRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN);
 		//Move entity from Region A to Region B
-        boolean activated = false;
-        if (chunkSnapshot != null && (chunkLive == null || chunkSnapshot.getRegion() != chunkLive.getRegion())) {
-            activated = physics.isActivated();
+        if (regionSnapshot != regionLive) {
+            boolean activated = physics.isActivated();
             physics.deactivate();
-            entityManager.removeEntity(this);  
-        }
-        //Get the new EntityManager for the new region
-        entityManager = regionLive != null ? regionLive.getEntityManager() : null;
-        if (chunkLive != null && (chunkSnapshot == null || chunkSnapshot.getRegion() != chunkLive.getRegion())) {
+            regionSnapshot.getEntityManager().removeEntity(this);
+
             //Add entity to Region B
-            entityManager.addEntity(this);
+            regionLive.getEntityManager().addEntity(this);
             if (activated) {
-                physics.activate(chunkLive.getRegion());
+                physics.activate(regionLive);
             }
         }
 

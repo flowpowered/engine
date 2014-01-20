@@ -15,6 +15,7 @@ import org.spout.engine.filesystem.WorldFiles;
 import org.spout.engine.geo.region.RegionFileManager;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
+import org.spout.engine.filesystem.SpoutFileSystem;
 
 public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
     private final WorldGenerator generator;
@@ -33,7 +34,7 @@ public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
         this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
         this.generator = generator;
         this.seed = seed;
-        this.regionFileManager = new RegionFileManager(new File(name));
+        this.regionFileManager = new RegionFileManager(new File(SpoutFileSystem.WORLDS_DIRECTORY, name));
     }
 
     public SpoutServerWorld(SpoutEngine engine, String name, WorldGenerator generator) {
@@ -41,7 +42,7 @@ public class SpoutServerWorld extends SpoutWorld implements ServerWorld {
         this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
         this.generator = generator;
         this.seed = new Random().nextLong();
-        this.regionFileManager = new RegionFileManager(new File(name));
+        this.regionFileManager = new RegionFileManager(new File(SpoutFileSystem.WORLDS_DIRECTORY, name));
     }
 
     @Override

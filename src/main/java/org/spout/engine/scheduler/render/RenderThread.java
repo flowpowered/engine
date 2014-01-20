@@ -65,7 +65,6 @@ public class RenderThread extends TickingElement {
     @Override
     public void onStart() {
         renderer.setGLVersion(GLVersioned.GLVersion.GL30);
-        renderer.getCamera().setPosition(new Vector3f(0, 5, 0));
         renderer.setSolidColor(new Color(0, 200, 0));
         renderer.init(((SpoutScheduler) client.getScheduler()).getMainThread());
 
@@ -232,8 +231,10 @@ public class RenderThread extends TickingElement {
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                 translation = translation.add(up.mul(-speed));
             }
-            ((SpoutSingleplayer) client).getTestEntity().getPhysics().translate(translation);
-            camera.setPosition(camera.getPosition().add(translation));
+            if (!translation.equals(Vector3f.ZERO)) {
+                ((SpoutSingleplayer) client).getTestEntity().getPhysics().translate(translation);
+                camera.setPosition(camera.getPosition().add(translation));
+            }
         }
     }
 

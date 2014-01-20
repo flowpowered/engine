@@ -108,7 +108,7 @@ public class SpoutPhysics extends Physics {
 
     @Override
 	public Transform getTransform() {
-		return live;
+		return live.copy();
 	}
 
 	@Override

@@ -53,7 +53,6 @@ import com.flowpowered.math.vector.Vector3i;
  */
 public class Network {
 	public static final LoadOption LOAD_GEN_NOWAIT = new LoadOption(true, true, false);
-	private static final WrappedSerizableIterator INITIAL_TICK = new WrappedSerizableIterator(null);
 	//TODO: Move all observer code to Network
 	public final DefaultedKey<Boolean> IS_OBSERVER = new DefaultedKeyImpl<>("IS_OBSERVER", false);
 	/**
@@ -64,15 +63,14 @@ public class Network {
 	/**
 	 * In chunks
 	 */
-	public final DefaultedKey<Integer> SYNC_DISTANCE = new DefaultedKeyImpl<>("SYNC_DISTANCE", 1);
+	public final DefaultedKey<Integer> SYNC_DISTANCE = new DefaultedKeyImpl<>("SYNC_DISTANCE", 10);
 	private final Set<Chunk> observingChunks = new HashSet<>();
 	private AtomicReference<WrappedSerizableIterator> liveObserverIterator = new AtomicReference<>(new WrappedSerizableIterator(new OutwardIterator(0, 0, 0, 0)));
-	private boolean observeChunksFailed = false;
+	private boolean observeChunksFailed = true;
     private final Entity entity;
 
     public Network(Entity entity) {
         this.entity = entity;
-        entity.getData().put(OBSERVER_ITERATOR, INITIAL_TICK);
         setObserver(true);
     }
 
@@ -193,9 +191,8 @@ public class Network {
 		Chunk snapChunk = entity.getPhysics().getPosition().getChunk(LoadOption.NO_LOAD);
 		Chunk liveChunk = live.getPosition().getChunk(LoadOption.NO_LOAD);
 		if (isObserver() && 
-			((snapChunk == null ? liveChunk == null : snapChunk.equals(liveChunk))
+			((snapChunk == null ? liveChunk != null : !snapChunk.equals(liveChunk))
 				|| liveObserverIterator.get() != old
-				|| old == INITIAL_TICK
 				|| observeChunksFailed)) {
 			updateObserver();
 		}
