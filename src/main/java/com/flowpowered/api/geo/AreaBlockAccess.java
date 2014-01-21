@@ -43,17 +43,6 @@ public interface AreaBlockAccess extends AreaBlockSource {
 	public boolean setBlockData(int x, int y, int z, short data, Cause<?> cause);
 
 	/**
-	 * Adds a value to the data for the block at (x, y, z)
-	 *
-	 * @param x coordinate of the block
-	 * @param y coordinate of the block
-	 * @param z coordinate of the block
-	 * @param data to add
-	 * @param cause of the change, or null if non-specific cause
-	 */
-	public boolean addBlockData(int x, int y, int z, short data, Cause<?> cause);
-
-	/**
 	 * Sets the material and data for the block at (x, y, z) to the given material and data.
 	 *
 	 * @param x coordinate of the block
@@ -171,16 +160,6 @@ public interface AreaBlockAccess extends AreaBlockSource {
 	 * @return true if it is contained, false if not
 	 */
 	public boolean containsBlock(int x, int y, int z);
-
-	/**
-	 * Gets a {@link Block} representing the block at (x, y, z)
-	 *
-	 * @param x coordinate of the block
-	 * @param y coordinate of the block
-	 * @param z coordinate of the block
-	 * @return the Block
-	 */
-	public Block getBlock(int x, int y, int z);
 
 	/**
 	 * Gets a {@link Block} representing the block at (x, y, z)

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.entity;
+package com.flowpowered.engine.util;
 
 import java.io.Serializable;
 import java.util.Iterator;

@@ -21,34 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.geo.chunk;
+package com.flowpowered.api.util;
 
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot.EntityType;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot.ExtraData;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot.SnapshotType;
-import com.flowpowered.commons.future.SimpleFuture;
+public interface UnloadSavable {
+	/**
+	 * Performs the necessary tasks to unload this object.
+	 *
+	 * @param save whether the data should be saved
+	 */
+	void unload(boolean save);
 
-public class FlowChunkSnapshotFuture extends SimpleFuture<ChunkSnapshot> implements Runnable {
-	private final FlowChunk chunk;
-	private final SnapshotType type;
-	private final EntityType entities;
-	private final ExtraData data;
+	/**
+	 * Performs the necessary tasks to save this object.
+	 */
+	void save();
 
-	public FlowChunkSnapshotFuture(FlowChunk chunk, SnapshotType type, EntityType entities, ExtraData data) {
-		this.chunk = chunk;
-		this.type = type;
-		this.entities = entities;
-		this.data = data;
-	}
-
-	@Override
-	public void run() {
-		try {
-			ChunkSnapshot snapshot = chunk.getSnapshot(type, entities, data);
-			super.setResult(snapshot);
-		} catch (Throwable t) {
-			super.setThrowable(t);
-		}
-	}
+	/**
+	 * Tests if loaded
+     * 
+     * @return true if loaded
+     */
+	boolean isLoaded();
 }

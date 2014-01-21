@@ -28,9 +28,9 @@ import java.io.OutputStream;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.flowpowered.api.Flow;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
+import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
 
 public class RegionFileManager {
 	/**

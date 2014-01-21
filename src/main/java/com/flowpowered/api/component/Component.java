@@ -23,30 +23,11 @@
  */
 package com.flowpowered.api.component;
 
+import com.flowpowered.api.scheduler.tickable.BasicTickable;
 import com.flowpowered.commons.datatable.SerializableMap;
-import com.flowpowered.api.scheduler.tickable.Tickable;
 
-public abstract class Component implements Tickable {
+public abstract class Component extends BasicTickable {
 	private ComponentOwner owner;
-
-	public Component() {
-	}
-
-	@Override
-	public boolean canTick() {
-		return true;
-	}
-
-	@Override
-	public final void tick(float dt) {
-		if (canTick()) {
-			onTick(dt);
-		}
-	}
-
-	@Override
-	public void onTick(float dt) {
-	}
 
 	/**
 	 * Attaches to a component owner.

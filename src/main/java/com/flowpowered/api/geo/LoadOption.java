@@ -40,6 +40,10 @@ public class LoadOption {
 	 * Don't load the chunk if it has already been generated, only generate if it does not yet exist
 	 */
 	public static final LoadOption GEN_ONLY = new LoadOption(false, true, true);
+	/**
+	 * Load chunk/region if not currently loaded, and generate it if it does not yet exist. Do not wait for generation to finish.
+	 */
+	public static final LoadOption LOAD_GEN_NOWAIT = new LoadOption(true, true, false);
 
 	private final boolean load;
 	private final boolean generate;

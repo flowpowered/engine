@@ -147,11 +147,6 @@ public class FlowWorld extends BaseComponentOwner implements World, CopySnapshot
     }
 
     @Override
-    public TaskManager getParallelTaskManager() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public TaskManager getTaskManager() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -328,11 +323,6 @@ public class FlowWorld extends BaseComponentOwner implements World, CopySnapshot
     }
 
     @Override
-    public boolean addBlockData(int x, int y, int z, short data, Cause<?> cause) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean setBlockMaterial(int x, int y, int z, BlockMaterial material, short data, Cause<?> cause) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -383,13 +373,8 @@ public class FlowWorld extends BaseComponentOwner implements World, CopySnapshot
     }
 
 	@Override
-	public FlowBlock getBlock(int x, int y, int z) {
-		return new FlowBlock(this, x, y, z);
-	}
-
-	@Override
 	public FlowBlock getBlock(float x, float y, float z) {
-		return this.getBlock(GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
+		return new FlowBlock(this, GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
 	}
 
 	@Override

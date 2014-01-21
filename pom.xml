@@ -24,7 +24,7 @@
         <buildNumber>0</buildNumber>
         <ciSystem>unknown</ciSystem>
         <commit>unknown</commit>
-        <mainClass>com.flowpowered.engine.SpoutApplication</mainClass>
+        <mainClass>com.flowpowered.engine.FlowApplication</mainClass>
     </properties>
 
     <!-- License information -->
@@ -215,6 +215,14 @@
                     <include>LICENSE.txt</include>
                 </includes>
             </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>src/main/resources</directory>
+                <targetPath>.</targetPath>
+                <includes>
+                    <include>**</include>
+                </includes>
+            </resource>
         </resources>
 
         <!-- Build plugins -->
@@ -280,10 +288,11 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Main-Class>${mainClass}}</Main-Class>
+                            <Main-Class>${mainClass}</Main-Class>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}+${ciSystem}-b${buildNumber}.git-${commit}</Implementation-Version>
+                            <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
                             <Specification-Title>${project.name}</Specification-Title>
-                            <Specification-Version>${project.version}+${ciSystem}-b${buildNumber}.git-${commit}</Specification-Version>
-                            <Specification-Vendor>${project.organization.name}</Specification-Vendor>
                         </manifestEntries>
                         <manifestSections>
                             <manifestSection>
@@ -304,7 +313,6 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>

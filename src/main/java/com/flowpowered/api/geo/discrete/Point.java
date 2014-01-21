@@ -26,11 +26,11 @@ package com.flowpowered.api.geo.discrete;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.flowpowered.commons.StringUtil;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.flowpowered.api.Flow;
-
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.WorldSource;
@@ -298,32 +298,16 @@ public class Point extends Vector3f implements WorldSource {
 
 	//Custom serialization logic because world can not be made serializable
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-		out.writeFloat(this.getX());
-		out.writeFloat(this.getY());
-		out.writeFloat(this.getZ());
+        out.defaultWriteObject();
 		out.writeUTF(world != null ? world.getName() : "null");
 	}
 
-	private void readObject(java.io.ObjectInputStream in) throws IOException {
-		float x = in.readFloat();
-		float y = in.readFloat();
-		float z = in.readFloat();
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
 		String world = in.readUTF();
 		World w = Flow.getEngine().getWorldManager().getWorld(world, true);
 		try {
 			Field field;
-
-			field = Vector3f.class.getDeclaredField("x");
-			field.setAccessible(true);
-			field.set(this, x);
-
-			field = Vector3f.class.getDeclaredField("y");
-			field.setAccessible(true);
-			field.set(this, y);
-
-			field = Vector3f.class.getDeclaredField("z");
-			field.setAccessible(true);
-			field.set(this, z);
 
 			field = Point.class.getDeclaredField("world");
 			field.setAccessible(true);

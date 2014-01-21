@@ -29,6 +29,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import com.flowpowered.api.generator.WorldGenerator;
+import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
@@ -98,18 +99,25 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
     }
 
     @Override
+    public boolean isLoaded() {
+        return true;
+    }
+
+    @Override
     public File getDirectory() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void queueChunksForGeneration(List<Vector3f> chunks) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (Vector3f chunk : chunks) {
+            queueChunkForGeneration(chunk);
+        }
     }
 
     @Override
     public void queueChunkForGeneration(Vector3f chunk) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getChunk(chunk.getFloorX(), chunk.getFloorY(), chunk.getFloorZ(), LoadOption.LOAD_GEN_NOWAIT);
     }
 
 	public BAAWrapper getRegionFile(int rx, int ry, int rz) {

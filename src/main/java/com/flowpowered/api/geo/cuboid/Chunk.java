@@ -24,9 +24,7 @@
 package com.flowpowered.api.geo.cuboid;
 
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import com.flowpowered.commons.BitSize;
 
@@ -35,17 +33,15 @@ import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.geo.AreaBlockAccess;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot.EntityType;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot.ExtraData;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot.SnapshotType;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.material.block.BlockFace;
+import com.flowpowered.api.util.UnloadSavable;
 import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Represents a cube containing 16x16x16 Blocks
  */
-public abstract class Chunk extends Cube implements AreaBlockAccess {
+public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavable {
 	/**
 	 * Stores the size of the amount of blocks in this Chunk
 	 */
@@ -53,7 +49,6 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
 	/**
 	 * Mask to convert a block integer coordinate into the point base
 	 */
-	public final static int POINT_BASE_MASK = -BLOCKS.SIZE;
 	private final int blockX;
 	private final int blockY;
 	private final int blockZ;
@@ -66,77 +61,9 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
 	}
 
 	/**
-	 * Performs the necessary tasks to unload this chunk from the world.
-	 *
-	 * @param save whether the chunk data should be saved.
-	 */
-	public abstract void unload(boolean save);
-
-	/**
-	 * Performs the necessary tasks to save this chunk.
-	 */
-	public abstract void save();
-
-	/**
-	 * Gets a snapshot of the data for the chunk. <br/><br/> This process may result in tearing if called during potential updates <br/><br/> This is the same as calling getSnapshot(BOTH, WEAK_ENTITIES,
-	 * NO_EXTRA_DATA)
-	 *
-	 * @return the snapshot
-	 */
-	public abstract ChunkSnapshot getSnapshot();
-
-	/**
-	 * Gets a snapshot of the data for the chunk. <br/><br/> This process may result in tearing if called during potential updates <br/><br/>
-	 *
-	 * @param type the type of basic snapshot information to be stored
-	 * @param entities whether to include entity data in the snapshot
-	 * @param data the extra data, if any, to be stored
-	 * @return the snapshot
-	 */
-	public abstract ChunkSnapshot getSnapshot(SnapshotType type, EntityType entities, ExtraData data);
-
-	/**
 	 * Fills the given block container with the block data for this chunk
 	 */
 	public abstract void fillBlockContainer(BlockContainer container);
-
-	/**
-	 * Fills the given block component container with the block components for this chunk
-	 */
-	public abstract void fillBlockComponentContainer(BlockComponentContainer container);
-
-	/**
-	 * Gets a snapshot of the data for the chunk.  The snapshot will be taken at a stable moment in the tick. <br/><br/> This is the same as calling getFutureSnapshot(BOTH, WEAK_ENTITIES, NO_EXTRA_DATA)
-	 *
-	 * @return the snapshot
-	 */
-	public abstract Future<ChunkSnapshot> getFutureSnapshot();
-
-	/**
-	 * Gets a snapshot of the data for the chunk.  The snapshot will be taken at a stable moment in the tick.
-	 *
-	 * @param type the type of basic snapshot information to be stored
-	 * @param entities whether to include entity data in the snapshot
-	 * @param data the extra data, if any, to be stored
-	 * @return the snapshot
-	 */
-	public abstract Future<ChunkSnapshot> getFutureSnapshot(SnapshotType type, EntityType entities, ExtraData data);
-
-	/**
-	 * Refresh the distance between a player and the chunk, and adds the player as an observer if not previously observing.
-	 *
-	 * @param player the player
-	 * @return false if the player was already observing the chunk
-	 */
-	public abstract boolean refreshObserver(Entity player);
-
-	/**
-	 * De-register a player as observing the chunk.
-	 *
-	 * @param player the player
-	 * @return true if the player was observing the chunk
-	 */
-	public abstract boolean removeObserver(Entity player);
 
 	/**
 	 * Gets the region that this chunk is located in
@@ -144,13 +71,6 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
 	 * @return region
 	 */
 	public abstract Region getRegion();
-
-	/**
-	 * Tests if the chunk is currently loaded
-	 *
-	 * Chunks may be unloaded at the end of each tick
-	 */
-	public abstract boolean isLoaded();
 
 	/**
 	 * Populates the chunk with all the Populators attached to the WorldGenerator of its world.
@@ -225,6 +145,22 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
 	 */
 	public abstract Set<? extends Entity> getObservers();
 
+	/**
+	 * Refresh the distance between a player and the chunk, and adds the player as an observer if not previously observing.
+	 *
+	 * @param player the player
+	 * @return false if the player was already observing the chunk
+	 */
+	public abstract boolean refreshObserver(Entity player);
+
+	/**
+	 * De-register a player as observing the chunk.
+	 *
+	 * @param player the player
+	 * @return true if the player was observing the chunk
+	 */
+	public abstract boolean removeObserver(Entity player);
+
 	@Override
 	public boolean containsBlock(int x, int y, int z) {
 		return x >> BLOCKS.BITS == this.getX() && y >> BLOCKS.BITS == this.getY() && z >> BLOCKS.BITS == this.getZ();
@@ -255,66 +191,6 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
 	 */
 	public int getBlockZ() {
 		return blockZ;
-	}
-
-	/**
-	 * Gets the Block x-coordinate in the world
-	 *
-	 * @param x-coordinate within this Chunk
-	 * @return x-coordinate within the World
-	 */
-	public int getBlockX(int x) {
-		return this.blockX + (x & BLOCKS.MASK);
-	}
-
-	/**
-	 * Gets the Block x-coordinate in the world
-	 *
-	 * @param y y-coordinate within this Chunk
-	 * @return y-coordinate within the World
-	 */
-	public int getBlockY(int y) {
-		return this.blockY + (y & BLOCKS.MASK);
-	}
-
-	/**
-	 * Gets the Block x-coordinate in the world
-	 *
-	 * @param z z-coordinate within this Chunk
-	 * @return z-coordinate within the World
-	 */
-	public int getBlockZ(int z) {
-		return this.blockZ + (z & BLOCKS.MASK);
-	}
-
-	/**
-	 * Gets a random Block x-coordinate using a Random
-	 *
-	 * @param random to use
-	 * @return x-coordinate within the World in this Chunk
-	 */
-	public int getBlockX(Random random) {
-		return this.blockX + random.nextInt(BLOCKS.SIZE);
-	}
-
-	/**
-	 * Gets a random Block y-coordinate using a Random
-	 *
-	 * @param random to use
-	 * @return y-coordinate within the World in this Chunk
-	 */
-	public int getBlockY(Random random) {
-		return this.blockY + random.nextInt(BLOCKS.SIZE);
-	}
-
-	/**
-	 * Gets a random Block z-coordinate using a Random
-	 *
-	 * @param random to use
-	 * @return z-coordinate within the World in this Chunk
-	 */
-	public int getBlockZ(Random random) {
-		return this.blockZ + random.nextInt(BLOCKS.SIZE);
 	}
 
     /**
@@ -372,12 +248,4 @@ public abstract class Chunk extends Cube implements AreaBlockAccess {
 	 * @return a unique generation id, or -1 if the chunk was loaded from disk
 	 */
 	public abstract int getGenerationIndex();
-
-	/**
-	 * Converts a point in such a way that it points to the first block (the base block) of the chunk<br> This is similar to performing the following operation on the x, y and z coordinate:<br> - Convert
-	 * to the chunk coordinate<br> - Multiply by chunk size
-	 */
-	public static Point pointToBase(Point p) {
-		return new Point(p.getWorld(), (int) p.getX() & POINT_BASE_MASK, (int) p.getY() & POINT_BASE_MASK, (int) p.getZ() & POINT_BASE_MASK);
-	}
 }

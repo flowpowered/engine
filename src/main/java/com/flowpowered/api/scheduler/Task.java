@@ -23,8 +23,6 @@
  */
 package com.flowpowered.api.scheduler;
 
-import com.flowpowered.api.geo.cuboid.Region;
-
 /**
  * Represents a task being executed by the scheduler
  */

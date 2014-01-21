@@ -51,21 +51,21 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @return the name of the world
 	 */
 	@Override
-	public String getName();
+	String getName();
 
 	/**
 	 * Gets the age of the world in ms. This count cannot be modified, and increments on every tick.
 	 *
 	 * @return the world's age in ms
 	 */
-	public long getAge();
+	long getAge();
 
 	/**
 	 * Gets the UID representing the world. With extremely high probability the UID is unique to each world.
 	 *
 	 * @return the name of the world
 	 */
-	public UUID getUID();
+	UUID getUID();
 
 	/**
 	 * Gets the entity with the matching unique id <p> Performs a search on each region for the entity, stopping when it is found, or after all the worlds have been searched upon failure.
@@ -73,7 +73,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param uid to search and match
 	 * @return entity that matched the uid, or null if none was found
 	 */
-	public Entity getEntity(UUID uid);
+	Entity getEntity(UUID uid);
 
 	/**
 	 * Spawns an {@link Entity} at the {@link Point} blueprinted with the {@link EntityPrefab} provided. <p>
@@ -85,7 +85,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param prefab The blueprint
 	 * @return The spawned entity at the point with the prefab applied
 	 */
-	public Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab);
+	Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab);
 
 	/**
      * @see World#spawnEntity(com.flowpowered.math.vector.Vector3f, com.flowpowered.api.geo.LoadOption, com.flowpowered.api.entity.EntityPrefab)
@@ -95,7 +95,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param classes The classes to attach
 	 * @return The spawned entity at the point with the components attached
 	 */
-	public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes);
+	Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes);
 
 	/**
      * @see World#spawnEntity(com.flowpowered.math.vector.Vector3f, com.flowpowered.api.geo.LoadOption, com.flowpowered.api.entity.EntityPrefab)
@@ -105,21 +105,21 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param classes The classes to attach
 	 * @return The spawned entities at the points with the components attached
 	 */
-	public Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes);
+	Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes);
 
 	/**
 	 * Gets the engine associated with this world
 	 *
 	 * @return the engine
 	 */
-	public Engine getEngine();
+	Engine getEngine();
 
 	/**
 	 * Gets all entities with the specified type.
 	 *
 	 * @return A collection of entities with the specified type.
 	 */
-	public List<Entity> getAll();
+	List<Entity> getAll();
 
 	/**
 	 * Gets an entity by its id.
@@ -127,23 +127,14 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param id The id.
 	 * @return The entity, or {@code null} if it could not be found.
 	 */
-	public Entity getEntity(int id);
-
-	/**
-	 * Gets the task manager responsible for parallel region tasks.<br> <br> All tasks are submitted to all loaded regions at the start of the next tick.<br> <br> Repeating tasks are also submitted to
-	 * all new regions when they are created.<br> Repeated tasks are NOT guaranteed to happen in the same tick for all regions, as each task is submitted individually to each region.<br> <br> This task
-	 * manager does not support async tasks. <br> If the Runnable for the task is a ParallelRunnable, then a new instance of the Runnable will be created for each region.
-	 *
-	 * @return the parallel task manager for the engine
-	 */
-	public TaskManager getParallelTaskManager();
+	Entity getEntity(int id);
 
 	/**
 	 * Gets the TaskManager associated with this world
 	 *
 	 * @return task manager
 	 */
-	public abstract TaskManager getTaskManager();
+	abstract TaskManager getTaskManager();
 
 	/**
 	 * Gets a list of nearby entities of the point, inside of the range
@@ -153,7 +144,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to look for
 	 * @return the list of nearby entities (or empty if none)
 	 */
-	public List<Entity> getNearbyEntities(Point position, Entity ignore, int range);
+	List<Entity> getNearbyEntities(Point position, Entity ignore, int range);
 
 	/**
 	 * Gets a set of nearby players to the point, inside of the range
@@ -162,7 +153,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to look for
 	 * @return A set of nearby Players
 	 */
-	public List<Entity> getNearbyEntities(Point position, int range);
+	List<Entity> getNearbyEntities(Point position, int range);
 
 	/**
 	 * Gets a set of nearby players to the entity, inside of the range
@@ -171,7 +162,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to look for
 	 * @return A set of nearby Players
 	 */
-	public List<Entity> getNearbyEntities(Entity entity, int range);
+	List<Entity> getNearbyEntities(Entity entity, int range);
 
 	/**
 	 * Gets the absolute closest player from the specified point within a specified range.
@@ -181,7 +172,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to search
 	 * @return nearest player
 	 */
-	public Entity getNearestEntity(Point position, Entity ignore, int range);
+	Entity getNearestEntity(Point position, Entity ignore, int range);
 
 	/**
 	 * Gets the absolute closest player from the specified point within a specified range.
@@ -190,7 +181,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to search
 	 * @return nearest player
 	 */
-	public Entity getNearestEntity(Point position, int range);
+	Entity getNearestEntity(Point position, int range);
 
 	/**
 	 * Gets the absolute closest player from the specified point within a specified range.
@@ -199,7 +190,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to search
 	 * @return nearest player
 	 */
-	public Entity getNearestEntity(Entity entity, int range);
+	Entity getNearestEntity(Entity entity, int range);
 
 	/**
 	 * Gets a set of nearby players to the point, inside of the range. The search will ignore the specified entity.
@@ -209,7 +200,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to look for
 	 * @return A set of nearby Players
 	 */
-	public List<Player> getNearbyPlayers(Point position, Player ignore, int range);
+	List<Player> getNearbyPlayers(Point position, Player ignore, int range);
 
 	/**
 	 * Gets a set of nearby players to the point, inside of the range
@@ -218,7 +209,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to look for
 	 * @return A set of nearby Players
 	 */
-	public List<Player> getNearbyPlayers(Point position, int range);
+	List<Player> getNearbyPlayers(Point position, int range);
 
 	/**
 	 * Gets a set of nearby players to the entity, inside of the range
@@ -227,7 +218,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to look for
 	 * @return A set of nearby Players
 	 */
-	public List<Player> getNearbyPlayers(Entity entity, int range);
+	List<Player> getNearbyPlayers(Entity entity, int range);
 
 	/**
 	 * Gets the absolute closest player from the specified point within a specified range.
@@ -237,7 +228,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to search
 	 * @return nearest player
 	 */
-	public Player getNearestPlayer(Point position, Player ignore, int range);
+	Player getNearestPlayer(Point position, Player ignore, int range);
 
 	/**
 	 * Gets the absolute closest player from the specified point within a specified range.
@@ -246,7 +237,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to search
 	 * @return nearest player
 	 */
-	public Player getNearestPlayer(Point position, int range);
+	Player getNearestPlayer(Point position, int range);
 
 	/**
 	 * Gets the absolute closest player from the specified point within a specified range.
@@ -255,7 +246,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param range to search
 	 * @return nearest player
 	 */
-	public Player getNearestPlayer(Entity entity, int range);
+	Player getNearestPlayer(Entity entity, int range);
 
 	/**
 	 * Atomically sets the cuboid volume to the values inside of the cuboid buffer.
@@ -263,7 +254,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param cause that is setting the cuboid volume
 	 */
 	@Override
-	public void setCuboid(CuboidBlockMaterialBuffer buffer, Cause<?> cause);
+	void setCuboid(CuboidBlockMaterialBuffer buffer, Cause<?> cause);
 
 	/**
 	 * Atomically sets the cuboid volume to the values inside of the cuboid buffer with the base located at the given coords
@@ -271,7 +262,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param cause that is setting the cuboid volume
 	 */
 	@Override
-	public void setCuboid(int x, int y, int z, CuboidBlockMaterialBuffer buffer, Cause<?> cause);
+	void setCuboid(int x, int y, int z, CuboidBlockMaterialBuffer buffer, Cause<?> cause);
 
 	/**
 	 * Atomically gets the cuboid volume with the base located at the given coords of the given size.<br> <br> Note: The block at the base coordinate is inside the
@@ -284,7 +275,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param sz size z-coordinate
 	 */
 	@Override
-	public CuboidBlockMaterialBuffer getCuboid(int bx, int by, int bz, int sx, int sy, int sz);
+	CuboidBlockMaterialBuffer getCuboid(int bx, int by, int bz, int sx, int sy, int sz);
 
 	/**
 	 * Atomically gets the cuboid volume with the base located at the given coords and the size of the given buffer.<br> <br> Note: The block at the base coordinate is inside the
@@ -294,7 +285,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param bz base z-coordinate
 	 */
 	@Override
-	public void getCuboid(int bx, int by, int bz, CuboidBlockMaterialBuffer buffer);
+	void getCuboid(int bx, int by, int bz, CuboidBlockMaterialBuffer buffer);
 
 	/**
 	 * Atomically gets the cuboid volume contained within the given buffer
@@ -302,7 +293,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @param buffer the buffer
 	 */
 	@Override
-	public void getCuboid(CuboidBlockMaterialBuffer buffer);
+	void getCuboid(CuboidBlockMaterialBuffer buffer);
 
 	/**
 	 * Gets the {@link ManagedMap} which a world always has.
@@ -310,12 +301,12 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
 	 * @return ManagedMap
 	 */
 	@Override
-	public ManagedMap getData();
+	ManagedMap getData();
 
 	/**
 	 * Gets a set of all players on active on this world
 	 *
 	 * @return all players on this world
 	 */
-	public List<Player> getPlayers();
+	List<Player> getPlayers();
 }

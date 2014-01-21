@@ -116,16 +116,6 @@ public class FlowEntity implements Entity {
     }
 
     @Override
-    public void onTick(float dt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean canTick() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void tick(float dt) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

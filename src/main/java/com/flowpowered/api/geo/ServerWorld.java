@@ -27,9 +27,10 @@ import java.io.File;
 import java.util.List;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.util.UnloadSavable;
 import com.flowpowered.math.vector.Vector3f;
 
-public interface ServerWorld extends World {
+public interface ServerWorld extends World, UnloadSavable {
 
     /**
      * Gets the {@link WorldGenerator} responsible for generating new chunks for this world
@@ -63,27 +64,29 @@ public interface ServerWorld extends World {
     /**
      * Unloads the world from the server. Undefined behavior will occur if any players are currently alive on the world while it is being unloaded.
      */
+    @Override
     void unload(boolean save);
 
 	/**
 	 * Saves all world data to world data file. <p> Note: World data does not include chunks, regions, or other data. World data pertains to world age, world name, and world data maps. </p>
 	 */
-	public void save();
+    @Override
+	void save();
 
-	public File getDirectory();
+	File getDirectory();
 
 	/**
 	 * Queues a list of chunks for generation.  The Vector3 values are in chunk coords.
 	 *
 	 * @param chunks a list of chunk coordinates
 	 */
-	public void queueChunksForGeneration(List<Vector3f> chunks);
+	void queueChunksForGeneration(List<Vector3f> chunks);
 
 	/**
 	 * Queues a chunk for generation.  The Vector3 value is in chunk coords.
 	 *
 	 * @param chunk chunk coordinates
 	 */
-	public void queueChunkForGeneration(Vector3f chunk);
+	void queueChunkForGeneration(Vector3f chunk);
     
 }

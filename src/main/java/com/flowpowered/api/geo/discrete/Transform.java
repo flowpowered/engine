@@ -23,8 +23,11 @@
  */
 package com.flowpowered.api.geo.discrete;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 
+import com.flowpowered.api.Flow;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.flowpowered.api.geo.World;
@@ -318,4 +321,20 @@ public final class Transform implements Serializable {
 			lock.unlock();
 		}
 	}
+
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+		try {
+			Field field;
+
+			field = Transform.class.getDeclaredField("spinLock");
+			field.setAccessible(true);
+            field.set(this, new SpinLock());
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			if (Flow.debugMode()) {
+				e.printStackTrace();
+			}
+		}
+	}
+    
 }

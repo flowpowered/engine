@@ -23,6 +23,7 @@
  */
 package com.flowpowered.engine.entity;
 
+import com.flowpowered.engine.util.OutwardIterator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

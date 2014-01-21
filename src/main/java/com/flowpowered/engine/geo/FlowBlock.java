@@ -177,12 +177,6 @@ public class FlowBlock implements Block {
 	}
 
 	@Override
-	public FlowBlock addData(int data) {
-		this.getChunk().addBlockData(this.x, this.y, this.z, (short) data, null);
-		return this;
-	}
-
-	@Override
 	public short getBlockData() {
 		return this.getChunk().getBlockData(this.x, this.y, this.z);
 	}

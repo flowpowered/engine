@@ -25,24 +25,20 @@ package com.flowpowered.engine.geo.chunk;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
+
+import gnu.trove.map.hash.TShortObjectHashMap;
 
 import com.flowpowered.commons.datatable.ManagedHashMap;
 import com.flowpowered.commons.hashing.NibbleQuadHashed;
 import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.events.Cause;
 
-import gnu.trove.map.hash.TShortObjectHashMap;
-
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.geo.cuboid.BlockComponentContainer;
 import com.flowpowered.api.geo.cuboid.BlockContainer;
 import com.flowpowered.api.geo.cuboid.Chunk;
-import static com.flowpowered.api.geo.cuboid.Chunk.BLOCKS;
-import com.flowpowered.api.geo.cuboid.ChunkSnapshot;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.engine.geo.FlowBlock;
@@ -87,32 +83,7 @@ public class FlowChunk extends Chunk {
     }
 
     @Override
-    public ChunkSnapshot getSnapshot() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ChunkSnapshot getSnapshot(ChunkSnapshot.SnapshotType type, ChunkSnapshot.EntityType entities, ChunkSnapshot.ExtraData data) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void fillBlockContainer(BlockContainer container) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void fillBlockComponentContainer(BlockComponentContainer container) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Future<ChunkSnapshot> getFutureSnapshot() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Future<ChunkSnapshot> getFutureSnapshot(ChunkSnapshot.SnapshotType type, ChunkSnapshot.EntityType entities, ChunkSnapshot.ExtraData data) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -197,11 +168,6 @@ public class FlowChunk extends Chunk {
     }
 
     @Override
-    public boolean addBlockData(int x, int y, int z, short data, Cause<?> cause) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean setBlockMaterial(int x, int y, int z, BlockMaterial material, short data, Cause<?> cause) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -247,13 +213,8 @@ public class FlowChunk extends Chunk {
     }
 
 	@Override
-	public FlowBlock getBlock(int x, int y, int z) {
-		return new FlowBlock((FlowWorld) getWorld(), x, y, z);
-	}
-
-	@Override
 	public FlowBlock getBlock(float x, float y, float z) {
-		return this.getBlock(GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
+        return new FlowBlock((FlowWorld) getWorld(), GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
 	}
 
 	@Override

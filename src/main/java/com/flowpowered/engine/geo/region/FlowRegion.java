@@ -122,11 +122,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     }
 
     @Override
-    public TaskManager getTaskManager() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean isLoaded() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -327,11 +322,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     }
 
     @Override
-    public boolean addBlockData(int x, int y, int z, short data, Cause<?> cause) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean setBlockMaterial(int x, int y, int z, BlockMaterial material, short data, Cause<?> cause) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -373,11 +363,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     @Override
     public int addBlockDataField(int x, int y, int z, int bits, int value, Cause<?> source) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Block getBlock(int x, int y, int z) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

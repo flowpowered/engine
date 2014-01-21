@@ -23,8 +23,6 @@
  */
 package com.flowpowered.api.geo;
 
-import java.util.List;
-
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.math.vector.Vector3f;
 
@@ -84,7 +82,8 @@ public interface AreaChunkAccess extends AreaBlockAccess {
 	 *
 	 * @param x coordinate of the chunk
 	 * @param y coordinate of the chunk
-	 * @param z coordinate of the chunk
+     * @param z coordinate of the chunk
+     * @param save whether to save or not 
 	 */
 	public void unloadChunk(int x, int y, int z, boolean save);
 

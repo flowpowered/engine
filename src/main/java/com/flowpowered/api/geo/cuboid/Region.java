@@ -34,12 +34,12 @@ import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.LocalAreaAccess;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
-import com.flowpowered.api.scheduler.TaskManager;
+import com.flowpowered.api.util.UnloadSavable;
 
 /**
  * Represents a cube containing 16x16x16 Chunks (256x256x256 Blocks)
  */
-public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaAccess, Iterable<Chunk> {
+public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaAccess, Iterable<Chunk>, UnloadSavable {
 	/**
 	 * Stores the size of the amount of chunks in this Region
 	 */
@@ -48,6 +48,7 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 	 * Stores the size of the amount of blocks in this Region
 	 */
 	public static final BitSize BLOCKS = new BitSize(CHUNKS.BITS + Chunk.BLOCKS.BITS);
+
 	private final int blockX;
 	private final int blockY;
 	private final int blockZ;
@@ -119,66 +120,6 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 		return this.chunkZ;
 	}
 
-	/**
-	 * Gets the Block x-coordinate in the world
-	 *
-	 * @param x-coordinate within this Region
-	 * @return x-coordinate within the World
-	 */
-	public int getBlockX(int x) {
-		return this.blockX + (x & BLOCKS.MASK);
-	}
-
-	/**
-	 * Gets the Block y-coordinate in the world
-	 *
-	 * @param y-coordinate within this Region
-	 * @return y-coordinate within the World
-	 */
-	public int getBlockY(int y) {
-		return this.blockY + (y & BLOCKS.MASK);
-	}
-
-	/**
-	 * Gets the Block z-coordinate in the world
-	 *
-	 * @param z-coordinate within this Region
-	 * @return z-coordinate within the World
-	 */
-	public int getBlockZ(int z) {
-		return this.blockZ + (z & BLOCKS.MASK);
-	}
-
-	/**
-	 * Gets the Chunk x-coordinate in the world
-	 *
-	 * @param x-coordinate within this Region
-	 * @return x-coordinate within the World
-	 */
-	public int getChunkX(int x) {
-		return this.chunkX + (x & CHUNKS.MASK);
-	}
-
-	/**
-	 * Gets the Chunk y-coordinate in the world
-	 *
-	 * @param y-coordinate within this Region
-	 * @return y-coordinate within the World
-	 */
-	public int getChunkY(int y) {
-		return this.chunkY + (y & CHUNKS.MASK);
-	}
-
-	/**
-	 * Gets the Chunk z-coordinate in the world
-	 *
-	 * @param z-coordinate within this Region
-	 * @return z-coordinate within the World
-	 */
-	public int getChunkZ(int z) {
-		return this.chunkZ + (z & CHUNKS.MASK);
-	}
-
 	@Override
 	public boolean containsBlock(int x, int y, int z) {
 		return x >> BLOCKS.BITS == this.getX() && y >> BLOCKS.BITS == this.getY() && z >> BLOCKS.BITS == this.getZ();
@@ -188,18 +129,6 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 	public boolean containsChunk(int x, int y, int z) {
 		return x >> CHUNKS.BITS == this.getX() && y >> CHUNKS.BITS == this.getY() && z >> CHUNKS.BITS == this.getZ();
 	}
-
-	/**
-	 * Queues all chunks for saving at the next available opportunity.
-	 */
-	public abstract void save();
-
-	/**
-	 * Performs the nessecary tasks to unload this region from the world, and all associated chunks.
-	 *
-	 * @param save whether to save the region and associated data.
-	 */
-	public abstract void unload(boolean save);
 
 	/**
 	 * Gets all entities with the specified type.
@@ -217,13 +146,6 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 	public abstract Entity getEntity(int id);
 
 	public abstract List<Player> getPlayers();
-
-	/**
-	 * Gets the TaskManager associated with this region
-	 */
-	public abstract TaskManager getTaskManager();
-
-	public abstract boolean isLoaded();
 
 	@Override
 	public Iterator<Chunk> iterator() {

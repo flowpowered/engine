@@ -41,21 +41,21 @@ public interface Block extends WorldSource, ComponentOwner {
 	 *
 	 * @return the position
 	 */
-	public Point getPosition();
+	Point getPosition();
 
 	/**
 	 * Gets the {@link Chunk} this block is in
 	 *
 	 * @return the Chunk
 	 */
-	public Chunk getChunk();
+	Chunk getChunk();
 
 	/**
 	 * Gets the {@link Region} this block is in
 	 *
 	 * @return the Region
 	 */
-	public Region getRegion();
+	Region getRegion();
 
 	/**
 	 * Gets the {@link World} this block is in
@@ -63,28 +63,28 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @return the World
 	 */
 	@Override
-	public World getWorld();
+	World getWorld();
 
 	/**
 	 * Gets the x-coordinate of this block
 	 *
 	 * @return the x-coordinate
 	 */
-	public int getX();
+	int getX();
 
 	/**
 	 * Gets the y-coordinate of this block
 	 *
 	 * @return the y-coordinate
 	 */
-	public int getY();
+	int getY();
 
 	/**
 	 * Gets the z-coordinate of this block
 	 *
 	 * @return the z-coordinate
 	 */
-	public int getZ();
+	int getZ();
 
 	/**
 	 * Translates this block using the offset and distance given
@@ -93,7 +93,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param distance to translate
 	 * @return a new Block instance
 	 */
-	public Block translate(BlockFace offset, int distance);
+	Block translate(BlockFace offset, int distance);
 
 	/**
 	 * Translates this block using the offset given
@@ -101,7 +101,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param offset BlockFace to translate
 	 * @return a new Block instance
 	 */
-	public Block translate(BlockFace offset);
+	Block translate(BlockFace offset);
 
 	/**
 	 * Translates this block using the offset given
@@ -109,7 +109,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param offset Vector to translate
 	 * @return a new Block instance
 	 */
-	public Block translate(Vector3f offset);
+	Block translate(Vector3f offset);
 
 	/**
 	 * Translates this block using the offset given
@@ -117,7 +117,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param offset Vector to translate
 	 * @return a new Block instance
 	 */
-	public Block translate(Vector3i offset);
+	Block translate(Vector3i offset);
 
 	/**
 	 * Translates this block using the offsets given
@@ -127,21 +127,21 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param dz offset to translate
 	 * @return a new Block instance
 	 */
-	public Block translate(int dx, int dy, int dz);
+	Block translate(int dx, int dy, int dz);
 
 	/**
 	 * Gets the block material of this block
 	 *
 	 * @return block material
 	 */
-	public BlockMaterial getMaterial();
+	BlockMaterial getMaterial();
 
 	/**
 	 * Gets the block data for this block
 	 *
 	 * @return data
 	 */
-	public short getBlockData();
+	short getBlockData();
 
 	/**
 	 * Sets the data of this block to the given material's data
@@ -149,7 +149,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param data to set to
 	 * @return this Block
 	 */
-	public Block setData(BlockMaterial data);
+	Block setData(BlockMaterial data);
 
 	/**
 	 * Sets the data of this block
@@ -157,7 +157,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param data to set to
 	 * @return this Block
 	 */
-	public Block setData(int data);
+	Block setData(int data);
 
 	/**
 	 * Sets the data of this block
@@ -166,15 +166,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param cause of the change
 	 * @return this Block
 	 */
-	public Block setData(int data, Cause<?> cause);
-
-	/**
-	 * Adds the value to the data of this block
-	 *
-	 * @param data to add
-	 * @return this Block
-	 */
-	public Block addData(int data);
+	Block setData(int data, Cause<?> cause);
 
 	/**
 	 * Sets the material of this block
@@ -182,7 +174,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param material to set to
 	 * @return whether the material set was successful
 	 */
-	public boolean setMaterial(BlockMaterial material);
+	boolean setMaterial(BlockMaterial material);
 
 	/**
 	 * Sets the material of this block
@@ -191,7 +183,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param cause of the change
 	 * @return whether the material set was successful
 	 */
-	public boolean setMaterial(BlockMaterial material, Cause<?> cause);
+	boolean setMaterial(BlockMaterial material, Cause<?> cause);
 
 	/**
 	 * Sets the material and data of this block
@@ -200,7 +192,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param data to set to
 	 * @return whether the material set was successful
 	 */
-	public boolean setMaterial(BlockMaterial material, int data);
+	boolean setMaterial(BlockMaterial material, int data);
 
 	/**
 	 * Sets the material and data of this block
@@ -210,7 +202,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param cause of the change
 	 * @return whether the material set was successful
 	 */
-	public boolean setMaterial(BlockMaterial material, int data, Cause<?> cause);
+	boolean setMaterial(BlockMaterial material, int data, Cause<?> cause);
 
 	/**
 	 * Sets the given bits in the data for the block<br> <br> newData = oldData | (bits)
@@ -218,7 +210,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param bits the bits to set
 	 * @return the old data for the block
 	 */
-	public short setDataBits(int bits);
+	short setDataBits(int bits);
 
 	/**
 	 * Sets the given bits in the data for the block<br> <br> newData = oldData | (bits) <br>or<br> newData = oldData & ~(bits)
@@ -227,7 +219,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param set True to set the bits, False to clear
 	 * @return the old data for the block
 	 */
-	public short setDataBits(int bits, boolean set);
+	short setDataBits(int bits, boolean set);
 
 	/**
 	 * Clears the given bits in the data for the block<br> <br> newData = oldData & (~bits)
@@ -235,7 +227,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param bits the bits to clear
 	 * @return the old data for the block
 	 */
-	public short clearDataBits(int bits);
+	short clearDataBits(int bits);
 
 	/**
 	 * Gets the data field from the block<br> <br> field = (data & bits) >> (shift)<br> <br> The shift value used shifts the least significant non-zero bit of bits to the LSB position
@@ -243,7 +235,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param bits the bits of the field
 	 * @return the field value
 	 */
-	public int getDataField(int bits);
+	int getDataField(int bits);
 
 	/**
 	 * Gets if any of the indicated bits are set.
@@ -251,7 +243,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param bits the bits to check
 	 * @return true if any of the given bits are set
 	 */
-	public boolean isDataBitSet(int bits);
+	boolean isDataBitSet(int bits);
 
 	/**
 	 * Sets the data field for the block.  This is the reverse operation to the getDataField method.<br> <br> newData = ((value << shift) & bits) | (oldData & (~bits))<br> <br> The shift value used
@@ -261,7 +253,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param value the new value of the field
 	 * @return the old value of the field
 	 */
-	public int setDataField(int bits, int value);
+	int setDataField(int bits, int value);
 
 	/**
 	 * Adds a value to the data field for the block.  This is the reverse operation to the getBlockDataField method.<br> <br> newData = (((oldData + (value << shift)) & bits) | (oldData & ~bits))<br>
@@ -271,7 +263,7 @@ public interface Block extends WorldSource, ComponentOwner {
 	 * @param value to add to the value of the field
 	 * @return the old value of the field
 	 */
-	public int addDataField(int bits, int value);
+	int addDataField(int bits, int value);
 
-	public boolean isMaterial(Material... materials);
+	boolean isMaterial(Material... materials);
 }
