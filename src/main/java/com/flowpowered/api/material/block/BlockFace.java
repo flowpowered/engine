@@ -44,8 +44,7 @@ public enum BlockFace implements ByteBitMask, Serializable {
 	WEST(0x20, 0, 0, 1, Quaternionf.fromAngleDegAxis(0, 0, 1, 0), EAST),
 	THIS(0x40, 0, 0, 0, Quaternionf.IDENTITY);
 	private final byte mask;
-	private final Vector3f offset;
-	private final Vector3i intOffset;
+	private final Vector3i offset;
 	private final Quaternionf direction;
 	private BlockFace opposite = this;
 	private static final TIntObjectHashMap<BlockFace> OFFSET_MAP = new TIntObjectHashMap<>(7);
@@ -64,20 +63,19 @@ public enum BlockFace implements ByteBitMask, Serializable {
 	}
 
 	private BlockFace(int mask, int dx, int dy, int dz, Quaternionf direction) {
-		this.offset = new Vector3f(dx, dy, dz);
-		this.intOffset = new Vector3i(dx, dy, dz);
+		this.offset = new Vector3i(dx, dy, dz);
 		this.direction = direction;
 		this.mask = (byte) mask;
 	}
 
-	private static int getOffsetHash(Vector3f offset) {
-		int x = offset.getFloorX();
-		int y = offset.getFloorY();
-		int z = offset.getFloorZ();
+	protected static byte getOffsetHash(Vector3i offset) {
+		int x = offset.getX();
+		int y = offset.getY();
+		int z = offset.getZ();
 		x += 1;
 		y += 1;
 		z += 1;
-		return x | y << 2 | z << 4;
+		return (byte) (x | y << 2 | z << 4);
 	}
 
 	/**
@@ -90,21 +88,12 @@ public enum BlockFace implements ByteBitMask, Serializable {
 	}
 
 	/**
-	 * Represents the directional offset of this Blockface as a Vector3.
+	 * Represents the directional offset of this Blockface as a Vector3i.
 	 *
 	 * @return the offset of this directional.
 	 */
-	public Vector3f getOffset() {
+	public Vector3i getOffset() {
 		return this.offset;
-	}
-
-	/**
-	 * Represents the directional offset of this Blockface as an IntVector3.
-	 *
-	 * @return the offset of this directional.
-	 */
-	public Vector3i getIntOffset() {
-		return this.intOffset;
 	}
 
 	/**
@@ -131,8 +120,7 @@ public enum BlockFace implements ByteBitMask, Serializable {
 		return BlockFaces.WSEN.get(Math.round(yaw / 90f) & 0x3);
 	}
 
-	public static BlockFace fromOffset(Vector3f offset) {
-		offset = offset.normalize().round();
+	public static BlockFace fromOffset(Vector3i offset) {
 		return OFFSET_MAP.get(getOffsetHash(offset));
 	}
 }

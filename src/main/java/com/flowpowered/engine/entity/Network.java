@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.flowpowered.commons.datatable.defaulted.DefaultedKey;
 import com.flowpowered.commons.datatable.defaulted.DefaultedKeyImpl;
 
-import com.flowpowered.api.Platform;
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
@@ -247,7 +246,7 @@ public class Network {
 		// For every chunk that we were observing but not anymore
 		for (Chunk chunk : observingChunks) {
 			if (!chunk.isLoaded()) {
-				throw new IllegalStateException("Chunk(" + chunk.getX() + " " + chunk.getY() + " " + chunk.getZ() + ") was unloaded while being observed!");
+				throw new IllegalStateException("Chunk(" + chunk.getChunkX() + " " + chunk.getChunkY() + " " + chunk.getChunkZ() + ") was unloaded while being observed!");
 			}
 			chunk.removeObserver(entity);
 		}

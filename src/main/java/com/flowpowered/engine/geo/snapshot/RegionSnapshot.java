@@ -39,17 +39,17 @@ import com.flowpowered.math.vector.Vector3i;
 public class RegionSnapshot {
     private final ChunkSnapshot[] chunks = new ChunkSnapshot[Region.CHUNKS.VOLUME];
     private final WorldSnapshot world;
-    private final Vector3i base;
+    private final Vector3i position;
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public RegionSnapshot(WorldSnapshot snapshot, Vector3i base) {
+    public RegionSnapshot(WorldSnapshot snapshot, Vector3i position) {
         this.world = snapshot;
-        this.base = base;
+        this.position = position;
     }
 
-    public Vector3i getBase() {
-        return base;
+    public Vector3i getPosition() {
+        return position;
     }
 
     public ChunkSnapshot getChunk(Vector3i position) {
@@ -87,7 +87,7 @@ public class RegionSnapshot {
     }
 
     public boolean update(FlowRegion current) {
-        if (!current.getBase().toInt().equals(base)) {
+        if (!current.getPosition().toInt().equals(position)) {
             throw new IllegalArgumentException("Cannot update from a region with another ID");
         }
         final Lock lock = this.lock.writeLock();
@@ -101,7 +101,7 @@ public class RegionSnapshot {
                 if (currentChunk == null && currentSnapshot == null) {
                     continue;
                 } else if (currentChunk != null && currentSnapshot == null) {
-                    ChunkSnapshot chunkSnapshot = new ChunkSnapshot(world, this, currentChunk.getBase().toInt());
+                    ChunkSnapshot chunkSnapshot = new ChunkSnapshot(world, this, currentChunk.getPosition().toInt());
                     chunkSnapshot.update(currentChunk);
                     chunks[i] = chunkSnapshot;
                     changed = true;
@@ -132,11 +132,11 @@ public class RegionSnapshot {
             return false;
         }
         final RegionSnapshot snapshot = (RegionSnapshot) o;
-        return base.equals(snapshot.base);
+        return position.equals(snapshot.position);
     }
 
     @Override
     public int hashCode() {
-        return 17 * base.hashCode();
+        return 17 * position.hashCode();
     }
 }

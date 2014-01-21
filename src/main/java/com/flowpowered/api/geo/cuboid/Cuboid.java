@@ -34,111 +34,117 @@ import com.flowpowered.math.vector.Vector3f;
  * Represents a Cuboid shaped volume that is located somewhere in a world.
  */
 public class Cuboid implements WorldSource {
-	protected final Point base;
-	protected final Vector3f size;
-	private final int x;
-	private final int y;
-	private final int z;
-	/**
-	 * Hashcode caching
-	 */
-	private volatile boolean hashed = false;
-	private volatile int hashcode = 0;
-	/**
-	 * Vertex cache
-	 */
-	private Vector3f[] vertices = null;
+    protected final Point base;
+    protected final Vector3f size;
+    protected final Vector3f position;
+    private final float x;
+    private final float y;
+    private final float z;
+    /**
+     * Hashcode caching
+     */
+    private volatile boolean hashed = false;
+    private volatile int hashcode = 0;
+    /**
+     * Vertex cache
+     */
+    private Vector3f[] vertices = null;
 
-	/**
-	 * Constructs a cubiod with the point as the base point, and
-	 */
-	public Cuboid(Point base, Vector3f size) {
-		this.base = base;
-		this.size = size;
-		this.x = (int) (base.getX() / size.getX());
-		this.y = (int) (base.getY() / size.getY());
-		this.z = (int) (base.getZ() / size.getZ());
-	}
+    /**
+     * Constructs a cubiod with the point as the base point, and
+     */
+    public Cuboid(Point base, Vector3f size) {
+        this.base = base;
+        this.size = size;
+        this.x = base.getX() / size.getX();
+        this.y = base.getY() / size.getY();
+        this.z = base.getZ() / size.getZ();
+        this.position = new Vector3f(x, y, z);
+    }
 
-	public Point getBase() {
-		return base;
-	}
+    public Point getBase() {
+        return base;
+    }
 
-	public Vector3f getSize() {
-		return size;
-	}
+    public Vector3f getSize() {
+        return size;
+    }
 
-	public int getX() {
-		return x;
-	}
+    public Vector3f getPosition() {
+        return position;
+    }
 
-	public int getY() {
-		return y;
-	}
+    public float getX() {
+        return x;
+    }
 
-	public int getZ() {
-		return z;
-	}
+    public float getY() {
+        return y;
+    }
 
-	@Override
-	public World getWorld() {
-		return base.getWorld();
-	}
+    public float getZ() {
+        return z;
+    }
 
-	/**
-	 * Returns the vertices of this Cuboid.
-	 *
-	 * @return The vertices
-	 */
-	public Vector3f[] getVertices() {
-		if (vertices == null) {
-			vertices = new Vector3f[8];
+    @Override
+    public World getWorld() {
+        return base.getWorld();
+    }
 
-			// Front
-			vertices[0] = new Vector3f(base.getX(), base.getY(), base.getZ() + size.getZ());
-			vertices[1] = new Vector3f(base.getX() + size.getX(), base.getY(), base.getZ() + size.getZ());
-			vertices[2] = new Vector3f(base.getX() + size.getX(), base.getY() + size.getY(), base.getZ() + size.getZ());
-			vertices[3] = new Vector3f(base.getX(), base.getY() + size.getY(), base.getZ() + size.getZ());
-			// Back
-			vertices[4] = new Vector3f(base.getX(), base.getY(), base.getZ());
-			vertices[5] = new Vector3f(base.getX() + size.getX(), base.getY(), base.getZ());
-			vertices[6] = new Vector3f(base.getX() + size.getX(), base.getY() + size.getY(), base.getZ());
-			vertices[7] = new Vector3f(base.getX(), base.getY() + size.getY(), base.getZ());
-		}
+    /**
+     * Returns the vertices of this Cuboid.
+     *
+     * @return The vertices
+     */
+    public Vector3f[] getVertices() {
+        if (vertices == null) {
+            vertices = new Vector3f[8];
 
-		return vertices;
-	}
+            // Front
+            vertices[0] = new Vector3f(base.getX(), base.getY(), base.getZ() + size.getZ());
+            vertices[1] = new Vector3f(base.getX() + size.getX(), base.getY(), base.getZ() + size.getZ());
+            vertices[2] = new Vector3f(base.getX() + size.getX(), base.getY() + size.getY(), base.getZ() + size.getZ());
+            vertices[3] = new Vector3f(base.getX(), base.getY() + size.getY(), base.getZ() + size.getZ());
+            // Back
+            vertices[4] = new Vector3f(base.getX(), base.getY(), base.getZ());
+            vertices[5] = new Vector3f(base.getX() + size.getX(), base.getY(), base.getZ());
+            vertices[6] = new Vector3f(base.getX() + size.getX(), base.getY() + size.getY(), base.getZ());
+            vertices[7] = new Vector3f(base.getX(), base.getY() + size.getY(), base.getZ());
+        }
 
-	public boolean contains(Vector3f vec) {
-		Vector3f max = base.add(size);
-		return (base.getX() <= vec.getX() && vec.getX() < max.getX()) && (base.getY() <= vec.getY() && vec.getY() < max.getY()) && (base.getZ() <= vec.getZ() && vec.getZ() < max.getZ());
-	}
+        return vertices;
+    }
 
-	@Override
-	public int hashCode() {
-		if (!hashed) {
-			hashcode = new HashCodeBuilder(563, 21).append(base).append(size).toHashCode();
-			hashed = true;
-		}
-		return hashcode;
-	}
+    public boolean contains(Vector3f vec) {
+        Vector3f max = base.add(size);
+        return (base.getX() <= vec.getX() && vec.getX() < max.getX()) && (base.getY() <= vec.getY() && vec.getY() < max.getY()) && (base.getZ() <= vec.getZ() && vec.getZ() < max.getZ());
+    }
 
-	@Override
-	public boolean equals(Object obj) {
+    @Override
+    public int hashCode() {
+        if (!hashed) {
+            hashcode = new HashCodeBuilder(563, 21).append(base).append(size).toHashCode();
+            hashed = true;
+        }
+        return hashcode;
+    }
 
-		if (obj == null) {
-			return false;
-		} else if (!(obj instanceof Cuboid)) {
-			return false;
-		} else {
-			Cuboid cuboid = (Cuboid) obj;
+    @Override
+    public boolean equals(Object obj) {
 
-			return cuboid.size.getX() == size.getX() && cuboid.size.getY() == size.getY() && cuboid.size.getZ() == size.getZ() && cuboid.getWorld().equals(getWorld()) && cuboid.getX() == getX() && cuboid.getY() == getY() && cuboid.getZ() == getZ();
-		}
-	}
+        if (obj == null) {
+            return false;
+        } else if (!(obj instanceof Cuboid)) {
+            return false;
+        } else {
+            Cuboid cuboid = (Cuboid) obj;
 
-	@Override
-	public String toString() {
-		return "Cuboid[" + size.getX() + ", " + size.getY() + ", " + size.getZ() + "]@[" + getX() + ", " + getY() + ", " + getZ() + "]";
-	}
+            return cuboid.size.getX() == size.getX() && cuboid.size.getY() == size.getY() && cuboid.size.getZ() == size.getZ() && cuboid.getWorld().equals(getWorld()) && cuboid.getX() == getX() && cuboid.getY() == getY() && cuboid.getZ() == getZ();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Cuboid[" + size.getX() + ", " + size.getY() + ", " + size.getZ() + "]@[" + getX() + ", " + getY() + ", " + getZ() + "]";
+    }
 }

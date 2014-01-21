@@ -104,7 +104,7 @@ public class WorldSnapshot {
         try {
             final Map<Vector3i, RegionSnapshot> map = new HashMap<>(regions.size());
             for (RegionSnapshot region : regions.valueCollection()) {
-                map.put(region.getBase(), region);
+                map.put(region.getPosition(), region);
             }
             return map;
         } finally {
@@ -160,18 +160,18 @@ public class WorldSnapshot {
             final Set<Vector3i> validRegions = new HashSet<>();
             boolean changed = false;
             for (FlowRegion region : current.getFlowRegions()) {
-                final Vector3i base = region.getBase().toInt();
-                RegionSnapshot regionSnapshot = regions.get(base.getX(), base.getY(), base.getZ());
+                final Vector3i position = region.getPosition().toInt();
+                RegionSnapshot regionSnapshot = regions.get(position.getX(), position.getY(), position.getZ());
                 if (regionSnapshot == null) {
                     regionSnapshot = region.getSnapshot();
-                    regions.put(base.getX(), base.getY(), base.getZ(), regionSnapshot);
+                    regions.put(position.getX(), position.getY(), position.getZ(), regionSnapshot);
                     changed = true;
                 }
-                validRegions.add(base);
+                validRegions.add(position);
             }
             for (Iterator<RegionSnapshot> iterator = regions.valueCollection().iterator(); iterator.hasNext(); ) {
                 RegionSnapshot next = iterator.next();
-                final Vector3i position = next.getBase();
+                final Vector3i position = next.getPosition();
                 if (!validRegions.contains(position)) {
                     iterator.remove();
                     lastUpdate.remove(next);

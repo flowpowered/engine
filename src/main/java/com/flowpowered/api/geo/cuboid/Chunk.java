@@ -37,6 +37,7 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.util.UnloadSavable;
 import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  * Represents a cube containing 16x16x16 Blocks
@@ -55,9 +56,9 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
 
 	public Chunk(World world, int x, int y, int z) {
 		super(new Point(world, x, y, z), BLOCKS.SIZE);
-		blockX = super.getX() << BLOCKS.BITS;
-		blockY = super.getY() << BLOCKS.BITS;
-		blockZ = super.getZ() << BLOCKS.BITS;
+		blockX = getChunkX() << BLOCKS.BITS;
+		blockY = getChunkY() << BLOCKS.BITS;
+		blockZ = getChunkZ() << BLOCKS.BITS;
 	}
 
 	/**
@@ -163,7 +164,7 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
 
 	@Override
 	public boolean containsBlock(int x, int y, int z) {
-		return x >> BLOCKS.BITS == this.getX() && y >> BLOCKS.BITS == this.getY() && z >> BLOCKS.BITS == this.getZ();
+		return x >> BLOCKS.BITS == getChunkX() && y >> BLOCKS.BITS == getChunkY() && z >> BLOCKS.BITS == getChunkZ();
 	}
 
 	/**
@@ -193,6 +194,18 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
 		return blockZ;
 	}
 
+    public int getChunkX() {
+        return (int) getX();
+    }
+
+    public int getChunkY() {
+        return (int) getY();
+    }
+
+    public int getChunkZ() {
+        return (int) getZ();
+    }
+
     /**
      * Gets a chunk relative to this chunk
      *
@@ -204,12 +217,12 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
      */
     public Chunk getRelative(int x, int y, int z, LoadOption opt) {
         // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
-        final int otherChunkX = this.getX() + x;
-        final int otherChunkY = this.getY() + y;
-        final int otherChunkZ = this.getZ() + z;
-        final int regionX = getRegion().getX();
-        final int regionY = getRegion().getY();
-        final int regionZ = getRegion().getZ();
+        final int otherChunkX = this.getChunkX() + x;
+        final int otherChunkY = this.getChunkY() + y;
+        final int otherChunkZ = this.getChunkZ() + z;
+        final int regionX = getRegion().getRegionX();
+        final int regionY = getRegion().getRegionY();
+        final int regionZ = getRegion().getRegionZ();
         final int otherRegionX = otherChunkX >> Region.CHUNKS.BITS;
         final int otherRegionY = otherChunkY >> Region.CHUNKS.BITS;
         final int otherRegionZ = otherChunkZ >> Region.CHUNKS.BITS;
@@ -227,8 +240,8 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
 	 * @param opt True to load the chunk if it is not yet loaded
 	 * @return The Chunk, or null if not loaded and load is False
 	 */
-	public Chunk getRelative(Vector3f offset, LoadOption opt) {
-		return this.getWorld().getChunk(this.getX() + (int) offset.getX(), this.getY() + (int) offset.getY(), this.getZ() + (int) offset.getZ(), opt);
+	public Chunk getRelative(Vector3i offset, LoadOption opt) {
+		return this.getWorld().getChunk(this.getChunkX() + offset.getX(), this.getChunkY() + offset.getY(), this.getChunkZ() + offset.getZ(), opt);
 	}
 
 	/**

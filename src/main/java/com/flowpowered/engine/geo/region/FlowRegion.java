@@ -92,7 +92,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         this.generator = new RegionGenerator(this, 4);
         this.chunkStore = chunkStore;
         this.render = render;
-        this.snapshot = new RegionSnapshot(world.getSnapshot(), getBase().toInt());
+        this.snapshot = new RegionSnapshot(world.getSnapshot(), getPosition().toInt());
 
     }
 

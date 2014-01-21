@@ -31,7 +31,7 @@ import com.flowpowered.commons.bit.ByteBitMask;
 
 import gnu.trove.map.hash.TByteObjectHashMap;
 
-import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  * Contains several BlockFace array constants and functions to operate on them
@@ -47,8 +47,8 @@ public class BlockFaces implements Iterable<BlockFace>, ByteBitMask {
 				for (BlockFace face3 : new BlockFace[] {BlockFace.THIS,
 						BlockFace.NORTH, BlockFace.SOUTH}) {
 					BlockFaces faces = new BlockFaces(face1, face2, face3);
-					Vector3f offset = faces.getOffset();
-					byte hash = getOffsetHash(offset);
+					Vector3i offset = faces.getOffset();
+					byte hash = BlockFace.getOffsetHash(offset);
 					offsetHash.put(hash, faces);
 				}
 			}
@@ -165,12 +165,12 @@ public class BlockFaces implements Iterable<BlockFace>, ByteBitMask {
 	public static final BlockFaces NONE = new BlockFaces();
 	private final byte mask;
 	private final BlockFace[] faces;
-	private final Vector3f offset;
+	private final Vector3i offset;
 
 	public BlockFaces(BlockFace... blockfaces) {
 		this.faces = blockfaces;
 		byte mask = 0;
-		Vector3f offsetc = Vector3f.ZERO;
+		Vector3i offsetc = Vector3i.ZERO;
 		for (BlockFace face : this.faces) {
 			offsetc = offsetc.add(face.getOffset());
 			mask |= face.getMask();
@@ -184,7 +184,7 @@ public class BlockFaces implements Iterable<BlockFace>, ByteBitMask {
 		return this.mask;
 	}
 
-	public Vector3f getOffset() {
+	public Vector3i getOffset() {
 		return offset;
 	}
 
@@ -357,19 +357,7 @@ public class BlockFaces implements Iterable<BlockFace>, ByteBitMask {
 		return Arrays.copyOf(this.faces, this.faces.length);
 	}
 
-	private static byte getOffsetHash(Vector3f offset) {
-		offset = offset.normalize();
-		offset = offset.round();
-		int x = offset.getFloorX();
-		int y = offset.getFloorY();
-		int z = offset.getFloorZ();
-		x += 1;
-		y += 1;
-		z += 1;
-		return (byte) (x | y << 2 | z << 4);
-	}
-
-	public static BlockFaces fromOffset(Vector3f offset) {
-		return offsetHash.get(getOffsetHash(offset));
+	public static BlockFaces fromOffset(Vector3i offset) {
+		return offsetHash.get(BlockFace.getOffsetHash(offset));
 	}
 }

@@ -58,12 +58,12 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 
 	public Region(World world, int x, int y, int z) {
 		super(new Point(world, x, y, z), BLOCKS.SIZE);
-		this.blockX = super.getX() << BLOCKS.BITS;
-		this.blockY = super.getY() << BLOCKS.BITS;
-		this.blockZ = super.getZ() << BLOCKS.BITS;
-		this.chunkX = super.getX() << CHUNKS.BITS;
-		this.chunkY = super.getY() << CHUNKS.BITS;
-		this.chunkZ = super.getZ() << CHUNKS.BITS;
+		this.blockX = getRegionX() << BLOCKS.BITS;
+		this.blockY = getRegionY() << BLOCKS.BITS;
+		this.blockZ = getRegionZ() << BLOCKS.BITS;
+		this.chunkX = getRegionX() << CHUNKS.BITS;
+		this.chunkY = getRegionY() << CHUNKS.BITS;
+		this.chunkZ = getRegionZ() << CHUNKS.BITS;
 	}
 
 	/**
@@ -120,14 +120,26 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 		return this.chunkZ;
 	}
 
+    public final int getRegionX() {
+        return (int) super.getX();
+    }
+
+    public final int getRegionY() {
+        return (int) super.getY();
+    }
+
+    public final int getRegionZ() {
+        return (int) super.getZ();
+    }
+
 	@Override
 	public boolean containsBlock(int x, int y, int z) {
-		return x >> BLOCKS.BITS == this.getX() && y >> BLOCKS.BITS == this.getY() && z >> BLOCKS.BITS == this.getZ();
+		return x >> BLOCKS.BITS == getRegionX() && y >> BLOCKS.BITS == getRegionY() && z >> BLOCKS.BITS == getRegionZ();
 	}
 
 	@Override
 	public boolean containsChunk(int x, int y, int z) {
-		return x >> CHUNKS.BITS == this.getX() && y >> CHUNKS.BITS == this.getY() && z >> CHUNKS.BITS == this.getZ();
+		return x >> CHUNKS.BITS == getRegionX() && y >> CHUNKS.BITS == getRegionY() && z >> CHUNKS.BITS == getRegionZ();
 	}
 
 	/**
@@ -178,9 +190,9 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
 		public Chunk next() {
 			Chunk current = next;
 			next = null;
-			final int cx = current.getX() & CHUNKS.MASK;
-			final int cy = current.getY() & CHUNKS.MASK;
-			final int cz = current.getZ() & CHUNKS.MASK;
+			final int cx = current.getChunkX() & CHUNKS.MASK;
+			final int cy = current.getChunkY() & CHUNKS.MASK;
+			final int cz = current.getChunkZ() & CHUNKS.MASK;
 			for (int dx = cx; dx < CHUNKS.SIZE; dx++) {
 				for (int dy = cy; dy < CHUNKS.SIZE; dy++) {
 					for (int dz = cz; dz < CHUNKS.SIZE; dz++) {

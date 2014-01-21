@@ -47,8 +47,6 @@ public class ChunkModel extends Model {
     public ChunkModel(FlowRenderer renderer, Vector3i position, Future<VertexData> mesh) {
         this.renderer = renderer;
         this.mesh = mesh;
-        // TODO: replace magic number
-        setPosition(position.mul(16).toFloat());
     }
 
     @Override

@@ -182,7 +182,7 @@ public class RenderThread extends TickingElement {
     private void addChunkModel(ChunkSnapshot chunk, ChunkModel previous) {
         final ChunkModel model = mesher.queue(chunk);
         final Vector3i position = chunk.getPosition();
-        model.setPosition(position.toFloat());
+        model.setPosition(position.mul(Chunk.BLOCKS.SIZE).toFloat());
         model.setRotation(Quaternionf.IDENTITY);
         // The previous model is kept to prevent frames with missing chunks because they're being meshed
         model.setPrevious(previous);

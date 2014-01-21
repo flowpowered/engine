@@ -45,14 +45,14 @@ public class ChunkSnapshot {
     private final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
     private final WorldSnapshot world;
     private final RegionSnapshot region;
-    private final Vector3i base;
+    private final Vector3i position;
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     public ChunkSnapshot(WorldSnapshot world, RegionSnapshot region, Vector3i position) {
         this.world = world;
         this.region = region;
-        this.base = position;
+        this.position = position;
     }
 
     public WorldSnapshot getWorld() {
@@ -64,19 +64,19 @@ public class ChunkSnapshot {
     }
 
     public Vector3i getPosition() {
-        return base;
+        return position;
     }
 
     public int getX() {
-        return base.getX();
+        return position.getX();
     }
 
     public int getY() {
-        return base.getY();
+        return position.getY();
     }
 
     public int getZ() {
-        return base.getZ();
+        return position.getZ();
     }
 
     public ChunkSnapshot getRelativeChunk(Vector3i relative) {
@@ -88,9 +88,9 @@ public class ChunkSnapshot {
         lock.lock();
         try {
             // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
-            final int regionX = getRegion().getBase().getX();
-            final int regionY = getRegion().getBase().getY();
-            final int regionZ = getRegion().getBase().getZ();
+            final int regionX = getRegion().getPosition().getX();
+            final int regionY = getRegion().getPosition().getY();
+            final int regionZ = getRegion().getPosition().getZ();
             final int otherChunkX = this.getX() + x;
             final int otherChunkY = this.getY() + y;
             final int otherChunkZ = this.getZ() + z;
@@ -141,7 +141,7 @@ public class ChunkSnapshot {
      * @return Whether or not the snapshot state has changed
      */
     public boolean update(FlowChunk current) {
-        if (!current.getBase().toInt().equals(base) || !current.getWorld().getUID().equals(world.getID())) {
+        if (!current.getPosition().toInt().equals(position) || !current.getWorld().getUID().equals(world.getID())) {
             throw new IllegalArgumentException("Cannot accept a chunk from another position or world");
         }
         final Lock lock = this.lock.writeLock();
@@ -175,7 +175,7 @@ public class ChunkSnapshot {
 
     private void touchNeighbors() {
         for (BlockFace face : BlockFaces.NESWBT) {
-            ChunkSnapshot rel = getRelativeChunk(face.getIntOffset());
+            ChunkSnapshot rel = getRelativeChunk(face.getOffset());
             if (rel != null) {
                 rel.touch();
             }
@@ -191,7 +191,7 @@ public class ChunkSnapshot {
             return false;
         }
         final ChunkSnapshot that = (ChunkSnapshot) o;
-        if (!base.equals(that.base)) {
+        if (!position.equals(that.position)) {
             return false;
         }
         return world.equals(that.world);
@@ -200,7 +200,7 @@ public class ChunkSnapshot {
     @Override
     public int hashCode() {
         int result = world.hashCode();
-        result = 31 * result + base.hashCode();
+        result = 31 * result + position.hashCode();
         return result;
     }
 

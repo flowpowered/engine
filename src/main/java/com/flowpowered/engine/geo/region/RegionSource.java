@@ -81,9 +81,9 @@ public class RegionSource implements Iterable<Region> {
             return;
         }
         */
-        int x = r.getX();
-        int y = r.getY();
-        int z = r.getZ();
+        int x = r.getRegionX();
+        int y = r.getRegionY();
+        int z = r.getRegionZ();
         boolean success = loadedRegions.remove(x, y, z, r);
         if (!success) {
             Flow.getLogger().info("Tried to remove region " + r + " but region removal failed");
