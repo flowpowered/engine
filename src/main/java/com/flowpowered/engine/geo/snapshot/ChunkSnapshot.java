@@ -84,28 +84,22 @@ public class ChunkSnapshot {
     }
 
     public ChunkSnapshot getRelativeChunk(int x, int y, int z) {
-        final Lock lock = this.lock.readLock();
-        lock.lock();
-        try {
-            // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
-            final int regionX = getRegion().getPosition().getX();
-            final int regionY = getRegion().getPosition().getY();
-            final int regionZ = getRegion().getPosition().getZ();
-            final int otherChunkX = this.getX() + x;
-            final int otherChunkY = this.getY() + y;
-            final int otherChunkZ = this.getZ() + z;
-            final int otherRegionX = otherChunkX / Region.CHUNKS.SIZE;
-            final int otherRegionY = otherChunkY / Region.CHUNKS.SIZE;
-            final int otherRegionZ = otherChunkZ / Region.CHUNKS.SIZE;
-            if (regionX == otherRegionX && regionZ == otherRegionZ && regionY == otherRegionY) {
-                // Get the chunk from the current region
-                return getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
-            }
-            RegionSnapshot other = getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
-            return other == null ? null : other.getChunk(otherChunkX, otherChunkY, otherChunkZ);
-        } finally {
-            lock.unlock();
+        // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
+        final int regionX = getRegion().getPosition().getX();
+        final int regionY = getRegion().getPosition().getY();
+        final int regionZ = getRegion().getPosition().getZ();
+        final int otherChunkX = this.getX() + x;
+        final int otherChunkY = this.getY() + y;
+        final int otherChunkZ = this.getZ() + z;
+        final int otherRegionX = otherChunkX / Region.CHUNKS.SIZE;
+        final int otherRegionY = otherChunkY / Region.CHUNKS.SIZE;
+        final int otherRegionZ = otherChunkZ / Region.CHUNKS.SIZE;
+        if (regionX == otherRegionX && regionZ == otherRegionZ && regionY == otherRegionY) {
+            // Get the chunk from the current region
+            return getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
         }
+        RegionSnapshot other = getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
+        return other == null ? null : other.getChunk(otherChunkX, otherChunkY, otherChunkZ);
     }
 
     public BlockMaterial getMaterial(Vector3i position) {
