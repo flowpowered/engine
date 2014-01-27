@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.scheduler.render;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -49,11 +48,11 @@ import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
+
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 import org.lwjgl.input.Keyboard;
 import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.GLVersioned;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 
 public class RenderThread extends TickingElement {

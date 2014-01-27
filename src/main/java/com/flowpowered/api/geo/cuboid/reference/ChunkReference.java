@@ -47,7 +47,7 @@ public class ChunkReference {
 
 	public ChunkReference(Point base) {
 		this.chunk = null;
-		this.region = new RegionReference(new Point(base.getWorld(), base.getFloorX() >> Region.BLOCKS.BITS, base.getFloorY() >> Region.BLOCKS.BITS, base.getFloorZ() >> Region.BLOCKS.BITS));
+		this.region = new RegionReference(new Point(base.getWorld(), base.getBlockX() >> Region.BLOCKS.BITS, base.getBlockY() >> Region.BLOCKS.BITS, base.getBlockZ() >> Region.BLOCKS.BITS));
 		this.base = base;
 	}
 
@@ -69,7 +69,7 @@ public class ChunkReference {
 		Region newRegion = region.refresh(opt);
 		if (newRegion == null) return null;
 
-		newChunk = newRegion.getChunkFromBlock(base, opt);
+		newChunk = newRegion.getChunkFromBlock(base.getVector(), opt);
 		this.chunk = newChunk == null ? null : new WeakReference<>(newChunk);
 		return newChunk;
 	}

@@ -48,7 +48,7 @@ public class ReactConverter {
 	}
 
 	public static org.spout.physics.math.Transform toReactTransform(final Transform flowTransform) {
-		return new org.spout.physics.math.Transform(toReactVector3(flowTransform.getPosition()), toReactQuaternion(flowTransform.getRotation()));
+		return new org.spout.physics.math.Transform(toReactVector3(flowTransform.getPosition().getVector()), toReactQuaternion(flowTransform.getRotation()));
 	}
 
 	//React -> Flow
@@ -61,6 +61,6 @@ public class ReactConverter {
 	}
 
 	public static Transform toFlowTransform(final org.spout.physics.math.Transform reactTransform, final World world, final Vector3f scale) {
-		return new Transform(new Point(toFlowVector3(reactTransform.getPosition()), world), new Quaternionf(toFlowQuaternion(reactTransform.getOrientation())), scale);
+		return new Transform(new Point(world, toFlowVector3(reactTransform.getPosition())), new Quaternionf(toFlowQuaternion(reactTransform.getOrientation())), scale);
 	}
 }

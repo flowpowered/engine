@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.LoadOption;
@@ -47,7 +48,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
 	/**
 	 * The spawn position.
 	 */
-	private final Transform spawnLocation;
+	private final AtomicReference<Transform> spawnLocation = new AtomicReference<>();
 	/**
 	 * RegionFile manager for the world
 	 */
@@ -55,7 +56,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
 
     public FlowServerWorld(FlowEngine engine, String name, UUID uid, long age, WorldGenerator generator, long seed) {
         super(engine, name, uid, age);
-        this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
+        this.spawnLocation.set(new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE));
         this.generator = generator;
         this.seed = seed;
         this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name));
@@ -63,7 +64,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
 
     public FlowServerWorld(FlowEngine engine, String name, WorldGenerator generator) {
         super(engine, name);
-        this.spawnLocation = new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE);
+        this.spawnLocation.set(new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE));
         this.generator = generator;
         this.seed = new Random().nextLong();
         this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name));
@@ -81,7 +82,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
 
     @Override
     public Transform getSpawnPoint() {
-        return spawnLocation;
+        return spawnLocation.get();
     }
 
     @Override

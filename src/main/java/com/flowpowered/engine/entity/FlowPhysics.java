@@ -23,6 +23,7 @@
  */
 package com.flowpowered.engine.entity;
 
+import java.util.concurrent.atomic.AtomicReference;
 import com.flowpowered.api.entity.Physics;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
@@ -43,8 +44,8 @@ import org.spout.physics.collision.shape.CollisionShape;
  */
 public class FlowPhysics extends Physics {
 	//Flow
-	private final Transform snapshot = new Transform();
-	private final Transform live = new Transform();
+	private AtomicReference<Transform> snapshot = new AtomicReference<>(Transform.EMPTY);
+	private AtomicReference<Transform> live = new AtomicReference<>(Transform.EMPTY);
 	//React
 	private RigidBody body;
 	private final RigidBodyMaterial material = new RigidBodyMaterial();
@@ -81,7 +82,7 @@ public class FlowPhysics extends Physics {
 	}
 
 	public void activate(final FlowRegion region) {
-		body = region.addBody(live, mass, shape, isGhost, isMobile);
+		body = region.addBody(live.get(), mass, shape, isGhost, isMobile);
 		body.setMaterial(material);
 		body.setUserPointer(entity);
 	}
@@ -101,12 +102,12 @@ public class FlowPhysics extends Physics {
 
 	@Override
 	public Transform getSnapshottedTransform() {
-		return snapshot.copy();
+		return snapshot.get();
 	}
 
     @Override
 	public Transform getTransform() {
-		return live.copy();
+		return live.get();
 	}
 
 	@Override
@@ -133,23 +134,32 @@ public class FlowPhysics extends Physics {
 
 	@Override
 	public Point getPosition() {
-		return live.getPosition();
+		return live.get().getPosition();
 	}
 
 	@Override
-	public FlowPhysics setPosition(Point point) {
-		live.setPosition(point);
+	public FlowPhysics setPosition(Point position) {
+		if (position == null) {
+			throw new IllegalArgumentException("position cannot be null!");
+		}
+        Transform oldTransform;
+        Transform newTransform;
+        do {
+            oldTransform = live.get();
+            newTransform = oldTransform.withPosition(position);
+        } while (!live.compareAndSet(oldTransform, newTransform));
+        sync();
 		return this;
 	}
 
 	@Override
 	public boolean isPositionDirty() {
-		return !snapshot.getPosition().equals(live.getPosition());
+		return !snapshot.get().getPosition().equals(live.get().getPosition());
 	}
 
 	@Override
 	public Quaternionf getRotation() {
-		return live.getRotation();
+		return live.get().getRotation();
 	}
 
 	@Override
@@ -157,19 +167,24 @@ public class FlowPhysics extends Physics {
 		if (rotation == null) {
 			throw new IllegalArgumentException("rotation cannot be null!");
 		}
-		live.setRotation(rotation);
-		sync();
+        Transform oldTransform;
+        Transform newTransform;
+        do {
+            oldTransform = live.get();
+            newTransform = oldTransform.withRotation(rotation);
+        } while (!live.compareAndSet(oldTransform, newTransform));
+        sync();
 		return this;
 	}
 
 	@Override
 	public boolean isRotationDirty() {
-		return !snapshot.getRotation().equals(live.getRotation());
+		return !snapshot.get().getRotation().equals(live.get().getRotation());
 	}
 
 	@Override
 	public Vector3f getScale() {
-		return live.getScale();
+		return live.get().getScale();
 	}
 
 	@Override
@@ -177,14 +192,19 @@ public class FlowPhysics extends Physics {
 		if (scale == null) {
 			throw new IllegalArgumentException("scale cannot be null!");
 		}
-		live.setScale(scale);
-		sync();
+        Transform oldTransform;
+        Transform newTransform;
+        do {
+            oldTransform = live.get();
+            newTransform = oldTransform.withScale(scale);
+        } while (!live.compareAndSet(oldTransform, newTransform));
+        sync();
 		return this;
 	}
 
 	@Override
 	public boolean isScaleDirty() {
-		return !snapshot.getScale().equals(live.getScale());
+		return !snapshot.get().getScale().equals(live.get().getScale());
 	}
 
 	@Override
@@ -194,12 +214,21 @@ public class FlowPhysics extends Physics {
 
 	@Override
 	public boolean isWorldDirty() {
-		return !snapshot.getPosition().getWorld().equals(live.getPosition().getWorld());
+		return !snapshot.get().getPosition().getWorld().equals(live.get().getPosition().getWorld());
 	}
 
 	@Override
-	public FlowPhysics translate(Vector3f point) {
-		live.translate(point);
+	public FlowPhysics translate(Vector3f translate) {
+		if (translate == null) {
+			throw new IllegalArgumentException("translate cannot be null!");
+		}
+        Transform oldTransform;
+        Transform newTransform;
+        do {
+            oldTransform = live.get();
+            newTransform = oldTransform.translated(translate);
+        } while (!live.compareAndSet(oldTransform, newTransform));
+        sync();
 		return this;
 	}
 
@@ -208,8 +237,13 @@ public class FlowPhysics extends Physics {
 		if (rotate == null) {
 			throw new IllegalArgumentException("rotate cannot be null!");
 		}
-		live.rotate(rotate);
-		sync();
+        Transform oldTransform;
+        Transform newTransform;
+        do {
+            oldTransform = live.get();
+            newTransform = oldTransform.rotated(rotate);
+        } while (!live.compareAndSet(oldTransform, newTransform));
+        sync();
 		return this;
 	}
 
@@ -218,8 +252,13 @@ public class FlowPhysics extends Physics {
 		if (scale == null) {
 			throw new IllegalArgumentException("scale cannot be null!");
 		}
-		live.scale(scale);
-		sync();
+        Transform oldTransform;
+        Transform newTransform;
+        do {
+            oldTransform = live.get();
+            newTransform = oldTransform.scaled(scale);
+        } while (!live.compareAndSet(oldTransform, newTransform));
+        sync();
 		return this;
 	}
 
@@ -391,7 +430,7 @@ public class FlowPhysics extends Physics {
 		if (body == null) {
 			return;
 		}
-		final org.spout.physics.math.Vector3 positionLiveToReact = ReactConverter.toReactVector3(live.getPosition());
+		final org.spout.physics.math.Vector3 positionLiveToReact = ReactConverter.toReactVector3(live.get().getPosition().getVector());
 		body.getTransform().setPosition(positionLiveToReact);
 	}
 
@@ -399,15 +438,22 @@ public class FlowPhysics extends Physics {
 	 * Called after the simulation was polled for an update. <p> This updates Flow's live with the transform of the body. The render transform is updated with interpolation from the body </p>
 	 */
 	public void onPostPhysicsTick(float dt) {
-			final Transform physicsLive = ReactConverter.toFlowTransform(body.getTransform(), live.getPosition().getWorld(), live.getScale());
-			if (!live.equals(physicsLive)) {
-				live.set(physicsLive);
-				sync();
-			}
+        Transform oldLive;
+        Transform newLive;
+        do {
+            oldLive = live.get();
+            final Transform physicsLive = ReactConverter.toFlowTransform(body.getTransform(), oldLive.getPosition().getWorld(), oldLive.getScale());
+            if (!oldLive.equals(physicsLive)) {
+                newLive = physicsLive;
+                sync();
+            } else {
+                newLive = oldLive;
+            }
+        } while (!live.compareAndSet(oldLive, newLive));
 	}
 
 	public void copySnapshot() {
-		snapshot.set(live);
+		snapshot.set(live.get());
 	}
 
 	private void sync() {
