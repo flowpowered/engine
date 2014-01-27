@@ -25,10 +25,8 @@ package com.flowpowered.api.entity;
 
 import java.util.List;
 
-import com.flowpowered.commands.Command;
+import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.commands.CommandSender;
-
-import com.flowpowered.api.geo.discrete.Transform;
 
 public interface Player extends CommandSender {
     /**
@@ -37,59 +35,59 @@ public interface Player extends CommandSender {
      * @return the player's name
      */
     @Override
-    public String getName();
+    String getName();
 
     /**
      * Gets the player's display name.
      *
      * @return the player's display name
      */
-    public String getDisplayName();
+    String getDisplayName();
 
     /**
      * Sets the player's display name.
      *
      * @param name the player's new display name
      */
-    public void setDisplayName(String name);
+    void setDisplayName(String name);
 
     /**
      * Gets if the player is online
      *
      * @return true if online
      */
-    public boolean isOnline();
+    boolean isOnline();
 
     /**
      * Gets if the player has joined before
      *
      * @return true if joined before
      */
-    public boolean hasJoinedBefore();
+    boolean hasJoinedBefore();
 
     /**
      * Kicks the player without giving a reason, or forcing it.
      */
-    public void kick();
+    void kick();
 
     /**
      * Kicks the player for the given reason.
      *
      * @param reason the message to send to the player.
      */
-    public void kick(String reason);
+    void kick(String reason);
 
     /**
      * Bans the player without giving a reason.
      */
-    public void ban();
+    void ban();
 
     /**
      * Bans the player for the given reason.
      *
      * @param kick whether to kick or not
      */
-    public void ban(boolean kick);
+    void ban(boolean kick);
 
     /**
      * Bans the player for the given reason.
@@ -97,26 +95,26 @@ public interface Player extends CommandSender {
      * @param kick whether to kick or not
      * @param reason for ban
      */
-    public void ban(boolean kick, String reason);
+    void ban(boolean kick, String reason);
 
     /**
      * Immediately saves the players state to disk
      *
      * @return true if successful
      */
-    public boolean save();
+    boolean save();
 
     /**
      * If an entity is set as invisible, it will not be sent to the client.
      */
-    public void setVisible(Entity entity, boolean visible);
+    void setVisible(Entity entity, boolean visible);
 
     /**
      * Retrieves a list of all invisible {@link Entity}'s to the player
      *
      * @return {@link List<{@link Entity}>} of invisible {@link Entity}'s
      */
-    public List<Entity> getInvisibleEntities();
+    List<Entity> getInvisibleEntities();
 
     /**
      * Returns true if the {@link Entity} provided is invisible this this {@link Player}
@@ -124,7 +122,7 @@ public interface Player extends CommandSender {
      * @param entity Entity to check if invisible to the {@link Player}
      * @return true if the {@link Entity} is invisible
      */
-    public boolean isInvisible(Entity entity);
+    boolean isInvisible(Entity entity);
 
     /**
      * Sends a command to be processed on the opposite Platform. This is basically a shortcut method to prevent the need to register a command locally with a {@link Command.NetworkSendType} of {@code
@@ -133,12 +131,11 @@ public interface Player extends CommandSender {
      * @param command to send
      * @param args to send
      */
-    public void sendCommand(String command, String... args);
+    void sendCommand(String command, String... args);
 
-    /**
-     * @return the location that player's camera is at
-     */
-    public Transform getCameraLocation();
+    TransformProvider getTransformProvider();
 
-    public PlayerSnapshot snapshot();
+    void setTransformProvider(TransformProvider provider);
+
+    PlayerSnapshot snapshot();
 }

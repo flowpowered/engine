@@ -254,9 +254,9 @@ public class RenderThread extends TickingElement {
             }
             if (!translation.equals(Vector3f.ZERO)) {
                 ((FlowSingleplayer) client).getTestEntity().getPhysics().translate(translation);
-                camera.setPosition(camera.getPosition().add(translation));
             }
             // Update the frustrum to match the camera
+            camera.setPosition(client.getPlayer().getTransformProvider().getTransform().getPosition().getVector());
             frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
         }
     }

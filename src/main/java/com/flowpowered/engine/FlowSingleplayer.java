@@ -48,6 +48,7 @@ public class FlowSingleplayer extends FlowServer implements Singleplayer {
 
     // TEST CODE
     private Entity testEntity;
+    private Entity testEntity2;
 
     public FlowSingleplayer(FlowApplication args) {
         super(args);
@@ -68,11 +69,18 @@ public class FlowSingleplayer extends FlowServer implements Singleplayer {
         this.player.set(player);
         players.put(player.getName(), player);
         Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
         this.testEntity = entity;
+        this.testEntity2 = entity2;
+        player.setTransformProvider(entity.getPhysics());
     }
 
     public Entity getTestEntity() {
         return testEntity;
+    }
+
+    public Entity getTestEntity2() {
+        return testEntity2;
     }
 
     @Override
