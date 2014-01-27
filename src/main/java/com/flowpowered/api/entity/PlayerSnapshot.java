@@ -23,19 +23,11 @@
  */
 package com.flowpowered.api.entity;
 
-import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.scheduler.Snapshot;
 
 /**
  * Represents a snapshot of an entity state at a specific UTC timestamp, with immutable values
  */
 public interface PlayerSnapshot extends Snapshot<Player> {
-	/**
-	 * Returns the entity reference, if the entity still exists
-	 *
-	 * @return entity reference if it exists, else null
-	 */
-	public Transform getCameraLocation();
-
     public String getName();
 }

@@ -27,6 +27,7 @@ import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.api.util.thread.annotation.SnapshotRead;
@@ -37,7 +38,7 @@ import org.spout.physics.collision.shape.CollisionShape;
  * Component that gives the owner the characteristics to be a part of a Scene. <p> A Scene consists of {@link Transform}s which represent the snapshot state, the live state, and the rendering state.
  * This component can be used to manipulate the object within the scene.
  */
-public abstract class Physics {
+public abstract class Physics implements TransformProvider {
     protected final Entity entity;
 
     public Physics(Entity entity) {
@@ -411,5 +412,6 @@ public abstract class Physics {
 	 */
 	public abstract boolean isGhost();
 
+    @Override
     public abstract Transform getTransform();
 }

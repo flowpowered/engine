@@ -26,17 +26,18 @@ package com.flowpowered.engine.entity;
 import java.util.List;
 import java.util.Set;
 
+import com.flowpowered.api.entity.Entity;
+import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.entity.PlayerSnapshot;
+import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.chat.ChatReceiver;
 import com.flowpowered.commands.CommandException;
 import com.flowpowered.permissions.PermissionDomain;
 
-import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.entity.Player;
-import com.flowpowered.api.entity.PlayerSnapshot;
-import com.flowpowered.api.geo.discrete.Transform;
-
 public class FlowPlayer implements Player {
     private final String name;
+
+    private volatile TransformProvider transformProvider;
 
     public FlowPlayer(String name) {
         this.name = name;
@@ -173,7 +174,12 @@ public class FlowPlayer implements Player {
     }
 
     @Override
-    public Transform getCameraLocation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public TransformProvider getTransformProvider() {
+        return transformProvider;
+    }
+
+    @Override
+    public void setTransformProvider(TransformProvider provider) {
+        this.transformProvider = provider;
     }
 }

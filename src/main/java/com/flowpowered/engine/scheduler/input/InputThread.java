@@ -25,8 +25,10 @@ package com.flowpowered.engine.scheduler.input;
 
 import java.util.Queue;
 
+import com.flowpowered.api.Flow;
 import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.engine.FlowSingleplayer;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -73,6 +75,13 @@ public class InputThread extends TickingElement {
                 final KeyboardEvent event = new KeyboardEvent(
                         Keyboard.getEventCharacter(), Keyboard.getEventKey(),
                         Keyboard.getEventKeyState(), Keyboard.getEventNanoseconds());
+                // TEST CODE
+                FlowSingleplayer e = (FlowSingleplayer) Flow.getEngine();
+                if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
+                    e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
+                } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {
+                    e.getPlayer().setTransformProvider(e.getTestEntity2().getPhysics());
+                }
                 // Add to the queues, if we don't have an empty queue, return, there's nothing more to add
                 if (!keyboardQueue.add(event)) {
                     break;
