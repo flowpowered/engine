@@ -34,7 +34,7 @@ import org.spout.nbt.Tag;
 
 public class TransformTag extends CompoundTag {
 	public TransformTag(String name, Transform t) {
-		this(name, t.getPosition(), t.getRotation(), t.getScale());
+		this(name, t.getPosition().getVector(), t.getRotation(), t.getScale());
 	}
 
 	public TransformTag(String name, float px, float py, float pz, float qx, float qy, float qz, float qw, float sx, float sy, float sz) {
@@ -82,7 +82,7 @@ public class TransformTag extends CompoundTag {
 			return null;
 		}
 
-		Point p = new Point(pVector, w);
+		Point p = new Point(w, pVector);
 
 		return new Transform(p, r, s);
 	}

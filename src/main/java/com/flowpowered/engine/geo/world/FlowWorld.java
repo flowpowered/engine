@@ -123,12 +123,12 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
 
     @Override
     public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes) {
-        FlowRegion region = (FlowRegion) getRegionFromBlock(point, option);
+        FlowRegion region = getRegionFromBlock(point, option);
         if (region == null) {
             return null;
         }
 
-        FlowEntity entity = EntityManager.createEntity(new Transform(new Point(point, this), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
+        FlowEntity entity = EntityManager.createEntity(new Transform(new Point(this, point), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
 		region.getEntityManager().addEntity(entity);
         return entity;
     }

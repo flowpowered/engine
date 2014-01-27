@@ -432,7 +432,7 @@ public class BlockMaterial extends Material implements Placeable {
 	 * @return cause
 	 */
 	public Cause<BlockMaterial> toCause(Point p) {
-		return new MaterialCause<>(this, p.getWorld().getBlock(p));
+		return new MaterialCause<>(this, p.getWorld().getBlock(p.getVector()));
 	}
 
 	public Set<Class<? extends BlockComponent>> getComponents() {

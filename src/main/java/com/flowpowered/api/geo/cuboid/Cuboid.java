@@ -56,9 +56,9 @@ public class Cuboid implements WorldSource {
     public Cuboid(Point base, Vector3f size) {
         this.base = base;
         this.size = size;
-        this.x = base.getX() / size.getX();
-        this.y = base.getY() / size.getY();
-        this.z = base.getZ() / size.getZ();
+        this.x = base.getVector().getX() / size.getX();
+        this.y = base.getVector().getY() / size.getY();
+        this.z = base.getVector().getZ() / size.getZ();
         this.position = new Vector3f(x, y, z);
     }
 
@@ -100,6 +100,7 @@ public class Cuboid implements WorldSource {
         if (vertices == null) {
             vertices = new Vector3f[8];
 
+            Vector3f base = this.base.getVector();
             // Front
             vertices[0] = new Vector3f(base.getX(), base.getY(), base.getZ() + size.getZ());
             vertices[1] = new Vector3f(base.getX() + size.getX(), base.getY(), base.getZ() + size.getZ());
@@ -116,6 +117,7 @@ public class Cuboid implements WorldSource {
     }
 
     public boolean contains(Vector3f vec) {
+        Vector3f base = this.base.getVector();
         Vector3f max = base.add(size);
         return (base.getX() <= vec.getX() && vec.getX() < max.getX()) && (base.getY() <= vec.getY() && vec.getY() < max.getY()) && (base.getZ() <= vec.getZ() && vec.getZ() < max.getZ());
     }

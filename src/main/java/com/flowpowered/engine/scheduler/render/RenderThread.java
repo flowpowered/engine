@@ -29,38 +29,34 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 
-import com.flowpowered.commons.ViewFrustum;
-import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.math.TrigMath;
-import com.flowpowered.math.imaginary.Quaternionf;
-import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.math.vector.Vector3i;
-
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 import org.lwjgl.input.Keyboard;
 
+import org.spout.renderer.api.Camera;
+import org.spout.renderer.api.GLVersioned;
+
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
-import com.flowpowered.api.geo.discrete.Point;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.material.block.BlockFace;
-import com.flowpowered.api.material.block.BlockFaces;
+import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowSingleplayer;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
-import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.model.ChunkModel;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.input.KeyboardEvent;
-import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.GLVersioned;
+import com.flowpowered.math.TrigMath;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
 
 public class RenderThread extends TickingElement {
     public static final int FPS = 60;
