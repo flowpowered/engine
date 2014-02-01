@@ -26,229 +26,229 @@ package com.flowpowered.api.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.logging.Level;
 
-import com.flowpowered.commons.datatable.ManagedHashMap;
-import com.flowpowered.events.Listener;
+import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import com.flowpowered.api.Flow;
+import com.flowpowered.commons.datatable.ManagedHashMap;
+import com.flowpowered.events.Listener;
 
 public class BaseComponentOwner implements ComponentOwner {
-	/**
-	 * Map of class name, component
-	 */
-	private final BiMap<Class<? extends Component>, Component> components = HashBiMap.create();
-	private final ManagedHashMap data;
+    /**
+     * Map of class name, component
+     */
+    private final BiMap<Class<? extends Component>, Component> components = HashBiMap.create();
+    private final ManagedHashMap data;
 
-	public BaseComponentOwner() {
-		data = new ManagedHashMap();
-	}
+    public BaseComponentOwner() {
+        data = new ManagedHashMap();
+    }
 
-	public BaseComponentOwner(ManagedHashMap data) {
-		this.data = data;
-	}
+    public BaseComponentOwner(ManagedHashMap data) {
+        this.data = data;
+    }
 
-	/**
-	 * For use de-serializing a list of components all at once, without having to worry about dependencies
-	 */
-	protected void add(Class<? extends Component>... components) {
-		HashSet<Component> added = new HashSet<>();
-		synchronized (components) {
-			for (Class<? extends Component> type : components) {
-				if (!this.components.containsKey(type)) {
-					added.add(add(type, false));
-				}
-			}
-		}
-		for (Component type : added) {
-			type.onAttached();
-		}
-	}
+    /**
+     * For use de-serializing a list of components all at once, without having to worry about dependencies
+     */
+    protected void add(Class<? extends Component>... components) {
+        HashSet<Component> added = new HashSet<>();
+        synchronized (components) {
+            for (Class<? extends Component> type : components) {
+                if (!this.components.containsKey(type)) {
+                    added.add(add(type, false));
+                }
+            }
+        }
+        for (Component type : added) {
+            type.onAttached();
+        }
+    }
 
-	@Override
-	public <T extends Component> T add(Class<T> type) {
-		return add(type, true);
-	}
+    @Override
+    public <T extends Component> T add(Class<T> type) {
+        return add(type, true);
+    }
 
-	/**
-	 * Adds a component to the map
-	 *
-	 * @param type to add
-	 * @param attach whether to call the component onAttached
-	 * @return instantiated component
-	 */
-	protected <T extends Component> T add(Class<T> type, boolean attach) {
-		return add(type, type, attach);
-	}
+    /**
+     * Adds a component to the map
+     *
+     * @param type to add
+     * @param attach whether to call the component onAttached
+     * @return instantiated component
+     */
+    protected <T extends Component> T add(Class<T> type, boolean attach) {
+        return add(type, type, attach);
+    }
 
-	/**
-	 * Adds a component to the map
-	 *
-	 * @param key the component class used as the lookup key
-	 * @param type of component to instantiate
-	 * @param attach whether to call the component onAttached
-	 * @return instantiated component
-	 */
-	@SuppressWarnings ("unchecked")
-	protected final <T extends Component> T add(Class<T> key, Class<? extends Component> type, boolean attach) {
-		if (type == null || key == null) {
-			return null;
-		}
+    /**
+     * Adds a component to the map
+     *
+     * @param key the component class used as the lookup key
+     * @param type of component to instantiate
+     * @param attach whether to call the component onAttached
+     * @return instantiated component
+     */
+    @SuppressWarnings ("unchecked")
+    protected final <T extends Component> T add(Class<T> key, Class<? extends Component> type, boolean attach) {
+        if (type == null || key == null) {
+            return null;
+        }
 
-		synchronized (components) {
-			T component = (T) components.get(key);
+        synchronized (components) {
+            T component = (T) components.get(key);
 
-			if (component != null) {
-				return component;
-			}
+            if (component != null) {
+                return component;
+            }
 
-			try {
-				component = (T) type.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
+            try {
+                component = (T) type.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
 
-			if (component != null) {
-				try {
-					attachComponent(key, component, attach);
-				} catch (Exception e) {
-					Flow.getLogger().log(Level.SEVERE, "Error while attaching component " + type + ": ", e);
-				}
-			}
-			return component;
-		}
-	}
+            if (component != null) {
+                try {
+                    attachComponent(key, component, attach);
+                } catch (Exception e) {
+                    Flow.getLogger().log(Level.ERROR, "Error while attaching component " + type + ": ", e);
+                }
+            }
+            return component;
+        }
+    }
 
-	protected void attachComponent(Class<? extends Component> key, Component component, boolean attach) throws Exception {
-		if (component.attachTo(this)) {
-			components.put(key, component);
-			if (attach) {
-				try {
-					component.onAttached();
-				} catch (Exception e) {
-					// Remove the component from the component map if onAttached can't be
-					// called, pass exception to next catch block.
-					components.remove(key);
-					throw e;
-				}
-			}
-		}
-	}
+    protected void attachComponent(Class<? extends Component> key, Component component, boolean attach) throws Exception {
+        if (component.attachTo(this)) {
+            components.put(key, component);
+            if (attach) {
+                try {
+                    component.onAttached();
+                } catch (Exception e) {
+                    // Remove the component from the component map if onAttached can't be
+                    // called, pass exception to next catch block.
+                    components.remove(key);
+                    throw e;
+                }
+            }
+        }
+    }
 
-	@Override
-	public <T extends Component> T detach(Class<? extends Component> type) {
-		return detach(type, false);
-	}
+    @Override
+    public <T extends Component> T detach(Class<? extends Component> type) {
+        return detach(type, false);
+    }
 
-	@SuppressWarnings ("unchecked")
-	protected <T extends Component> T detach(Class<? extends Component> type, boolean force) {
-		Preconditions.checkNotNull(type);
-		synchronized (components) {
-			T component = (T) get(type);
+    @SuppressWarnings ("unchecked")
+    protected <T extends Component> T detach(Class<? extends Component> type, boolean force) {
+        Preconditions.checkNotNull(type);
+        synchronized (components) {
+            T component = (T) get(type);
 
-			if (component != null && (component.isDetachable() || force)) {
-				components.inverse().remove(component);
-				try {
-					component.onDetached();
-					if (component instanceof Listener) {
-						Flow.getEventManager().unRegisterEvents((Listener) component);
-					}
-				} catch (Exception e) {
-					Flow.getLogger().log(Level.SEVERE, "Error detaching component " + type + " from holder: ", e);
-				}
-			}
+            if (component != null && (component.isDetachable() || force)) {
+                components.inverse().remove(component);
+                try {
+                    component.onDetached();
+                    if (component instanceof Listener) {
+                        Flow.getEventManager().unRegisterEvents((Listener) component);
+                    }
+                } catch (Exception e) {
+                    Flow.getLogger().log(Level.ERROR, "Error detaching component " + type + " from holder: ", e);
+                }
+            }
 
-			return component;
-		}
-	}
+            return component;
+        }
+    }
 
-	@SuppressWarnings ("unchecked")
-	@Override
-	public <T extends Component> T get(Class<T> type) {
-		Preconditions.checkNotNull(type);
-		Component component = components.get(type);
+    @SuppressWarnings ("unchecked")
+    @Override
+    public <T extends Component> T get(Class<T> type) {
+        Preconditions.checkNotNull(type);
+        Component component = components.get(type);
 
-		if (component == null) {
-			component = findComponent(type);
-		}
-		return (T) component;
-	}
+        if (component == null) {
+            component = findComponent(type);
+        }
+        return (T) component;
+    }
 
-	@Override
-	public <T> T getType(Class<T> type) {
-		Preconditions.checkNotNull(type);
+    @Override
+    public <T> T getType(Class<T> type) {
+        Preconditions.checkNotNull(type);
 
-		T component = findComponent(type);
+        T component = findComponent(type);
 
-		return component;
-	}
+        return component;
+    }
 
-	@SuppressWarnings ("unchecked")
-	@Override
-	public <T extends Component> T getExact(Class<T> type) {
-		Preconditions.checkNotNull(type);
-		synchronized (components) {
-			return (T) components.get(type);
-		}
-	}
+    @SuppressWarnings ("unchecked")
+    @Override
+    public <T extends Component> T getExact(Class<T> type) {
+        Preconditions.checkNotNull(type);
+        synchronized (components) {
+            return (T) components.get(type);
+        }
+    }
 
-	@SuppressWarnings ("unchecked")
-	@Override
-	public <T extends Component> Collection<T> getAll(Class<T> type) {
-		Preconditions.checkNotNull(type);
-		synchronized (components) {
-			ArrayList<T> matches = new ArrayList<>();
-			for (Component component : components.values()) {
-				if (type.isAssignableFrom(component.getClass())) {
-					matches.add((T) component);
-				}
-			}
-			return matches;
-		}
-	}
+    @SuppressWarnings ("unchecked")
+    @Override
+    public <T extends Component> Collection<T> getAll(Class<T> type) {
+        Preconditions.checkNotNull(type);
+        synchronized (components) {
+            ArrayList<T> matches = new ArrayList<>();
+            for (Component component : components.values()) {
+                if (type.isAssignableFrom(component.getClass())) {
+                    matches.add((T) component);
+                }
+            }
+            return matches;
+        }
+    }
 
-	@SuppressWarnings ("unchecked")
-	@Override
-	public <T extends Object> Collection<T> getAllOfType(Class<T> type) {
-		Preconditions.checkNotNull(type);
-		synchronized (components) {
-			ArrayList<T> matches = new ArrayList<>();
-			for (Component component : components.values()) {
-				if (type.isAssignableFrom(component.getClass())) {
-					matches.add((T) component);
-				}
-			}
-			return matches;
-		}
-	}
+    @SuppressWarnings ("unchecked")
+    @Override
+    public <T extends Object> Collection<T> getAllOfType(Class<T> type) {
+        Preconditions.checkNotNull(type);
+        synchronized (components) {
+            ArrayList<T> matches = new ArrayList<>();
+            for (Component component : components.values()) {
+                if (type.isAssignableFrom(component.getClass())) {
+                    matches.add((T) component);
+                }
+            }
+            return matches;
+        }
+    }
 
-	@Override
-	public Collection<Component> values() {
-		synchronized (components) {
-			return new ArrayList<>(components.values());
-		}
-	}
+    @Override
+    public Collection<Component> values() {
+        synchronized (components) {
+            return new ArrayList<>(components.values());
+        }
+    }
 
-	@Override
-	public ManagedHashMap getData() {
-		return data;
-	}
+    @Override
+    public ManagedHashMap getData() {
+        return data;
+    }
 
-	@SuppressWarnings ("unchecked")
-	private <T> T findComponent(Class<T> type) {
-		Preconditions.checkNotNull(type);
-		synchronized (components) {
-			for (Component component : values()) {
-				if (type.isAssignableFrom(component.getClass())) {
-					return (T) component;
-				}
-			}
-		}
+    @SuppressWarnings ("unchecked")
+    private <T> T findComponent(Class<T> type) {
+        Preconditions.checkNotNull(type);
+        synchronized (components) {
+            for (Component component : values()) {
+                if (type.isAssignableFrom(component.getClass())) {
+                    return (T) component;
+                }
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 }

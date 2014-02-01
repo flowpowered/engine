@@ -29,7 +29,8 @@ import java.lang.management.ThreadMXBean;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.api.Flow;
 

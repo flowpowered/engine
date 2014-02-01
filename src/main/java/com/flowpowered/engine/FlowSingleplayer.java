@@ -24,8 +24,8 @@
 package com.flowpowered.engine;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
 
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.Singleplayer;
@@ -59,7 +59,7 @@ public class FlowSingleplayer extends FlowServer implements Singleplayer {
         try {
             DeployNatives.deploy();
         } catch (Exception ex) {
-            Logger.getLogger(FlowSingleplayer.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
             return;
         }
         super.init();
