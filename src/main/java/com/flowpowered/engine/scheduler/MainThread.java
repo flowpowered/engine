@@ -23,8 +23,10 @@
  */
 package com.flowpowered.engine.scheduler;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -36,7 +38,10 @@ import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.api.Flow;
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
@@ -102,6 +107,10 @@ public class MainThread extends TickingElement {
     @Override
     public void onStart() {
         tpsMonitor.start();
+
+        if (scheduler.getInputThread() != null) {
+            scheduler.getInputThread().subscribeToInput();
+        }
     }
 
     @Override
@@ -119,6 +128,10 @@ public class MainThread extends TickingElement {
             if (delay < 8000) {
                 delay <<= 1;
             }
+        }
+
+        if (scheduler.getInputThread() != null) {
+            scheduler.getInputThread().unsubscribeToInput();
         }
     }
 
@@ -178,6 +191,18 @@ public class MainThread extends TickingElement {
 
         doCopySnapshot();
 
+        // TEST CODE
+        if (scheduler.getInputThread().isActive()) {
+            List<InputSnapshot> inputList = new ArrayList<>();
+            Queue<InputSnapshot> inputQueue = scheduler.getInputThread().getInputQueue();
+            while (!inputQueue.isEmpty()) {
+                InputSnapshot current = inputQueue.poll();
+                inputList.add(current);
+            }
+            if (Flow.getEngine().getPlatform().isClient()) {
+                ((FlowClient) Flow.getEngine()).getPlayer().setInput(inputList);
+            }
+        }
         tpsMonitor.update();
     }
 

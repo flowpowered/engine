@@ -86,7 +86,7 @@ public final class FlowScheduler implements Scheduler {
             throw new IllegalStateException("Attempt was made to start the client threads twice");
         }
 
-        inputThread = new InputThread(client.getScheduler());
+        inputThread = new InputThread(client);
         renderThread = new RenderThread(client);
         renderThread.start();
         inputThread.start();

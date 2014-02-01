@@ -23,6 +23,8 @@
  */
 package com.flowpowered.engine.entity;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +32,7 @@ import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.entity.PlayerSnapshot;
 import com.flowpowered.api.geo.discrete.TransformProvider;
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.chat.ChatReceiver;
 import com.flowpowered.commands.CommandException;
 import com.flowpowered.permissions.PermissionDomain;
@@ -37,6 +40,7 @@ import com.flowpowered.permissions.PermissionDomain;
 public class FlowPlayer implements Player {
     private final String name;
 
+    private volatile List<InputSnapshot> input = new LinkedList<>();
     private volatile TransformProvider transformProvider;
 
     public FlowPlayer(String name) {
@@ -181,5 +185,13 @@ public class FlowPlayer implements Player {
     @Override
     public void setTransformProvider(TransformProvider provider) {
         this.transformProvider = provider;
+    }
+
+    public void setInput(List<InputSnapshot> inputList) {
+        input = inputList;
+    }
+
+    public List<InputSnapshot> getInput() {
+        return Collections.unmodifiableList(input);
     }
 }

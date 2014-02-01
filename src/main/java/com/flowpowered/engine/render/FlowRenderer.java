@@ -107,6 +107,7 @@ public class FlowRenderer implements Renderer {
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
     private StringModel tpsMonitorModel;
+    private StringModel itpsMonitorModel;
     private StringModel positionModel;
     private boolean fpsMonitorStarted = false;
 
@@ -276,17 +277,21 @@ public class FlowRenderer implements Renderer {
         renderGUINode.addModel(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
         final StringModel tpsModel = sandboxModel.getInstance();
+        final StringModel itpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, .94 * aspect, -0.1));
         tpsModel.setPosition(new Vector3f(0.005, .91 * aspect, -0.1));
+        itpsModel.setPosition(new Vector3f(0.005, .88 * aspect, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
         tpsModel.setString("TPS: " + scheduler.getMainThread().getTPS());
+        itpsModel.setString("Input TPS: " + scheduler.getInputThread().getTPS());
         renderGUINode.addModel(fpsModel);
         renderGUINode.addModel(tpsModel);
+        renderGUINode.addModel(itpsModel);
         fpsMonitorModel = fpsModel;
         tpsMonitorModel = tpsModel;
-
+        itpsMonitorModel = itpsModel;
         final StringModel posModel = sandboxModel.getInstance();
-        posModel.setPosition(new Vector3f(0.005, .88 * aspect, -0.1));
+        posModel.setPosition(new Vector3f(0.005, .85 * aspect, -0.1));
         posModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
         renderGUINode.addModel(posModel);
         positionModel = posModel;
@@ -340,6 +345,7 @@ public class FlowRenderer implements Renderer {
         fpsMonitor.update();
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
         tpsMonitorModel.setString("TPS: " + scheduler.getMainThread().getTPS());
+        itpsMonitorModel.setString("Input TPS: " + scheduler.getInputThread().getTPS());
 
         positionModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
     }

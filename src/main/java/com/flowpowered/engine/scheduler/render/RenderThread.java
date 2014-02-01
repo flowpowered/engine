@@ -30,13 +30,13 @@ import java.util.Queue;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
+import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
-import com.flowpowered.engine.FlowSingleplayerImpl;
 import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
 import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
@@ -98,7 +98,8 @@ public class RenderThread extends TickingElement {
 
     @Override
     public void onTick(long dt) {
-        handleInput(dt / 1e9f);
+        handleInput();
+        updateCameraAndFrustrum();
         updateChunkModels(client.getWorld().getSnapshot());
         updateLight(client.getWorld().getAge());
         renderer.render();
@@ -201,78 +202,15 @@ public class RenderThread extends TickingElement {
         }
     }
 
-    private static final float MOUSE_SENSITIVITY = 0.08f;
-    private static final float CAMERA_SPEED = 0.2f;
-    private float cameraPitch = 0;
-    private float cameraYaw = 0;
-    private int mouseX = 0;
-    private int mouseY = 0;
-    private boolean mouseGrabbed = false;
-
-    private void handleInput(float dt) {
-        // Store the old mouse grabbed state
-        final boolean mouseGrabbedBefore = mouseGrabbed;
+    private void handleInput() {
         // Handle keyboard events
-        handleKeyboardEvents();
-        // Handle the mouse and keyboard inputs, if the input is active
-        if (input.isActive()) {
-            // If the mouse grabbed state has changed from the keyboard events, update the mouse grabbed state
-            if (mouseGrabbed != mouseGrabbedBefore) {
-                input.setMouseGrabbed(mouseGrabbed);
-                // If the mouse has just been re-grabbed, ensure that movement when not grabbed will be ignored
-                if (mouseGrabbed) {
-                    mouseX = input.getMouseX();
-                    mouseY = input.getMouseY();
-                }
-            }
-            // Handle the mouse input if it's been grabbed
-            if (mouseGrabbed) {
-                handleMouseInput(dt * 60);
-            }
-            // TODO: Update the camera position to match the player
-
-            // TEST CODE!
-            final Camera camera = renderer.getRenderModelsNode().getCamera();
-            final Vector3f right = camera.getRight();
-            final Vector3f up = camera.getUp();
-            final Vector3f forward = camera.getForward();
-            Vector3f translation = Vector3f.ZERO;
-            final float speed = CAMERA_SPEED * 60 * dt;
-            if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-                translation = translation.add(forward.mul(speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-                translation = translation.add(forward.mul(-speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
-                translation = translation.add(right.mul(-speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
-                translation = translation.add(right.mul(speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
-                translation = translation.add(up.mul(speed));
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-                translation = translation.add(up.mul(-speed));
-            }
-            if (!translation.equals(Vector3f.ZERO)) {
-                ((FlowSingleplayerImpl) client).getTestEntity().getPhysics().translate(translation);
-            }
-            // Update the frustrum to match the camera
-            camera.setPosition(client.getPlayer().getTransformProvider().getTransform().getPosition().getVector());
-            frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
-        }
-    }
-
-    private void handleKeyboardEvents() {
         final Queue<KeyboardEvent> keyboardEvents = input.getKeyboardQueue();
         while (!keyboardEvents.isEmpty()) {
             final KeyboardEvent event = keyboardEvents.poll();
             if (event.wasPressedDown()) {
                 switch (event.getKey()) {
                     case Keyboard.KEY_ESCAPE:
-                        mouseGrabbed ^= true;
+                        input.setMouseGrabbed(!input.isMouseGrabbed());
                         break;
                     case Keyboard.KEY_F2:
                         renderer.saveScreenshot(null);
@@ -281,25 +219,14 @@ public class RenderThread extends TickingElement {
         }
     }
 
-    private void handleMouseInput(float dt) {
-        // Get the input
-        // Calculate sensitivity adjusted to the FPS
-        final float sensitivity = MOUSE_SENSITIVITY * dt;
-        // Get the latest mouse x and y
-        final int mouseX = input.getMouseX();
-        final int mouseY = input.getMouseY();
-        // Rotate the camera by the difference from the old and new mouse coordinates
-        cameraPitch -= (mouseX - this.mouseX) * sensitivity;
-        cameraPitch %= 360;
-        final Quaternionf pitch = Quaternionf.fromAngleDegAxis(cameraPitch, 0, 1, 0);
-        cameraYaw += (mouseY - this.mouseY) * sensitivity;
-        cameraYaw %= 360;
-        final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
-        // Set the new camera rotation
-        renderer.getRenderModelsNode().getCamera().setRotation(pitch.mul(yaw));
-        // Update the last mouse x and y
-        this.mouseX = mouseX;
-        this.mouseY = mouseY;
+    private void updateCameraAndFrustrum() {
+        final Camera camera = renderer.getRenderModelsNode().getCamera();
+        // Update camera to match client player's position
+        Transform transform = client.getPlayer().getTransformProvider().getTransform();
+        camera.setPosition(transform.getPosition().getVector());
+        camera.setRotation(transform.getRotation());
+        // Update the frustrum to match the camera
+        frustum.update(camera.getProjectionMatrix(), camera.getViewMatrix());
     }
 
     private static final float PI = (float) TrigMath.PI;
