@@ -28,7 +28,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.Level;
 
 import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.commons.bit.ShortBitSet;
@@ -193,7 +194,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             checkChunkLoaded(generatedChunk, loadopt);
             return generatedChunk;
         }
-        Flow.getLogger().severe("Chunk failed to generate!  (" + loadopt + ")");
+        Flow.getLogger().error("Chunk failed to generate!  (" + loadopt + ")");
         Flow.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
         Thread.dumpStack();
         return null;
@@ -207,7 +208,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
                     ChunkDataForRegion dataForRegion = new ChunkDataForRegion();
                     FlowChunk newChunk = ChunkFiles.loadChunk(this, x, y, z, stream, dataForRegion);
                     if (newChunk == null) {
-                        Flow.getLogger().severe("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
+                        Flow.getLogger().error("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
                         return null;
                     }
                     FlowChunk c = setChunk(newChunk, x, y, z, dataForRegion);
@@ -217,7 +218,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
                     stream.close();
                 }
             } catch (IOException e) {
-                Flow.getLogger().log(Level.WARNING, "IOException when loading chunk!", e);
+                Flow.getLogger().log(Level.WARN, "IOException when loading chunk!", e);
             }
         }
         return null;

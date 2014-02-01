@@ -32,20 +32,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import com.flowpowered.commons.StringToUniqueIntegerMap;
-import com.flowpowered.commons.datatable.SerializableMap;
-import com.flowpowered.commons.sanitation.SafeCast;
-import com.flowpowered.commons.store.BinaryFileStore;
-
-import com.flowpowered.api.Server;
-import com.flowpowered.api.Flow;
-import com.flowpowered.api.generator.WorldGenerator;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.io.nbt.TransformTag;
-import com.flowpowered.api.io.nbt.UUIDTag;
-import com.flowpowered.engine.FlowEngine;
-import com.flowpowered.engine.geo.world.FlowServerWorld;
-
 import org.spout.nbt.ByteArrayTag;
 import org.spout.nbt.ByteTag;
 import org.spout.nbt.CompoundMap;
@@ -55,6 +41,19 @@ import org.spout.nbt.StringTag;
 import org.spout.nbt.stream.NBTInputStream;
 import org.spout.nbt.stream.NBTOutputStream;
 import org.spout.nbt.util.NBTMapper;
+
+import com.flowpowered.api.Flow;
+import com.flowpowered.api.Server;
+import com.flowpowered.api.generator.WorldGenerator;
+import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.io.nbt.TransformTag;
+import com.flowpowered.api.io.nbt.UUIDTag;
+import com.flowpowered.commons.StringToUniqueIntegerMap;
+import com.flowpowered.commons.datatable.SerializableMap;
+import com.flowpowered.commons.sanitation.SafeCast;
+import com.flowpowered.commons.store.BinaryFileStore;
+import com.flowpowered.engine.FlowEngine;
+import com.flowpowered.engine.geo.world.FlowServerWorld;
 
 public class WorldFiles {
     public static final byte WORLD_VERSION = 1;
@@ -98,10 +97,10 @@ public class WorldFiles {
                     Flow.info("Cannot close world file");
                 }
             }
-            Flow.info("Loading world [{0}]", worldName);
+            Flow.info("Loading world [{}]", worldName);
             world = loadWorldImpl(engine, worldName, map, generator, itemMap);
         } catch (FileNotFoundException ioe) {
-            Flow.info("Creating new world named [{0}]", worldName);
+            Flow.info("Creating new world named [{}]", worldName);
 
             world = new FlowServerWorld(engine, worldName, generator);
             world.save();

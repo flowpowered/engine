@@ -23,8 +23,9 @@
  */
 package com.flowpowered.api;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.events.EventManager;
 import com.flowpowered.filesystem.FileSystem;
@@ -34,7 +35,7 @@ import com.flowpowered.filesystem.FileSystem;
  */
 public final class Flow {
 	private static Engine instance = null;
-	private static final Logger logger = Logger.getLogger("Flow");
+	private static final Logger logger = LogManager.getLogger("Flow");
 
 	private Flow() {
 		throw new IllegalStateException("Can not construct Flow instance");
@@ -87,27 +88,27 @@ public final class Flow {
 	}
 
 	public static void finest(String log, Throwable t) {
-		logger.log(Level.FINEST, log, t);
+		logger.log(Level.TRACE, log, t);
 	}
 
 	public static void finest(String log, Object... params) {
-		logger.log(Level.FINEST, log, params);
+		logger.log(Level.TRACE, log, params);
 	}
 
 	public static void finer(String log, Throwable t) {
-		logger.log(Level.FINER, log, t);
+		logger.log(Level.TRACE, log, t);
 	}
 
 	public static void finer(String log, Object... params) {
-		logger.log(Level.FINER, log, params);
+		logger.log(Level.TRACE, log, params);
 	}
 
 	public static void fine(String log, Throwable t) {
-		logger.log(Level.FINE, log, t);
+		logger.log(Level.DEBUG, log, t);
 	}
 
 	public static void fine(String log, Object... params) {
-		logger.log(Level.FINE, log, params);
+		logger.log(Level.DEBUG, log, params);
 	}
 
 	public static void info(String log, Throwable t) {
@@ -119,19 +120,19 @@ public final class Flow {
 	}
 
 	public static void warn(String log, Throwable t) {
-		logger.log(Level.WARNING, log, t);
+		logger.log(Level.WARN, log, t);
 	}
 
 	public static void warn(String log, Object... params) {
-		logger.log(Level.WARNING, log, params);
+		logger.log(Level.WARN, log, params);
 	}
 
 	public static void severe(String log, Throwable t) {
-		logger.log(Level.SEVERE, log, t);
+		logger.log(Level.ERROR, log, t);
 	}
 
 	public static void severe(String log, Object... params) {
-		logger.log(Level.SEVERE, log, params);
+		logger.log(Level.ERROR, log, params);
 	}
 
 	public static void setEngine(Engine game) {

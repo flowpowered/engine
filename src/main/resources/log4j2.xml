@@ -2,10 +2,10 @@
 <Configuration status="WARN">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss} [%highlight{%-5level}] %logger{36} - %msg%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} [%highlight{%-5level}] [%logger{36}] %msg%n"/>
     </Console>
-    <RollingFile name="RollingFile" fileName="speed4j.log" filePattern="speed4j.%i.log">
-      <PatternLayout pattern="%d{HH:mm:ss} [%-5level] %logger{36} - %msg%n"/>
+    <RollingFile name="RollingFile" fileName="spout2.log" filePattern="spout2.%i.log">
+      <PatternLayout pattern="%d{HH:mm:ss} [%-5level] [%logger{36}] %msg%n"/>
       <SizeBasedTriggeringPolicy size="50000" />
     </RollingFile>
   </Appenders>

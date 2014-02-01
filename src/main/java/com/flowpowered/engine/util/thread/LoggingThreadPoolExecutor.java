@@ -32,7 +32,8 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+
+import org.apache.logging.log4j.Level;
 
 import com.flowpowered.api.Flow;
 import com.flowpowered.engine.scheduler.MarkedNamedThreadFactory;
@@ -74,7 +75,7 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
         if (t != null) {
-            Flow.getLogger().log(Level.WARNING, "Exception in core task", t);
+            Flow.getLogger().log(Level.WARN, "Exception in core task", t);
         }
     }
 }
