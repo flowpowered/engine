@@ -23,6 +23,7 @@
  */
 package com.flowpowered.engine.scheduler.input;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 import org.lwjgl.LWJGLException;
@@ -30,26 +31,32 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.api.input.MouseEvent;
+import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.FlowSingleplayerImpl;
-import com.flowpowered.engine.scheduler.FlowScheduler;
 
-/**
- *
- */
 public class InputThread extends TickingElement {
     private static final int TPS = 60;
-    private final FlowScheduler scheduler;
+    private final FlowClient client;
     private boolean mouseCreated = false, keyboardCreated = false;
     private final SubscribableQueue<KeyboardEvent> keyboardQueue = new SubscribableQueue<>(false);
     private final SubscribableQueue<MouseEvent> mouseQueue = new SubscribableQueue<>(false);
+    private final SubscribableQueue<InputSnapshot> inputQueue = new SubscribableQueue<>(false);
+    private volatile InputSnapshot lastSnapshot = new InputSnapshot();
 
-    public InputThread(FlowScheduler scheduler) {
+    private final TPSMonitor tpsMonitor = new TPSMonitor();
+    public int getTPS() {
+        return tpsMonitor.getTPS();
+    }
+
+    public InputThread(FlowClient client) {
         super("input", TPS);
-        this.scheduler = scheduler;
+        this.client = client;
     }
 
     @Override
@@ -58,16 +65,21 @@ public class InputThread extends TickingElement {
 
         keyboardQueue.becomePublisher();
         mouseQueue.becomePublisher();
+        inputQueue.becomePublisher();
+
+        tpsMonitor.start();
     }
 
     @Override
     public void onTick(long dt) {
         // Exit game if we're asked to
         if (isCloseRequested()) {
-            scheduler.stop();
+            stop();
         }
         // Tries to create the input, only does so if it already hasn't been created
         createInputIfNecessary();
+        LinkedList<KeyboardEvent> currentKeys = new LinkedList<>();
+        LinkedList<MouseEvent> currentMouse = new LinkedList<>();
         if (keyboardCreated) {
             // For every keyboard event
             while (Keyboard.next()) {
@@ -76,12 +88,13 @@ public class InputThread extends TickingElement {
                         Keyboard.getEventCharacter(), Keyboard.getEventKey(),
                         Keyboard.getEventKeyState(), Keyboard.getEventNanoseconds());
                 // TEST CODE
-                FlowSingleplayerImpl e = (FlowSingleplayerImpl) scheduler.getEngine();
+                FlowSingleplayerImpl e = (FlowSingleplayerImpl) client;
                 if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
                     e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
                 } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {
                     e.getPlayer().setTransformProvider(e.getTestEntity2().getPhysics());
                 }
+                currentKeys.add(event);
                 // Add to the queues, if we don't have an empty queue, return, there's nothing more to add
                 if (!keyboardQueue.add(event)) {
                     break;
@@ -91,22 +104,23 @@ public class InputThread extends TickingElement {
         if (mouseCreated) {
             // For every mouse event
             while (Mouse.next()) {
-                // We ignore events not caused by buttons to prevent them from filling the queue very quickly
-                if (Mouse.getEventButton() == -1) {
-                    continue;
-                }
                 // Create a new event
                 final MouseEvent event = new MouseEvent(
                         Mouse.getEventX(), Mouse.getEventY(),
                         Mouse.getEventDX(), Mouse.getEventDY(),
                         Mouse.getEventDWheel(),
                         Mouse.getEventButton(), Mouse.getEventButtonState());
+                currentMouse.add(event);
                 // Add to the queues, if we don't have an empty queue, return, there's nothing more to add
                 if (!mouseQueue.add(event)) {
                     break;
                 }
             }
         }
+        InputSnapshot newSnapshot = lastSnapshot.withChanges(dt / 1e9f, Mouse.isGrabbed(), currentKeys, currentMouse);
+        inputQueue.add(newSnapshot);
+        lastSnapshot = newSnapshot;
+        tpsMonitor.update();
     }
 
     private void createInputIfNecessary() {
@@ -146,7 +160,7 @@ public class InputThread extends TickingElement {
         System.out.println("Input stop");
 
         // We make sure to end of the game, else there's no way to stop it normally (no input!)
-        scheduler.stop();
+        client.stop();
         if (Keyboard.isCreated()) {
             Keyboard.destroy();
         }
@@ -157,6 +171,19 @@ public class InputThread extends TickingElement {
         }
         mouseCreated = false;
         mouseQueue.unsubscribeAll();
+        inputQueue.unsubscribeAll();
+    }
+
+    public Queue<InputSnapshot> getInputQueue() {
+        return inputQueue;
+    }
+
+    public void subscribeToInput() {
+        inputQueue.subscribe();
+    }
+
+    public void unsubscribeToInput() {
+        inputQueue.unsubscribe();
     }
 
     public Queue<KeyboardEvent> getKeyboardQueue() {
@@ -195,6 +222,10 @@ public class InputThread extends TickingElement {
         if (Mouse.isCreated()) {
             Mouse.setGrabbed(grabbed);
         }
+    }
+
+    public boolean isMouseGrabbed() {
+        return Mouse.isCreated() && Mouse.isGrabbed();
     }
 
     public int getMouseX() {

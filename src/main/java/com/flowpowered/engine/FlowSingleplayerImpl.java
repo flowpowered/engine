@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.flowpowered.api.Platform;
+import com.flowpowered.api.component.entity.PlayerControlledMovementComponent;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.generator.FlatWorldGenerator;
@@ -69,6 +70,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         Entity entity2 = loadedWorld.spawnEntity(new Vector3f(0, 1, 0), LoadOption.LOAD_GEN);
         this.testEntity = entity;
         this.testEntity2 = entity2;
+        this.testEntity.add(PlayerControlledMovementComponent.class).setController(player);
         player.setTransformProvider(entity.getPhysics());
     }
 
