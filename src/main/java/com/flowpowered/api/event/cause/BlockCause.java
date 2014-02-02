@@ -28,19 +28,19 @@ import com.flowpowered.events.Cause;
 import com.flowpowered.api.geo.cuboid.Block;
 
 public class BlockCause extends Cause<Block> {
-	private final Block block;
+    private final Block block;
 
-	public BlockCause(Block block) {
-		this(null, block);
-	}
+    public BlockCause(Block block) {
+        this(null, block);
+    }
 
-	public BlockCause(Cause<?> parent, Block block) {
-		super(parent);
-		this.block = block;
-	}
+    public BlockCause(Cause<?> parent, Block block) {
+        super(parent);
+        this.block = block;
+    }
 
-	@Override
-	public Block getSource() {
-		return block;
-	}
+    @Override
+    public Block getSource() {
+        return block;
+    }
 }

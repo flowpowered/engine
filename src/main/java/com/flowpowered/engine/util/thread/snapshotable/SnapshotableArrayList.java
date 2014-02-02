@@ -37,114 +37,114 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * A snapshotable object for ArrayLists
  */
 public class SnapshotableArrayList<T> implements Snapshotable {
-	private final ConcurrentLinkedQueue<T> dirty = new ConcurrentLinkedQueue<>();
-	private final List<T> snapshot;
-	private final List<T> live;
+    private final ConcurrentLinkedQueue<T> dirty = new ConcurrentLinkedQueue<>();
+    private final List<T> snapshot;
+    private final List<T> live;
 
-	public SnapshotableArrayList(SnapshotManager manager) {
-		this(manager, null);
-	}
+    public SnapshotableArrayList(SnapshotManager manager) {
+        this(manager, null);
+    }
 
-	public SnapshotableArrayList(SnapshotManager manager, ArrayList<T> initial) {
-		if (initial != null) {
-			snapshot = new ArrayList<>(initial);
-		} else {
-			snapshot = new ArrayList<>();
-		}
-		live = Collections.synchronizedList(new ArrayList<>(snapshot));
-		manager.add(this);
-	}
+    public SnapshotableArrayList(SnapshotManager manager, ArrayList<T> initial) {
+        if (initial != null) {
+            snapshot = new ArrayList<>(initial);
+        } else {
+            snapshot = new ArrayList<>();
+        }
+        live = Collections.synchronizedList(new ArrayList<>(snapshot));
+        manager.add(this);
+    }
 
-	/**
-	 * Adds an object to the list
-	 */
-	@DelayedWrite
-	public boolean add(T object) {
-		boolean success = live.add(object);
+    /**
+     * Adds an object to the list
+     */
+    @DelayedWrite
+    public boolean add(T object) {
+        boolean success = live.add(object);
 
-		if (success) {
-			dirty.add(object);
-		}
+        if (success) {
+            dirty.add(object);
+        }
 
-		return success;
-	}
+        return success;
+    }
 
-	@DelayedWrite
-	public void addAll(Collection<T> values) {
-		for (T object : values) {
-			boolean success = live.add(object);
+    @DelayedWrite
+    public void addAll(Collection<T> values) {
+        for (T object : values) {
+            boolean success = live.add(object);
 
-			if (success) {
-				dirty.add(object);
-			}
-		}
-	}
+            if (success) {
+                dirty.add(object);
+            }
+        }
+    }
 
-	/**
-	 * Removes an object from the list
-	 */
-	@DelayedWrite
-	public boolean remove(T object) {
-		boolean success = live.remove(object);
+    /**
+     * Removes an object from the list
+     */
+    @DelayedWrite
+    public boolean remove(T object) {
+        boolean success = live.remove(object);
 
-		if (success) {
-			dirty.add(object);
-		}
+        if (success) {
+            dirty.add(object);
+        }
 
-		return success;
-	}
+        return success;
+    }
 
-	/**
-	 * Removes the object from the list at a particular index
-	 */
-	@DelayedWrite
-	public void remove(int index) {
-		dirty.add(live.remove(index));
-	}
+    /**
+     * Removes the object from the list at a particular index
+     */
+    @DelayedWrite
+    public void remove(int index) {
+        dirty.add(live.remove(index));
+    }
 
-	/**
-	 * Gets the snapshot value
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public List<T> get() {
-		return Collections.unmodifiableList(snapshot);
-	}
+    /**
+     * Gets the snapshot value
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public List<T> get() {
+        return Collections.unmodifiableList(snapshot);
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the live value
-	 */
-	@LiveRead
-	public List<T> getLive() {
-		return Collections.unmodifiableList(live);
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the live value
+     */
+    @LiveRead
+    public List<T> getLive() {
+        return Collections.unmodifiableList(live);
+    }
 
-	/**
-	 * Gets the dirty object list
-	 *
-	 * @return the dirty list
-	 */
-	@LiveRead
-	public List<T> getDirtyList() {
-		return Collections.unmodifiableList(new ArrayList<>(dirty));
-	}
+    /**
+     * Gets the dirty object list
+     *
+     * @return the dirty list
+     */
+    @LiveRead
+    public List<T> getDirtyList() {
+        return Collections.unmodifiableList(new ArrayList<>(dirty));
+    }
 
-	/**
-	 * Copies the next values to the snapshot
-	 */
-	@Override
-	public void copySnapshot() {
-		if (dirty.size() > 0) {
-			snapshot.clear();
-			synchronized (live) {
-				for (T o : live) {
-					snapshot.add(o);
-				}
-			}
-		}
-		dirty.clear();
-	}
+    /**
+     * Copies the next values to the snapshot
+     */
+    @Override
+    public void copySnapshot() {
+        if (dirty.size() > 0) {
+            snapshot.clear();
+            synchronized (live) {
+                for (T o : live) {
+                    snapshot.add(o);
+                }
+            }
+        }
+        dirty.clear();
+    }
 }

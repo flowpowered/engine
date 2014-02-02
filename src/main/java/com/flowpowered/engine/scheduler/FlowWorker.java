@@ -31,93 +31,93 @@ import com.flowpowered.api.scheduler.Worker;
 import com.flowpowered.commons.future.SimpleFuture;
 
 public class FlowWorker implements Worker, Runnable {
-	@SuppressWarnings ("rawtypes")
-	private static final Future<?> NOT_SUBMITED = new SimpleFuture();
-	@SuppressWarnings ("rawtypes")
-	private static final Future<?> CANCELLED = new SimpleFuture();
-	private final int id;
-	private final Object owner;
-	private final FlowTask task;
-	private final Thread thread;
-	private final Runnable r;
-	private AtomicReference<Future<?>> futureRef = new AtomicReference<Future<?>>(NOT_SUBMITED);
-	private boolean shouldContinue = true;
-	private final FlowTaskManager taskManager;
+    @SuppressWarnings ("rawtypes")
+    private static final Future<?> NOT_SUBMITED = new SimpleFuture();
+    @SuppressWarnings ("rawtypes")
+    private static final Future<?> CANCELLED = new SimpleFuture();
+    private final int id;
+    private final Object owner;
+    private final FlowTask task;
+    private final Thread thread;
+    private final Runnable r;
+    private AtomicReference<Future<?>> futureRef = new AtomicReference<Future<?>>(NOT_SUBMITED);
+    private boolean shouldContinue = true;
+    private final FlowTaskManager taskManager;
 
-	protected FlowWorker(final FlowTask task, final FlowTaskManager taskManager) {
-		id = task.getTaskId();
-		owner = task.getOwner();
-		this.task = task;
-		String name = "Flow Worker{Owner:" + ((owner != null) ? owner.getClass().getName() : "none") + ", id:" + id + "}";
-		r = new Runnable() {
-			@Override
-			public void run() {
-				task.pulse();
-				taskManager.removeWorker(FlowWorker.this, task);
-				taskManager.repeatSchedule(task);
-			}
-		};
-		if (task.isLongLived()) {
-			thread = new Thread(r, name);
-		} else {
-			thread = null;
-		}
-		this.taskManager = taskManager;
-	}
+    protected FlowWorker(final FlowTask task, final FlowTaskManager taskManager) {
+        id = task.getTaskId();
+        owner = task.getOwner();
+        this.task = task;
+        String name = "Flow Worker{Owner:" + ((owner != null) ? owner.getClass().getName() : "none") + ", id:" + id + "}";
+        r = new Runnable() {
+            @Override
+            public void run() {
+                task.pulse();
+                taskManager.removeWorker(FlowWorker.this, task);
+                taskManager.repeatSchedule(task);
+            }
+        };
+        if (task.isLongLived()) {
+            thread = new Thread(r, name);
+        } else {
+            thread = null;
+        }
+        this.taskManager = taskManager;
+    }
 
-	public void start(ExecutorService pool) {
-		if (thread != null) {
-			thread.start();
-		} else {
-			Future<?> future = pool.submit(r);
-			if (!this.futureRef.compareAndSet(NOT_SUBMITED, future)) {
-				future.cancel(true);
-			}
-		}
-	}
+    public void start(ExecutorService pool) {
+        if (thread != null) {
+            thread.start();
+        } else {
+            Future<?> future = pool.submit(r);
+            if (!this.futureRef.compareAndSet(NOT_SUBMITED, future)) {
+                future.cancel(true);
+            }
+        }
+    }
 
-	@Override
-	public int hashCode() {
-		return id;
-	}
+    @Override
+    public int hashCode() {
+        return id;
+    }
 
-	@Override
-	public int getTaskId() {
-		return id;
-	}
+    @Override
+    public int getTaskId() {
+        return id;
+    }
 
-	@Override
-	public Object getOwner() {
-		return owner;
-	}
+    @Override
+    public Object getOwner() {
+        return owner;
+    }
 
-	@Override
-	public FlowTask getTask() {
-		return task;
-	}
+    @Override
+    public FlowTask getTask() {
+        return task;
+    }
 
-	public boolean shouldContinue() {
-		return shouldContinue;
-	}
+    public boolean shouldContinue() {
+        return shouldContinue;
+    }
 
-	@Override
-	public void cancel() {
-		taskManager.cancelTask(task);
-	}
+    @Override
+    public void cancel() {
+        taskManager.cancelTask(task);
+    }
 
-	public void interrupt() {
-		if (thread != null) {
-			thread.interrupt();
-		} else {
-			if (!this.futureRef.compareAndSet(NOT_SUBMITED, CANCELLED)) {
-				Future<?> future = futureRef.get();
-				future.cancel(true);
-			}
-		}
-	}
+    public void interrupt() {
+        if (thread != null) {
+            thread.interrupt();
+        } else {
+            if (!this.futureRef.compareAndSet(NOT_SUBMITED, CANCELLED)) {
+                Future<?> future = futureRef.get();
+                future.cancel(true);
+            }
+        }
+    }
 
-	@Override
-	public void run() {
-		shouldContinue = task.pulse();
-	}
+    @Override
+    public void run() {
+        shouldContinue = task.pulse();
+    }
 }

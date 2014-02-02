@@ -57,65 +57,65 @@ public class Point implements Serializable {
         return vector;
     }
 
-	public int getBlockX() {
+    public int getBlockX() {
         return vector.getFloorX();
-	}
+    }
 
-	public int getBlockY() {
+    public int getBlockY() {
         return vector.getFloorY();
-	}
+    }
 
-	public int getBlockZ() {
+    public int getBlockZ() {
         return vector.getFloorZ();
-	}
+    }
 
-	public int getChunkX() {
-		return getBlockX() >> Chunk.BLOCKS.BITS;
-	}
+    public int getChunkX() {
+        return getBlockX() >> Chunk.BLOCKS.BITS;
+    }
 
-	public int getChunkY() {
-		return getBlockY() >> Chunk.BLOCKS.BITS;
-	}
+    public int getChunkY() {
+        return getBlockY() >> Chunk.BLOCKS.BITS;
+    }
 
-	public int getChunkZ() {
-		return getBlockZ() >> Chunk.BLOCKS.BITS;
-	}
+    public int getChunkZ() {
+        return getBlockZ() >> Chunk.BLOCKS.BITS;
+    }
 
-	public Chunk getChunk(LoadOption loadopt) {
-		return world.getChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
-	}
+    public Chunk getChunk(LoadOption loadopt) {
+        return world.getChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
+    }
 
-	public Region getRegion(LoadOption loadopt) {
-		return world.getRegionFromChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
-	}
+    public Region getRegion(LoadOption loadopt) {
+        return world.getRegionFromChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
+    }
 
-	public String toBlockString() {
-		return "{" + world.getName() + ":" + getBlockX() + ", " + getBlockY() + ", " + getBlockZ() + "}";
-	}
+    public String toBlockString() {
+        return "{" + world.getName() + ":" + getBlockX() + ", " + getBlockY() + ", " + getBlockZ() + "}";
+    }
 
-	public String toChunkString() {
-		return "{" + world.getName() + ":" + getChunkX() + ", " + getChunkY() + ", " + getChunkZ() + "}";
-	}
+    public String toChunkString() {
+        return "{" + world.getName() + ":" + getChunkX() + ", " + getChunkY() + ", " + getChunkZ() + "}";
+    }
 
-	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-		out.writeUTF(world != null ? world.getName() : "null");
-	}
+        out.writeUTF(world != null ? world.getName() : "null");
+    }
 
-	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-		String world = in.readUTF();
-		World w = Flow.getEngine().getWorldManager().getWorld(world, true);
-		try {
-			Field field;
+        String world = in.readUTF();
+        World w = Flow.getEngine().getWorldManager().getWorld(world, true);
+        try {
+            Field field;
 
-			field = Point.class.getDeclaredField("world");
-			field.setAccessible(true);
-			field.set(this, w);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			if (Flow.debugMode()) {
-				e.printStackTrace();
-			}
-		}
-	}
+            field = Point.class.getDeclaredField("world");
+            field.setAccessible(true);
+            field.set(this, w);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            if (Flow.debugMode()) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

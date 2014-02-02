@@ -33,46 +33,46 @@ import org.spout.nbt.Tag;
 import org.spout.nbt.util.NBTMapper;
 
 public class Vector3Tag extends ListTag<FloatTag> {
-	public Vector3Tag(String name, Vector3f v) {
-		super(name, FloatTag.class, vector3ToList(v));
-	}
+    public Vector3Tag(String name, Vector3f v) {
+        super(name, FloatTag.class, vector3ToList(v));
+    }
 
-	private static List<FloatTag> vector3ToList(Vector3f v) {
-		List<FloatTag> list = new ArrayList<>(3);
-		list.add(new FloatTag("", v.getX()));
-		list.add(new FloatTag("", v.getY()));
-		list.add(new FloatTag("", v.getZ()));
-		return list;
-	}
+    private static List<FloatTag> vector3ToList(Vector3f v) {
+        List<FloatTag> list = new ArrayList<>(3);
+        list.add(new FloatTag("", v.getX()));
+        list.add(new FloatTag("", v.getY()));
+        list.add(new FloatTag("", v.getZ()));
+        return list;
+    }
 
-	@SuppressWarnings ("unchecked")
-	public static Vector3f getValue(Tag<?> tag) {
-		try {
-			return getValue((ListTag<FloatTag>) tag);
-		} catch (ClassCastException e) {
-			return null;
-		}
-	}
+    @SuppressWarnings ("unchecked")
+    public static Vector3f getValue(Tag<?> tag) {
+        try {
+            return getValue((ListTag<FloatTag>) tag);
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
 
-	public static Vector3f getValue(ListTag<FloatTag> list) {
-		if (list == null) {
-			return null;
-		}
-		return getValue(list.getValue());
-	}
+    public static Vector3f getValue(ListTag<FloatTag> list) {
+        if (list == null) {
+            return null;
+        }
+        return getValue(list.getValue());
+    }
 
-	public static Vector3f getValue(List<FloatTag> list) {
-		if (list == null || list.size() != 3) {
-			return null;
-		}
-		Float x = NBTMapper.toTagValue(list.get(0), Float.class, null);
-		Float y = NBTMapper.toTagValue(list.get(1), Float.class, null);
-		Float z = NBTMapper.toTagValue(list.get(2), Float.class, null);
+    public static Vector3f getValue(List<FloatTag> list) {
+        if (list == null || list.size() != 3) {
+            return null;
+        }
+        Float x = NBTMapper.toTagValue(list.get(0), Float.class, null);
+        Float y = NBTMapper.toTagValue(list.get(1), Float.class, null);
+        Float z = NBTMapper.toTagValue(list.get(2), Float.class, null);
 
-		if (x == null || y == null || z == null) {
-			return null;
-		}
+        if (x == null || y == null || z == null) {
+            return null;
+        }
 
-		return new Vector3f(x, y, z);
-	}
+        return new Vector3f(x, y, z);
+    }
 }

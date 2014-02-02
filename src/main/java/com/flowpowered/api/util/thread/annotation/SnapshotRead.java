@@ -30,9 +30,9 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention (value = RetentionPolicy.RUNTIME)
 public @interface SnapshotRead {
-	public String author() default "SpoutDev";
+    public String author() default "SpoutDev";
 
-	public String version() default "1.0";
+    public String version() default "1.0";
 
-	public String shortDescription() default "Indicates that this method reads a snapshot value.  Snapshots are taken at the end of every tick";
+    public String shortDescription() default "Indicates that this method reads a snapshot value.  Snapshots are taken at the end of every tick";
 }

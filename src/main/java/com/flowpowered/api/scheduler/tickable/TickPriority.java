@@ -27,18 +27,18 @@ package com.flowpowered.api.scheduler.tickable;
  * Represents a {@link com.flowpowered.api.component.Component}s priority
  */
 public enum TickPriority {
-	LOWEST(0),
-	LOW(1),
-	NORMAL(2),
-	HIGH(3),
-	HIGHEST(4);
-	private final int index;
+    LOWEST(0),
+    LOW(1),
+    NORMAL(2),
+    HIGH(3),
+    HIGHEST(4);
+    private final int index;
 
-	private TickPriority(int index) {
-		this.index = index;
-	}
+    private TickPriority(int index) {
+        this.index = index;
+    }
 
-	public int getIndex() {
-		return index;
-	}
+    public int getIndex() {
+        return index;
+    }
 }

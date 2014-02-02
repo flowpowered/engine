@@ -47,60 +47,60 @@ import com.flowpowered.engine.util.thread.AsyncManager;
  * <li><b>Copy Snapshot</b><br> During this stage all live values are copied to their stable snapshot. Data is unstable so no reads are permitted during this stage. </ul> </ul>
  */
 public final class FlowScheduler implements Scheduler {
-	/**
-	 * The number of milliseconds between pulses.
-	 */
-	public static final int PULSE_EVERY = 50;
-	/**
-	 * A time that is at least 1 Pulse below the maximum time instant
-	 */
-	public static final long END_OF_THE_WORLD = Long.MAX_VALUE - PULSE_EVERY;
-	/**
-	 * Target Frames per Second for the renderer
-	 */
-	public static final int TARGET_FPS = 60;
+    /**
+     * The number of milliseconds between pulses.
+     */
+    public static final int PULSE_EVERY = 50;
+    /**
+     * A time that is at least 1 Pulse below the maximum time instant
+     */
+    public static final long END_OF_THE_WORLD = Long.MAX_VALUE - PULSE_EVERY;
+    /**
+     * Target Frames per Second for the renderer
+     */
+    public static final int TARGET_FPS = 60;
     private final FlowTaskManager taskManager;
     // SchedulerElements
     private final MainThread mainThread;
     private final RenderThread renderThread;
     private final InputThread inputThread;
 
-	/**
-	 * Creates a new task scheduler.
-	 */
-	public FlowScheduler(Engine engine) {
-		mainThread = new MainThread(this);
+    /**
+     * Creates a new task scheduler.
+     */
+    public FlowScheduler(Engine engine) {
+        mainThread = new MainThread(this);
 
-		if (engine.getPlatform().isClient()) {
+        if (engine.getPlatform().isClient()) {
             inputThread = new InputThread(this);
-			renderThread = new RenderThread((Client) engine, this);
-		} else {
+            renderThread = new RenderThread((Client) engine, this);
+        } else {
             inputThread = null;
-			renderThread = null;
-		}
-		taskManager = new FlowTaskManager(this);
-	}
+            renderThread = null;
+        }
+        taskManager = new FlowTaskManager(this);
+    }
 
-	public void startMainThread() {
-		if (mainThread.isRunning()) {
-			throw new IllegalStateException("Attempt was made to start the main thread twice");
-		}
+    public void startMainThread() {
+        if (mainThread.isRunning()) {
+            throw new IllegalStateException("Attempt was made to start the main thread twice");
+        }
 
-		mainThread.start();
-	}
+        mainThread.start();
+    }
 
-	public void startClientThreads() {
-		if (renderThread.isRunning() || inputThread.isRunning()) {
-			throw new IllegalStateException("Attempt was made to start the client threads twice");
-		}
+    public void startClientThreads() {
+        if (renderThread.isRunning() || inputThread.isRunning()) {
+            throw new IllegalStateException("Attempt was made to start the client threads twice");
+        }
         renderThread.start();
         inputThread.start();
-	}
+    }
 
-	/**
-	 * Stops the scheduler
-	 */
-	public void stop() {
+    /**
+     * Stops the scheduler
+     */
+    public void stop() {
         mainThread.stop();
         if (renderThread != null) {
             renderThread.stop();
@@ -108,92 +108,92 @@ public final class FlowScheduler implements Scheduler {
         if (inputThread != null) {
             inputThread.stop();
         }
-	}
+    }
 
-	@Override
-	public Task scheduleSyncDelayedTask(Object plugin, Runnable task) {
-		return taskManager.scheduleSyncDelayedTask(plugin, task);
-	}
+    @Override
+    public Task scheduleSyncDelayedTask(Object plugin, Runnable task) {
+        return taskManager.scheduleSyncDelayedTask(plugin, task);
+    }
 
-	@Override
-	public Task scheduleSyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
-		return taskManager.scheduleSyncDelayedTask(plugin, task, delay, priority);
-	}
+    @Override
+    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
+        return taskManager.scheduleSyncDelayedTask(plugin, task, delay, priority);
+    }
 
-	@Override
-	public Task scheduleSyncDelayedTask(Object plugin, Runnable task, TaskPriority priority) {
-		return taskManager.scheduleSyncDelayedTask(plugin, task, priority);
-	}
+    @Override
+    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, TaskPriority priority) {
+        return taskManager.scheduleSyncDelayedTask(plugin, task, priority);
+    }
 
-	@Override
-	public Task scheduleSyncRepeatingTask(Object plugin, Runnable task, long delay, long period, TaskPriority priority) {
-		return taskManager.scheduleSyncRepeatingTask(plugin, task, delay, period, priority);
-	}
+    @Override
+    public Task scheduleSyncRepeatingTask(Object plugin, Runnable task, long delay, long period, TaskPriority priority) {
+        return taskManager.scheduleSyncRepeatingTask(plugin, task, delay, period, priority);
+    }
 
-	@Override
-	public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
-		return taskManager.scheduleAsyncDelayedTask(plugin, task, delay, priority);
-	}
+    @Override
+    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
+        return taskManager.scheduleAsyncDelayedTask(plugin, task, delay, priority);
+    }
 
-	@Override
-	public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority, boolean longLife) {
-		return taskManager.scheduleAsyncDelayedTask(plugin, task, delay, priority, longLife);
-	}
+    @Override
+    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority, boolean longLife) {
+        return taskManager.scheduleAsyncDelayedTask(plugin, task, delay, priority, longLife);
+    }
 
-	@Override
-	public Task scheduleAsyncTask(Object plugin, Runnable task) {
-		return taskManager.scheduleAsyncTask(plugin, task);
-	}
+    @Override
+    public Task scheduleAsyncTask(Object plugin, Runnable task) {
+        return taskManager.scheduleAsyncTask(plugin, task);
+    }
 
-	@Override
-	public Task scheduleAsyncTask(Object plugin, Runnable task, boolean longLife) {
-		return taskManager.scheduleAsyncTask(plugin, task, longLife);
-	}
+    @Override
+    public Task scheduleAsyncTask(Object plugin, Runnable task, boolean longLife) {
+        return taskManager.scheduleAsyncTask(plugin, task, longLife);
+    }
 
-	@Override
-	public <T> Future<T> callSyncMethod(Object plugin, Callable<T> task, TaskPriority priority) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
+    @Override
+    public <T> Future<T> callSyncMethod(Object plugin, Callable<T> task, TaskPriority priority) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-	@Override
-	public boolean isQueued(int taskId) {
-		return taskManager.isQueued(taskId);
-	}
+    @Override
+    public boolean isQueued(int taskId) {
+        return taskManager.isQueued(taskId);
+    }
 
-	@Override
-	public void cancelTask(int taskId) {
-		taskManager.cancelTask(taskId);
-	}
+    @Override
+    public void cancelTask(int taskId) {
+        taskManager.cancelTask(taskId);
+    }
 
-	@Override
-	public void cancelTask(Task task) {
-		taskManager.cancelTask(task);
-	}
+    @Override
+    public void cancelTask(Task task) {
+        taskManager.cancelTask(task);
+    }
 
-	@Override
-	public void cancelTasks(Object plugin) {
-		taskManager.cancelTasks(plugin);
-	}
+    @Override
+    public void cancelTasks(Object plugin) {
+        taskManager.cancelTasks(plugin);
+    }
 
-	@Override
-	public void cancelAllTasks() {
-		taskManager.cancelAllTasks();
-	}
+    @Override
+    public void cancelAllTasks() {
+        taskManager.cancelAllTasks();
+    }
 
-	@Override
-	public List<Worker> getActiveWorkers() {
-		return taskManager.getActiveWorkers();
-	}
+    @Override
+    public List<Worker> getActiveWorkers() {
+        return taskManager.getActiveWorkers();
+    }
 
-	@Override
-	public List<Task> getPendingTasks() {
-		return taskManager.getPendingTasks();
-	}
+    @Override
+    public List<Task> getPendingTasks() {
+        return taskManager.getPendingTasks();
+    }
 
-	@Override
-	public long getUpTime() {
-		return taskManager.getUpTime();
-	}
+    @Override
+    public long getUpTime() {
+        return taskManager.getUpTime();
+    }
 
     public FlowTaskManager getTaskManager() {
         return taskManager;
@@ -216,19 +216,19 @@ public final class FlowScheduler implements Scheduler {
         return inputThread;
     }
 
-	/**
-	 * Adds an async manager to the scheduler
-	 */
-	public void addAsyncManager(AsyncManager manager) {
-		mainThread.addAsyncManager(manager);
-	}
+    /**
+     * Adds an async manager to the scheduler
+     */
+    public void addAsyncManager(AsyncManager manager) {
+        mainThread.addAsyncManager(manager);
+    }
 
-	/**
-	 * Removes an async manager from the scheduler
-	 */
-	public void removeAsyncManager(AsyncManager manager) {
-		mainThread.removeAsyncManager(manager);
-	}
+    /**
+     * Removes an async manager from the scheduler
+     */
+    public void removeAsyncManager(AsyncManager manager) {
+        mainThread.removeAsyncManager(manager);
+    }
 
     public void runCoreAsyncTask(Runnable r) {
         mainThread.executorService.submit(r);

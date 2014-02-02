@@ -28,15 +28,15 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.PreSnapshotManager;
 
 public class PreSnapshotTask extends LocalManagerRunnableFactory {
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((PreSnapshotManager) manager).preSnapshotRun();
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((PreSnapshotManager) manager).preSnapshotRun();
+            }
+        };
+    }
 
     @Override
     public TickStage getTickStage() {

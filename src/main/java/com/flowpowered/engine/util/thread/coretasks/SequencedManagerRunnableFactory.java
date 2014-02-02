@@ -24,13 +24,13 @@
 package com.flowpowered.engine.util.thread.coretasks;
 
 public abstract class SequencedManagerRunnableFactory implements ManagerRunnableFactory {
-	@Override
-	public int getMaxSequence() {
-		return 26;
-	}
+    @Override
+    public int getMaxSequence() {
+        return 26;
+    }
 
-	@Override
-	public int getMinSequence() {
-		return -1;
-	}
+    @Override
+    public int getMinSequence() {
+        return -1;
+    }
 }

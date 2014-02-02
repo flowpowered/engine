@@ -36,46 +36,46 @@ import com.flowpowered.engine.util.argument.PlatformConverter;
  * A main class for launching various platforms
  */
 public class FlowApplication {
-	@Parameter (names = {"--platform", "-platform", "--p", "-p"}, converter = PlatformConverter.class)
-	public Platform platform = Platform.SINGLEPLAYER;
-	@Parameter (names = {"--debug", "-debug", "--d", "-d"}, description = "Debug Mode")
-	public boolean debug = false;
-	@Parameter (names = {"--protocol"}, description = "Protocol to connect with")
-	public String protocol = null;
-	@Parameter (names = {"--server"}, description = "Server to connect to")
-	public String server = null;
-	@Parameter (names = {"--port"}, description = "Port to connect to")
-	public int port = -1;
-	@Parameter (names = {"--user"}, description = "User to connect as")
-	public String user = null;
+    @Parameter (names = {"--platform", "-platform", "--p", "-p"}, converter = PlatformConverter.class)
+    public Platform platform = Platform.SINGLEPLAYER;
+    @Parameter (names = {"--debug", "-debug", "--d", "-d"}, description = "Debug Mode")
+    public boolean debug = false;
+    @Parameter (names = {"--protocol"}, description = "Protocol to connect with")
+    public String protocol = null;
+    @Parameter (names = {"--server"}, description = "Server to connect to")
+    public String server = null;
+    @Parameter (names = {"--port"}, description = "Port to connect to")
+    public int port = -1;
+    @Parameter (names = {"--user"}, description = "User to connect as")
+    public String user = null;
 
-	public static void main(String[] args) {
-		try {
-			FlowApplication main = new FlowApplication();
-			JCommander commands = new JCommander(main);
-			commands.parse(args);
+    public static void main(String[] args) {
+        try {
+            FlowApplication main = new FlowApplication();
+            JCommander commands = new JCommander(main);
+            commands.parse(args);
 
-			FlowEngine engine;
-			switch (main.platform) {
-				case CLIENT:
-					engine = new FlowClient(main);
-					break;
-				case SERVER:
-					engine = new FlowServer(main);
-					break;
-				case SINGLEPLAYER:
-					engine = new FlowSingleplayer(main);
-					break;
-				default:
-					throw new IllegalArgumentException("Unknown platform: " + main.platform);
-			}
+            FlowEngine engine;
+            switch (main.platform) {
+                case CLIENT:
+                    engine = new FlowClient(main);
+                    break;
+                case SERVER:
+                    engine = new FlowServer(main);
+                    break;
+                case SINGLEPLAYER:
+                    engine = new FlowSingleplayer(main);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown platform: " + main.platform);
+            }
 
-			Flow.setEngine(engine);
+            Flow.setEngine(engine);
             engine.init();
-			engine.start();
-		} catch (Throwable t) {
-			t.printStackTrace();
-			Runtime.getRuntime().halt(1);
-		}
-	}
+            engine.start();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            Runtime.getRuntime().halt(1);
+        }
+    }
 }

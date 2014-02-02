@@ -24,22 +24,22 @@
 package com.flowpowered.api.util;
 
 public interface UnloadSavable {
-	/**
-	 * Performs the necessary tasks to unload this object.
-	 *
-	 * @param save whether the data should be saved
-	 */
-	void unload(boolean save);
+    /**
+     * Performs the necessary tasks to unload this object.
+     *
+     * @param save whether the data should be saved
+     */
+    void unload(boolean save);
 
-	/**
-	 * Performs the necessary tasks to save this object.
-	 */
-	void save();
+    /**
+     * Performs the necessary tasks to save this object.
+     */
+    void save();
 
-	/**
-	 * Tests if loaded
+    /**
+     * Tests if loaded
      * 
      * @return true if loaded
      */
-	boolean isLoaded();
+    boolean isLoaded();
 }

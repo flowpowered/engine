@@ -168,7 +168,7 @@ public class FlowEntity implements Entity {
     void finalizeRun() {
         FlowRegion regionLive = getRegion();
         FlowRegion regionSnapshot = (FlowRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN);
-		//Move entity from Region A to Region B
+        //Move entity from Region A to Region B
         if (regionSnapshot != regionLive) {
             boolean activated = physics.isActivated();
             physics.deactivate();

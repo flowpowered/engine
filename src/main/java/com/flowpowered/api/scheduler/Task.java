@@ -27,50 +27,50 @@ package com.flowpowered.api.scheduler;
  * Represents a task being executed by the scheduler
  */
 public interface Task {
-	/**
-	 * Returns the taskId for the task
-	 *
-	 * @return Task id number
-	 */
-	public int getTaskId();
+    /**
+     * Returns the taskId for the task
+     *
+     * @return Task id number
+     */
+    public int getTaskId();
 
-	/**
-	 * Returns the Object that owns this task
-	 *
-	 * @return The Object that owns the task
-	 */
-	public Object getOwner();
+    /**
+     * Returns the Object that owns this task
+     *
+     * @return The Object that owns the task
+     */
+    public Object getOwner();
 
-	/**
-	 * Returns true if the Task is a sync task
-	 *
-	 * @return true if the task is run by main thread
-	 */
-	public boolean isSync();
+    /**
+     * Returns true if the Task is a sync task
+     *
+     * @return true if the task is run by main thread
+     */
+    public boolean isSync();
 
-	/**
-	 * Returns true if the Task is alive.  Dead tasks are no longer being scheduled
-	 *
-	 * @return true if the task is alive
-	 */
-	public boolean isAlive();
+    /**
+     * Returns true if the Task is alive.  Dead tasks are no longer being scheduled
+     *
+     * @return true if the task is alive
+     */
+    public boolean isAlive();
 
-	/**
-	 * Returns true if the Task is executing.
-	 *
-	 * @return true if the task is executing
-	 */
-	public boolean isExecuting();
+    /**
+     * Returns true if the Task is executing.
+     *
+     * @return true if the task is executing
+     */
+    public boolean isExecuting();
 
-	/**
-	 * Returns true if the task is a long lived async task
-	 *
-	 * @return true if the task is a long lived task
-	 */
-	public boolean isLongLived();
+    /**
+     * Returns true if the task is a long lived async task
+     *
+     * @return true if the task is a long lived task
+     */
+    public boolean isLongLived();
 
-	/**
-	 * Cancels current Task
-	 */
-	public void cancel();
+    /**
+     * Cancels current Task
+     */
+    public void cancel();
 }

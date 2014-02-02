@@ -30,7 +30,7 @@ import com.flowpowered.math.vector.Vector3f;
  * Represents a Cube that is located somewhere in a world.
  */
 public class Cube extends Cuboid {
-	public Cube(Point base, float size) {
-		super(base, new Vector3f(size, size, size));
-	}
+    public Cube(Point base, float size) {
+        super(base, new Vector3f(size, size, size));
+    }
 }

@@ -31,48 +31,48 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * A snapshotable object that supports primitive doubles
  */
 public class SnapshotableDouble implements Snapshotable {
-	private volatile double next;
-	private double snapshot;
+    private volatile double next;
+    private double snapshot;
 
-	public SnapshotableDouble(SnapshotManager manager, double initial) {
-		next = initial;
-		snapshot = initial;
-		manager.add(this);
-	}
+    public SnapshotableDouble(SnapshotManager manager, double initial) {
+        next = initial;
+        snapshot = initial;
+        manager.add(this);
+    }
 
-	/**
-	 * Sets the next value for the Snapshotable
-	 */
-	@DelayedWrite
-	public void set(double next) {
-		this.next = next;
-	}
+    /**
+     * Sets the next value for the Snapshotable
+     */
+    @DelayedWrite
+    public void set(double next) {
+        this.next = next;
+    }
 
-	/**
-	 * Gets the snapshot value for
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public double get() {
-		return snapshot;
-	}
+    /**
+     * Gets the snapshot value for
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public double get() {
+        return snapshot;
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the unstable Live "next" value
-	 */
-	@LiveRead
-	public double getLive() {
-		return next;
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the unstable Live "next" value
+     */
+    @LiveRead
+    public double getLive() {
+        return next;
+    }
 
-	/**
-	 * Copies the next value to the snapshot value
-	 */
-	@Override
-	public void copySnapshot() {
-		snapshot = next;
-	}
+    /**
+     * Copies the next value to the snapshot value
+     */
+    @Override
+    public void copySnapshot() {
+        snapshot = next;
+    }
 }

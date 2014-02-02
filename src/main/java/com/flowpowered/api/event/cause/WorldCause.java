@@ -28,19 +28,19 @@ import com.flowpowered.events.Cause;
 import com.flowpowered.api.geo.World;
 
 public class WorldCause extends Cause<World> {
-	private final World world;
+    private final World world;
 
-	public WorldCause(World world) {
-		this.world = world;
-	}
+    public WorldCause(World world) {
+        this.world = world;
+    }
 
-	public WorldCause(Cause<?> parent, World world) {
-		super(parent);
-		this.world = world;
-	}
+    public WorldCause(Cause<?> parent, World world) {
+        super(parent);
+        this.world = world;
+    }
 
-	@Override
-	public World getSource() {
-		return world;
-	}
+    @Override
+    public World getSource() {
+        return world;
+    }
 }

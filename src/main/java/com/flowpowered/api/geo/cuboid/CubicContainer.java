@@ -24,8 +24,8 @@
 package com.flowpowered.api.geo.cuboid;
 
 public interface CubicContainer {
-	/**
-	 * Gets the fill order for the container
-	 */
-	public ContainerFillOrder getOrder();
+    /**
+     * Gets the fill order for the container
+     */
+    public ContainerFillOrder getOrder();
 }

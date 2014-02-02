@@ -37,129 +37,129 @@ import com.flowpowered.engine.util.thread.snapshotable.SnapshotableHashMap;
  * A class which manages all of the entities within a world.
  */
 public class EntityManager {
-	/**
-	 * The snapshot manager
-	 */
-	protected final SnapshotManager snapshotManager = new SnapshotManager();
-	/**
-	 * A map of all the entity ids to the corresponding entities.
-	 */
-	private final SnapshotableHashMap<Integer, FlowEntity> entities = new SnapshotableHashMap<>(snapshotManager);
-	/**
-	 * The next id to check.
-	 */
-	private final static AtomicInteger nextId = new AtomicInteger(1);
-	/**
-	 * Player listings plus listings of sync'd entities per player
-	 */
-	private final SnapshotableHashMap<Player, ArrayList<FlowEntity>> players = new SnapshotableHashMap<>(snapshotManager);
+    /**
+     * The snapshot manager
+     */
+    protected final SnapshotManager snapshotManager = new SnapshotManager();
+    /**
+     * A map of all the entity ids to the corresponding entities.
+     */
+    private final SnapshotableHashMap<Integer, FlowEntity> entities = new SnapshotableHashMap<>(snapshotManager);
+    /**
+     * The next id to check.
+     */
+    private final static AtomicInteger nextId = new AtomicInteger(1);
+    /**
+     * Player listings plus listings of sync'd entities per player
+     */
+    private final SnapshotableHashMap<Player, ArrayList<FlowEntity>> players = new SnapshotableHashMap<>(snapshotManager);
 
-	/**
-	 * Gets all entities.
-	 *
-	 * @return A collection of entities.
-	 */
-	public Collection<FlowEntity> getAll() {
-		return entities.get().values();
-	}
+    /**
+     * Gets all entities.
+     *
+     * @return A collection of entities.
+     */
+    public Collection<FlowEntity> getAll() {
+        return entities.get().values();
+    }
 
-	/**
-	 * Gets all the entities that are in a live state (not the snapshot).
-	 *
-	 * @return A collection of entities
-	 */
-	public Collection<FlowEntity> getAllLive() {
-		return entities.getLive().values();
-	}
+    /**
+     * Gets all the entities that are in a live state (not the snapshot).
+     *
+     * @return A collection of entities
+     */
+    public Collection<FlowEntity> getAllLive() {
+        return entities.getLive().values();
+    }
 
-	/**
-	 * Gets all the players currently in the engine.
-	 *
-	 * @return The list of players.
-	 */
-	public List<Player> getPlayers() {
-		return new ArrayList<>(players.get().keySet());
-	}
+    /**
+     * Gets all the players currently in the engine.
+     *
+     * @return The list of players.
+     */
+    public List<Player> getPlayers() {
+        return new ArrayList<>(players.get().keySet());
+    }
 
-	/**
-	 * Gets an entity by its id.
-	 *
-	 * @param id The id.
-	 * @return The entity, or {@code null} if it could not be found.
-	 */
-	public FlowEntity getEntity(int id) {
-		return entities.get().get(id);
-	}
+    /**
+     * Gets an entity by its id.
+     *
+     * @param id The id.
+     * @return The entity, or {@code null} if it could not be found.
+     */
+    public FlowEntity getEntity(int id) {
+        return entities.get().get(id);
+    }
 
-	/**
-	 * Adds an entity to the manager.
-	 *
-	 * @param entity The entity
-	 */
-	public void addEntity(FlowEntity entity) {
-		entities.put(entity.getId(), entity);
-		if (entity instanceof Player) {
-			players.put((Player) entity, new ArrayList<FlowEntity>());
-		}
-	}
+    /**
+     * Adds an entity to the manager.
+     *
+     * @param entity The entity
+     */
+    public void addEntity(FlowEntity entity) {
+        entities.put(entity.getId(), entity);
+        if (entity instanceof Player) {
+            players.put((Player) entity, new ArrayList<FlowEntity>());
+        }
+    }
 
     public static FlowEntity createEntity(Transform transform) {
         return new FlowEntity(getNextId(), transform);
     }
 
-	private static int getNextId() {
-		int id = nextId.getAndIncrement();
-		if (id == -2) {
-			throw new IllegalStateException("Entity id space exhausted");
-		}
-		return id;
-	}
+    private static int getNextId() {
+        int id = nextId.getAndIncrement();
+        if (id == -2) {
+            throw new IllegalStateException("Entity id space exhausted");
+        }
+        return id;
+    }
 
-	/**
-	 * Removes an entity from the manager.
-	 *
-	 * @param entity The entity
-	 */
-	public void removeEntity(FlowEntity entity) {
-		entities.remove(entity.getId());
-		if (entity instanceof Player) {
-			players.remove((Player) entity);
-		}
-	}
+    /**
+     * Removes an entity from the manager.
+     *
+     * @param entity The entity
+     */
+    public void removeEntity(FlowEntity entity) {
+        entities.remove(entity.getId());
+        if (entity instanceof Player) {
+            players.remove((Player) entity);
+        }
+    }
 
-	/**
-	 * Finalizes the manager at the FINALIZERUN tick stage
-	 */
-	public void finalizeRun() {
-		for (FlowEntity e : entities.get().values()) {
-			e.finalizeRun();
-		}
-	}
+    /**
+     * Finalizes the manager at the FINALIZERUN tick stage
+     */
+    public void finalizeRun() {
+        for (FlowEntity e : entities.get().values()) {
+            e.finalizeRun();
+        }
+    }
 
-	/**
-	 * Finalizes the manager at the FINALIZERUN tick stage
-	 */
-	public void preSnapshotRun() {
-		for (FlowEntity e : entities.get().values()) {
-			e.preSnapshotRun();
-		}
-	}
+    /**
+     * Finalizes the manager at the FINALIZERUN tick stage
+     */
+    public void preSnapshotRun() {
+        for (FlowEntity e : entities.get().values()) {
+            e.preSnapshotRun();
+        }
+    }
 
-	/**
-	 * Snapshots the manager and all the entities managed in the SNAPSHOT tickstage.
-	 */
-	public void copyAllSnapshots() {
-		for (FlowEntity e : entities.get().values()) {
-			e.copySnapshot();
-		}
-		snapshotManager.copyAllSnapshots();
+    /**
+     * Snapshots the manager and all the entities managed in the SNAPSHOT tickstage.
+     */
+    public void copyAllSnapshots() {
+        for (FlowEntity e : entities.get().values()) {
+            e.copySnapshot();
+        }
+        snapshotManager.copyAllSnapshots();
 
-		// We want one more tick with for the removed Entities
-		// The next tick works with the snapshotted values which contains has all removed entities with isRemoved true
-		for (FlowEntity e : entities.get().values()) {
-			if (e.isRemoved()) {
-				removeEntity(e);
-			}
-		}
-	}
+        // We want one more tick with for the removed Entities
+        // The next tick works with the snapshotted values which contains has all removed entities with isRemoved true
+        for (FlowEntity e : entities.get().values()) {
+            if (e.isRemoved()) {
+                removeEntity(e);
+            }
+        }
+    }
 }

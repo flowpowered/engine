@@ -27,10 +27,10 @@ package com.flowpowered.api.geo;
  * Represents an object that can be contained within a {@link World}
  */
 public interface WorldSource {
-	/**
-	 * Gets the World
-	 *
-	 * @return the World
-	 */
-	public World getWorld();
+    /**
+     * Gets the World
+     *
+     * @return the World
+     */
+    public World getWorld();
 }

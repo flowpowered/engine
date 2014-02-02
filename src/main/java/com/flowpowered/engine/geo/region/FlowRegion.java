@@ -65,25 +65,25 @@ import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 
 public class FlowRegion extends Region implements CompleteAsyncManager {
-	private final RegionGenerator generator;
-	/**
-	 * Reference to the persistent ByteArrayArray that stores chunk data
-	 */
-	private final BAAWrapper chunkStore;
+    private final RegionGenerator generator;
+    /**
+     * Reference to the persistent ByteArrayArray that stores chunk data
+     */
+    private final BAAWrapper chunkStore;
     protected final FlowEngine engine;
-	/**
-	 * Holds all of the entities to be simulated
-	 */
-	protected final EntityManager entityManager = new EntityManager();
-	// TODO: possibly have a SoftReference of unloaded chunks to allow for quicker loading of chunk
+    /**
+     * Holds all of the entities to be simulated
+     */
+    protected final EntityManager entityManager = new EntityManager();
+    // TODO: possibly have a SoftReference of unloaded chunks to allow for quicker loading of chunk
     /**
      * Chunks used for ticking.
      */
-	protected final AtomicReference<FlowChunk[]> chunks = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
+    protected final AtomicReference<FlowChunk[]> chunks = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
     /**
      * All live chunks. These are not ticked, but can be accessed.
      */
-	protected final AtomicReference<FlowChunk[]> live = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
+    protected final AtomicReference<FlowChunk[]> live = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
     private final RegionSnapshot snapshot;
     private final RenderThread render;
 
@@ -127,13 +127,13 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-	protected void checkChunkLoaded(FlowChunk chunk, LoadOption loadopt) {
-		if (loadopt.loadIfNeeded()) {
-			//if (!chunk.cancelUnload()) {
-			//	throw new IllegalStateException("Unloaded chunk returned by getChunk");
-			//}
-		}
-	}
+    protected void checkChunkLoaded(FlowChunk chunk, LoadOption loadopt) {
+        if (loadopt.loadIfNeeded()) {
+            //if (!chunk.cancelUnload()) {
+            //    throw new IllegalStateException("Unloaded chunk returned by getChunk");
+            //}
+        }
+    }
 
     @Override
     public FlowChunk getChunk(final int x, final int y, final int z, final LoadOption loadopt) {
@@ -175,15 +175,15 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     // If loadopt.isWait(), this method is run synchronously and so is any further generation
     // If !loadopt.isWait(), this method is run by a runnable, because the loading is taxing; any further generation is also run in its own Runnable
-	private FlowChunk loadOrGenChunkImmediately(int worldX, int worldY, int worldZ, final LoadOption loadopt) {
+    private FlowChunk loadOrGenChunkImmediately(int worldX, int worldY, int worldZ, final LoadOption loadopt) {
         final int localX = worldX & CHUNKS.MASK;
         final int localY = worldY & CHUNKS.MASK;
         final int localZ = worldZ & CHUNKS.MASK;
-		FlowChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(localX, localY, localZ) : null;
+        FlowChunk newChunk = loadopt.loadIfNeeded() ? loadChunk(localX, localY, localZ) : null;
 
-		if (newChunk != null || !loadopt.generateIfNeeded()) {
+        if (newChunk != null || !loadopt.generateIfNeeded()) {
             return newChunk;
-		}
+        }
 
         generator.generateChunk(worldX, worldY, worldZ, loadopt.isWait());
         if (!loadopt.isWait()) {
@@ -198,7 +198,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         Flow.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
         Thread.dumpStack();
         return null;
-	}
+    }
 
     private FlowChunk loadChunk(int x, int y, int z) {
         final InputStream stream = this.getChunkInputStream(x, y, z);
@@ -224,31 +224,31 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return null;
     }
 
-	/**
-	 * Gets the DataInputStream corresponding to a given Chunk.<br> <br> The stream is based on a snapshot of the array.
-	 *
-	 * @param x the chunk
-	 * @return the DataInputStream
-	 */
-	public InputStream getChunkInputStream(int x, int y, int z) {
-		return chunkStore.getBlockInputStream(getChunkKey(x, y, z));
-	}
+    /**
+     * Gets the DataInputStream corresponding to a given Chunk.<br> <br> The stream is based on a snapshot of the array.
+     *
+     * @param x the chunk
+     * @return the DataInputStream
+     */
+    public InputStream getChunkInputStream(int x, int y, int z) {
+        return chunkStore.getBlockInputStream(getChunkKey(x, y, z));
+    }
 
-	public static int getChunkKey(int chunkX, int chunkY, int chunkZ) {
-		chunkX &= CHUNKS.MASK;
-		chunkY &= CHUNKS.MASK;
-		chunkZ &= CHUNKS.MASK;
+    public static int getChunkKey(int chunkX, int chunkY, int chunkZ) {
+        chunkX &= CHUNKS.MASK;
+        chunkY &= CHUNKS.MASK;
+        chunkZ &= CHUNKS.MASK;
 
-		int key = 0;
-		key |= chunkX;
-		key |= chunkY << CHUNKS.BITS;
-		key |= chunkZ << (CHUNKS.BITS << 1);
+        int key = 0;
+        key |= chunkX;
+        key |= chunkY << CHUNKS.BITS;
+        key |= chunkZ << (CHUNKS.BITS << 1);
 
-		return key;
-	}
+        return key;
+    }
 
-	protected void setGeneratedChunks(FlowChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
-		while(true) {
+    protected void setGeneratedChunks(FlowChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
+        while(true) {
             FlowChunk[] live = this.live.get();
             FlowChunk[] newArray = Arrays.copyOf(live, live.length);
             final int width = newChunks.length;
@@ -266,11 +266,11 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             if (this.live.compareAndSet(live, newArray)) {
                 //newChunk.queueNew();
                 break;
-			}
+            }
         }
-	}
+    }
 
-	protected FlowChunk setChunk(FlowChunk newChunk, int x, int y, int z, ChunkDataForRegion dataForRegion) {
+    protected FlowChunk setChunk(FlowChunk newChunk, int x, int y, int z, ChunkDataForRegion dataForRegion) {
         final int chunkIndex = getChunkIndex(x, y, z);
         while (true) {
             FlowChunk[] live = this.live.get();
@@ -283,14 +283,14 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             newArray[chunkIndex] = newChunk;
             if (this.live.compareAndSet(live, newArray)) {
                 if (dataForRegion != null) {
-					for (FlowEntitySnapshot snapshot : dataForRegion.loadedEntities) {
-						FlowEntity entity = EntityManager.createEntity(snapshot.getTransform());
-						entityManager.addEntity(entity);
-					}
-				}
-			}
-		}
-	}
+                    for (FlowEntitySnapshot snapshot : dataForRegion.loadedEntities) {
+                        FlowEntity entity = EntityManager.createEntity(snapshot.getTransform());
+                        entityManager.addEntity(entity);
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     public Chunk getChunkFromBlock(int x, int y, int z, LoadOption loadopt) {

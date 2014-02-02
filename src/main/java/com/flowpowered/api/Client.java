@@ -31,21 +31,21 @@ import com.flowpowered.api.render.Renderer;
  * Represents the client-specific component of the Flow platform.
  */
 public interface Client extends Engine {
-	/**
-	 * Gets the player on the local machine (the one who is using the client).
-	 *
-	 * @return player
-	 */
-	public Player getPlayer();
+    /**
+     * Gets the player on the local machine (the one who is using the client).
+     *
+     * @return player
+     */
+    public Player getPlayer();
 
-	/**
-	 * Gets the current world in-which the player on the local machine is within.
-	 *
-	 * This is always the world the client is currently rendering.
-	 *
-	 * @return world
-	 */
-	public World getWorld();
+    /**
+     * Gets the current world in-which the player on the local machine is within.
+     *
+     * This is always the world the client is currently rendering.
+     *
+     * @return world
+     */
+    public World getWorld();
 
     /**
      * Gets the renderer that the client is using.

@@ -36,7 +36,7 @@ import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap
 
 public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
     protected final FlowEngine engine;
-	protected final SnapshotableLinkedHashMap<String, T> loadedWorlds;
+    protected final SnapshotableLinkedHashMap<String, T> loadedWorlds;
 
     public FlowWorldManager(FlowEngine engine) {
         loadedWorlds = new SnapshotableLinkedHashMap<>(engine.getSnapshotManager());
@@ -50,39 +50,39 @@ public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
 
     @Override
     public World getWorld(String name, boolean exact) {
-		if (exact) {
-			FlowWorld world = loadedWorlds.get().get(name);
-			if (world != null) {
-				return world;
-			}
-			return loadedWorlds.get().get(name);
-		} else {
-			return StringUtil.getShortest(StringUtil.matchName(loadedWorlds.getValues(), name));
-		}
+        if (exact) {
+            FlowWorld world = loadedWorlds.get().get(name);
+            if (world != null) {
+                return world;
+            }
+            return loadedWorlds.get().get(name);
+        } else {
+            return StringUtil.getShortest(StringUtil.matchName(loadedWorlds.getValues(), name));
+        }
     }
 
-	@Override
-	public Collection<World> matchWorld(String name) {
-		return StringUtil.matchName(getWorlds(), name);
-	}
+    @Override
+    public Collection<World> matchWorld(String name) {
+        return StringUtil.matchName(getWorlds(), name);
+    }
 
-	@Override
-	public FlowWorld getWorld(UUID uid) {
-		for (FlowWorld world : loadedWorlds.getValues()) {
-			if (world.getUID().equals(uid)) {
-				return world;
-			}
-		}
-		return null;
-	}
+    @Override
+    public FlowWorld getWorld(UUID uid) {
+        for (FlowWorld world : loadedWorlds.getValues()) {
+            if (world.getUID().equals(uid)) {
+                return world;
+            }
+        }
+        return null;
+    }
 
     @Override
     public Collection<World> getWorlds() {
-		Collection<World> w = new ArrayList<>();
-		for (FlowWorld world : loadedWorlds.getValues()) {
-			w.add(world);
-		}
-		return w;
+        Collection<World> w = new ArrayList<>();
+        for (FlowWorld world : loadedWorlds.getValues()) {
+            w.add(world);
+        }
+        return w;
     }
 
 }

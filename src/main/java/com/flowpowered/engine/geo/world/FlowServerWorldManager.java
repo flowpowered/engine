@@ -45,96 +45,96 @@ import com.flowpowered.engine.filesystem.WorldFiles;
 
 
 public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> implements ServerWorldManager {
-	private final WorldGenerator defaultGenerator = new EmptyWorldGenerator();
+    private final WorldGenerator defaultGenerator = new EmptyWorldGenerator();
 
     public <E extends FlowEngine & Server> FlowServerWorldManager(E engine) {
         super(engine);
     }
 
-	@Override
-	public Collection<File> matchWorldFolder(String worldName) {
-		return StringUtil.matchFile(getWorldFolders(), worldName);
-	}
+    @Override
+    public Collection<File> matchWorldFolder(String worldName) {
+        return StringUtil.matchFile(getWorldFolders(), worldName);
+    }
 
-	@Override
-	public FlowServerWorld loadWorld(String name, WorldGenerator generator) {
-		if (loadedWorlds.get().containsKey((name))) {
-			return loadedWorlds.get().get(name);
-		}
-		if (loadedWorlds.getLive().containsKey(name)) {
-			return loadedWorlds.getLive().get(name);
-		}
+    @Override
+    public FlowServerWorld loadWorld(String name, WorldGenerator generator) {
+        if (loadedWorlds.get().containsKey((name))) {
+            return loadedWorlds.get().get(name);
+        }
+        if (loadedWorlds.getLive().containsKey(name)) {
+            return loadedWorlds.getLive().get(name);
+        }
 
-		if (generator == null) {
-			generator = defaultGenerator;
-		}
+        if (generator == null) {
+            generator = defaultGenerator;
+        }
 
-		FlowServerWorld world = WorldFiles.loadWorld((FlowServer) engine, generator, name);
+        FlowServerWorld world = WorldFiles.loadWorld((FlowServer) engine, generator, name);
 
-		FlowServerWorld oldWorld = loadedWorlds.putIfAbsent(name, world);
+        FlowServerWorld oldWorld = loadedWorlds.putIfAbsent(name, world);
 
-		if (oldWorld != null) {
-			return oldWorld;
-		}
+        if (oldWorld != null) {
+            return oldWorld;
+        }
 
-		engine.getScheduler().addAsyncManager(world);
-		//getEventManager().callDelayedEvent(new WorldLoadEvent(world));
-		return world;
-	}
+        engine.getScheduler().addAsyncManager(world);
+        //getEventManager().callDelayedEvent(new WorldLoadEvent(world));
+        return world;
+    }
 
-	@Override
-	public void save(boolean worlds, boolean players) {
-		// TODO: Auto-generated method stub
-	}
+    @Override
+    public void save(boolean worlds, boolean players) {
+        // TODO: Auto-generated method stub
+    }
 
-	@Override
-	public List<File> getWorldFolders() {
-		File[] folders = this.getWorldFolder().listFiles((FilenameFilter) DirectoryFileFilter.INSTANCE);
-		if (folders == null || folders.length == 0) {
-			return new ArrayList<>();
-		}
-		List<File> worlds = new ArrayList<>(folders.length);
-		// Are they really world folders?
-		for (File world : folders) {
-			if (new File(world, "world.dat").exists()) {
-				worlds.add(world);
-			}
-		}
-		return worlds;
-	}
+    @Override
+    public List<File> getWorldFolders() {
+        File[] folders = this.getWorldFolder().listFiles((FilenameFilter) DirectoryFileFilter.INSTANCE);
+        if (folders == null || folders.length == 0) {
+            return new ArrayList<>();
+        }
+        List<File> worlds = new ArrayList<>(folders.length);
+        // Are they really world folders?
+        for (File world : folders) {
+            if (new File(world, "world.dat").exists()) {
+                worlds.add(world);
+            }
+        }
+        return worlds;
+    }
 
-	@Override
-	public File getWorldFolder() {
-		return FlowFileSystem.WORLDS_DIRECTORY;
-	}
+    @Override
+    public File getWorldFolder() {
+        return FlowFileSystem.WORLDS_DIRECTORY;
+    }
 
-	@Override
-	public WorldGenerator getDefaultGenerator() {
-		return defaultGenerator;
-	}
+    @Override
+    public WorldGenerator getDefaultGenerator() {
+        return defaultGenerator;
+    }
 
-	@Override
-	public boolean unloadWorld(String name, boolean save) {
-		return unloadWorld((ServerWorld) loadedWorlds.getLive().get(name), save);
-	}
+    @Override
+    public boolean unloadWorld(String name, boolean save) {
+        return unloadWorld((ServerWorld) loadedWorlds.getLive().get(name), save);
+    }
 
-	@Override
-	public boolean unloadWorld(ServerWorld world, boolean save) {
-		if (world == null) {
-			return false;
-		}
+    @Override
+    public boolean unloadWorld(ServerWorld world, boolean save) {
+        if (world == null) {
+            return false;
+        }
 
         FlowServerWorld w = (FlowServerWorld) world;
-		boolean success = loadedWorlds.remove(world.getName(), w);
-		if (success) {
-			if (save) {
-				engine.getScheduler().removeAsyncManager(w);
-				//getEventManager().callDelayedEvent(new WorldUnloadEvent(world));
-				w.unload(save);
-			}
-			// Note: Worlds should not allow being saved twice and/or throw exceptions if accessed after unloading.
-			// Also, should blank out as much internal world data as possible, in case plugins retain references to unloaded worlds.
-		}
-		return success;
-	}
+        boolean success = loadedWorlds.remove(world.getName(), w);
+        if (success) {
+            if (save) {
+                engine.getScheduler().removeAsyncManager(w);
+                //getEventManager().callDelayedEvent(new WorldUnloadEvent(world));
+                w.unload(save);
+            }
+            // Note: Worlds should not allow being saved twice and/or throw exceptions if accessed after unloading.
+            // Also, should blank out as much internal world data as possible, in case plugins retain references to unloaded worlds.
+        }
+        return success;
+    }
 }

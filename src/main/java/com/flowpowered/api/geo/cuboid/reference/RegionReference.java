@@ -34,51 +34,51 @@ import com.flowpowered.api.geo.discrete.Point;
  * store of a {@code Point} representing the base. Because of this, a RegionReference may contain only base info.
  */
 public class RegionReference {
-	private final Point base;
-	private WeakReference<Region> region;
-	public RegionReference(Region referent) {
-		this.region = new WeakReference<>(referent);
-		base = referent.getBase();
-	}
+    private final Point base;
+    private WeakReference<Region> region;
+    public RegionReference(Region referent) {
+        this.region = new WeakReference<>(referent);
+        base = referent.getBase();
+    }
 
-	public RegionReference(Point base) {
-		region = null;
-		this.base = base;
-	}
+    public RegionReference(Point base) {
+        region = null;
+        this.base = base;
+    }
 
-	public Region get() {
-		Region get = region == null ? null : region.get();
-		if (get != null) {
-			if (!get.isLoaded()) {
-				region = null;
-				return null;
-			}
-		}
-		return get;
-	}
+    public Region get() {
+        Region get = region == null ? null : region.get();
+        if (get != null) {
+            if (!get.isLoaded()) {
+                region = null;
+                return null;
+            }
+        }
+        return get;
+    }
 
-	public Region refresh(LoadOption opt) {
-		Region newRegion = get();
-		if (newRegion != null) return newRegion;
-		newRegion = base.getRegion(opt);
-		this.region = newRegion == null ? null : new WeakReference<>(newRegion);
-		return newRegion;
-	}
+    public Region refresh(LoadOption opt) {
+        Region newRegion = get();
+        if (newRegion != null) return newRegion;
+        newRegion = base.getRegion(opt);
+        this.region = newRegion == null ? null : new WeakReference<>(newRegion);
+        return newRegion;
+    }
 
-	@Override
-	public int hashCode() {
-		return base.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return base.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof RegionReference) {
-			return base.equals(((RegionReference) obj).base);
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RegionReference) {
+            return base.equals(((RegionReference) obj).base);
+        }
+        return false;
+    }
 
-	public Point getBase() {
-		return base;
-	}
+    public Point getBase() {
+        return base;
+    }
 }

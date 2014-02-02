@@ -31,48 +31,48 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * A snapshotable object that supports primitive floats
  */
 public class SnapshotableFloat implements Snapshotable {
-	private volatile float next;
-	private float snapshot;
+    private volatile float next;
+    private float snapshot;
 
-	public SnapshotableFloat(SnapshotManager manager, float initial) {
-		next = initial;
-		snapshot = initial;
-		manager.add(this);
-	}
+    public SnapshotableFloat(SnapshotManager manager, float initial) {
+        next = initial;
+        snapshot = initial;
+        manager.add(this);
+    }
 
-	/**
-	 * Sets the next value for the Snapshotable
-	 */
-	@DelayedWrite
-	public void set(float next) {
-		this.next = next;
-	}
+    /**
+     * Sets the next value for the Snapshotable
+     */
+    @DelayedWrite
+    public void set(float next) {
+        this.next = next;
+    }
 
-	/**
-	 * Gets the snapshot value for
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public float get() {
-		return snapshot;
-	}
+    /**
+     * Gets the snapshot value for
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public float get() {
+        return snapshot;
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the unstable Live "next" value
-	 */
-	@LiveRead
-	public float getLive() {
-		return next;
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the unstable Live "next" value
+     */
+    @LiveRead
+    public float getLive() {
+        return next;
+    }
 
-	/**
-	 * Copies the next value to the snapshot value
-	 */
-	@Override
-	public void copySnapshot() {
-		snapshot = next;
-	}
+    /**
+     * Copies the next value to the snapshot value
+     */
+    @Override
+    public void copySnapshot() {
+        snapshot = next;
+    }
 }

@@ -28,21 +28,21 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.DynamicUpdateManager;
 
 public class LocalDynamicUpdatesTask extends LocalManagerRunnableFactory {
-	private long threshold = 0;
+    private long threshold = 0;
 
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((DynamicUpdateManager) manager).runDynamicUpdates(threshold, sequence);
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((DynamicUpdateManager) manager).runDynamicUpdates(threshold, sequence);
+            }
+        };
+    }
 
-	public void setThreshold(long threshold) {
-		this.threshold = threshold;
-	}
+    public void setThreshold(long threshold) {
+        this.threshold = threshold;
+    }
 
     @Override
     public TickStage getTickStage() {

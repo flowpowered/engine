@@ -31,10 +31,10 @@ public interface DynamicUpdateManager extends AsyncManager {
      */
     void runDynamicUpdates(long threshold, int sequence);
 
-	/**
-	 * This method is called to determine the earliest available dynamic update time
-	 *
-	 * @return the earliest pending dynamic block update
-	 */
-	public long getFirstDynamicUpdateTime();
+    /**
+     * This method is called to determine the earliest available dynamic update time
+     *
+     * @return the earliest pending dynamic block update
+     */
+    public long getFirstDynamicUpdateTime();
 }

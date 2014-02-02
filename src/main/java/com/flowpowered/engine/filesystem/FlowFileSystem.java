@@ -27,6 +27,6 @@ import java.io.File;
 import com.flowpowered.filesystem.SimpleFileSystem;
 
 public class FlowFileSystem extends SimpleFileSystem {
-	public static final File PLAYERS_DIRECTORY = new File("players");
-	public static final File WORLDS_DIRECTORY = new File("worlds");
+    public static final File PLAYERS_DIRECTORY = new File("players");
+    public static final File WORLDS_DIRECTORY = new File("worlds");
 }

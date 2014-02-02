@@ -37,59 +37,59 @@ import com.flowpowered.api.scheduler.Snapshot;
  */
 public interface EntitySnapshot extends Snapshot<Entity> {
 
-	/**
-	 * Gets the id of the entity. <p> Entity ids' may become invalid if the server has stopped and started. They do not persist across server instances. For persistent ids, use {@link #getUID()}. </p>
-	 *
-	 * @return id
-	 */
-	public int getId();
+    /**
+     * Gets the id of the entity. <p> Entity ids' may become invalid if the server has stopped and started. They do not persist across server instances. For persistent ids, use {@link #getUID()}. </p>
+     *
+     * @return id
+     */
+    public int getId();
 
-	/**
-	 * Gets the UID for the entity. <p> This id is persistent across server instances, unique to this entity </p>
-	 *
-	 * @return uid
-	 */
-	public UUID getUID();
+    /**
+     * Gets the UID for the entity. <p> This id is persistent across server instances, unique to this entity </p>
+     *
+     * @return uid
+     */
+    public UUID getUID();
 
-	/**
-	 * Gets the transform for the entity. <p> Note: if the world that the entity was in has been unloaded, the world in the transform will be null. </p>
-	 *
-	 * @return transform
-	 */
-	public Transform getTransform();
+    /**
+     * Gets the transform for the entity. <p> Note: if the world that the entity was in has been unloaded, the world in the transform will be null. </p>
+     *
+     * @return transform
+     */
+    public Transform getTransform();
 
-	/**
-	 * Gets the UUID of the world that the entity was in at the time of this snapshot
-	 *
-	 * @return uid
-	 */
-	public UUID getWorldUID();
+    /**
+     * Gets the UUID of the world that the entity was in at the time of this snapshot
+     *
+     * @return uid
+     */
+    public UUID getWorldUID();
 
-	/**
-	 * Gets the name of the world that the entity was in at the time of this snapshot
-	 *
-	 * @return world name
-	 */
-	public String getWorldName();
+    /**
+     * Gets the name of the world that the entity was in at the time of this snapshot
+     *
+     * @return world name
+     */
+    public String getWorldName();
 
-	/**
-	 * Gets a copy of the data map for the entity, created at the time of this snapshot
-	 *
-	 * @return data map
-	 */
-	public SerializableMap getDataMap();
+    /**
+     * Gets a copy of the data map for the entity, created at the time of this snapshot
+     *
+     * @return data map
+     */
+    public SerializableMap getDataMap();
 
-	/**
-	 * Gets the savable flag for the entity at the time of the snapshot
-	 *
-	 * @return savable
-	 */
-	public boolean isSavable();
+    /**
+     * Gets the savable flag for the entity at the time of the snapshot
+     *
+     * @return savable
+     */
+    public boolean isSavable();
 
-	/**
-	 * Gets a list of the classes of components attached to this entity
-	 *
-	 * @return entity
-	 */
-	public List<Class<? extends Component>> getComponents();
+    /**
+     * Gets a list of the classes of components attached to this entity
+     *
+     * @return entity
+     */
+    public List<Class<? extends Component>> getComponents();
 }

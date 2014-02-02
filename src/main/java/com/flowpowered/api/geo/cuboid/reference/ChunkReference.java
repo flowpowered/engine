@@ -35,59 +35,59 @@ import com.flowpowered.api.geo.discrete.Point;
  * store of a {@code Point} representing the base. Because of this, a ChunkReference may contain only base info.
  */
 public class ChunkReference {
-	private final Point base;
-	private final RegionReference region;
-	private WeakReference<Chunk> chunk;
+    private final Point base;
+    private final RegionReference region;
+    private WeakReference<Chunk> chunk;
 
-	public ChunkReference(Chunk referent) {
-		this.chunk = new WeakReference<>(referent);
-		this.region = new RegionReference(referent.getRegion());
-		this.base = referent.getBase();
-	}
+    public ChunkReference(Chunk referent) {
+        this.chunk = new WeakReference<>(referent);
+        this.region = new RegionReference(referent.getRegion());
+        this.base = referent.getBase();
+    }
 
-	public ChunkReference(Point base) {
-		this.chunk = null;
-		this.region = new RegionReference(new Point(base.getWorld(), base.getBlockX() >> Region.BLOCKS.BITS, base.getBlockY() >> Region.BLOCKS.BITS, base.getBlockZ() >> Region.BLOCKS.BITS));
-		this.base = base;
-	}
+    public ChunkReference(Point base) {
+        this.chunk = null;
+        this.region = new RegionReference(new Point(base.getWorld(), base.getBlockX() >> Region.BLOCKS.BITS, base.getBlockY() >> Region.BLOCKS.BITS, base.getBlockZ() >> Region.BLOCKS.BITS));
+        this.base = base;
+    }
 
-	public Chunk get() {
-		Chunk get = chunk == null ? null : chunk.get();
-		if (get != null) {
-			if (!get.isLoaded()) {
-				chunk = null;
-				return null;
-			}
-		}
-		return get;
-	}
+    public Chunk get() {
+        Chunk get = chunk == null ? null : chunk.get();
+        if (get != null) {
+            if (!get.isLoaded()) {
+                chunk = null;
+                return null;
+            }
+        }
+        return get;
+    }
 
-	public Chunk refresh(LoadOption opt) {
-		Chunk newChunk = get();
-		if (newChunk != null) return newChunk;
+    public Chunk refresh(LoadOption opt) {
+        Chunk newChunk = get();
+        if (newChunk != null) return newChunk;
 
-		Region newRegion = region.refresh(opt);
-		if (newRegion == null) return null;
+        Region newRegion = region.refresh(opt);
+        if (newRegion == null) return null;
 
-		newChunk = newRegion.getChunkFromBlock(base.getVector(), opt);
-		this.chunk = newChunk == null ? null : new WeakReference<>(newChunk);
-		return newChunk;
-	}
+        newChunk = newRegion.getChunkFromBlock(base.getVector(), opt);
+        this.chunk = newChunk == null ? null : new WeakReference<>(newChunk);
+        return newChunk;
+    }
 
-	@Override
-	public int hashCode() {
-		return base.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return base.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof ChunkReference) {
-			return base.equals(((ChunkReference) obj).base);
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ChunkReference) {
+            return base.equals(((ChunkReference) obj).base);
+        }
+        return false;
+    }
 
-	public Point getBase() {
-		return base;
-	}
+    public Point getBase() {
+        return base;
+    }
 }

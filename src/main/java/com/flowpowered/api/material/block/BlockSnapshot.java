@@ -34,115 +34,115 @@ import com.flowpowered.commons.hashing.ShortPairHashed;
  * Represents an immutable snapshot of the state of a block
  */
 public class BlockSnapshot {
-	private final BlockMaterial material;
-	private final short data;
-	private final int x, y, z;
-	private final World world;
+    private final BlockMaterial material;
+    private final short data;
+    private final int x, y, z;
+    private final World world;
 
-	public BlockSnapshot(Block block) {
-		this(block, block.getMaterial(), block.getBlockData());
-	}
+    public BlockSnapshot(Block block) {
+        this(block, block.getMaterial(), block.getBlockData());
+    }
 
-	public BlockSnapshot(Block block, BlockMaterial material, short data) {
-		this(block.getWorld(), block.getX(), block.getY(), block.getZ(), material, data);
-	}
+    public BlockSnapshot(Block block, BlockMaterial material, short data) {
+        this(block.getWorld(), block.getX(), block.getY(), block.getZ(), material, data);
+    }
 
-	public BlockSnapshot(World world, int x, int y, int z, BlockMaterial material, short data) {
-		this.material = material;
-		this.data = data;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.world = world;
-	}
+    public BlockSnapshot(World world, int x, int y, int z, BlockMaterial material, short data) {
+        this.material = material;
+        this.data = data;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.world = world;
+    }
 
-	/**
-	 * Gets the x-coordinate of this Block snapshot
-	 *
-	 * @return the x-coordinate
-	 */
-	public int getX() {
-		return this.x;
-	}
+    /**
+     * Gets the x-coordinate of this Block snapshot
+     *
+     * @return the x-coordinate
+     */
+    public int getX() {
+        return this.x;
+    }
 
-	/**
-	 * Gets the y-coordinate of this Block snapshot
-	 *
-	 * @return the y-coordinate
-	 */
-	public int getY() {
-		return this.y;
-	}
+    /**
+     * Gets the y-coordinate of this Block snapshot
+     *
+     * @return the y-coordinate
+     */
+    public int getY() {
+        return this.y;
+    }
 
-	/**
-	 * Gets the z-coordinate of this Block snapshot
-	 *
-	 * @return the z-coordinate
-	 */
-	public int getZ() {
-		return this.z;
-	}
+    /**
+     * Gets the z-coordinate of this Block snapshot
+     *
+     * @return the z-coordinate
+     */
+    public int getZ() {
+        return this.z;
+    }
 
-	/**
-	 * Gets the world this Block snapshot is in
-	 *
-	 * @return the World
-	 */
-	public World getWorld() {
-		return this.world;
-	}
+    /**
+     * Gets the world this Block snapshot is in
+     *
+     * @return the World
+     */
+    public World getWorld() {
+        return this.world;
+    }
 
-	/**
-	 * Gets which block corresponding to the snapshot
-	 *
-	 * @return the block
-	 */
-	public Block getBlock() {
-		return this.world.getBlock(this.x, this.y, this.z);
-	}
+    /**
+     * Gets which block corresponding to the snapshot
+     *
+     * @return the block
+     */
+    public Block getBlock() {
+        return this.world.getBlock(this.x, this.y, this.z);
+    }
 
-	/**
-	 * Gets the block's material at the time of the snapshot
-	 *
-	 * @return the material
-	 */
-	public BlockMaterial getMaterial() {
-		return this.material;
-	}
+    /**
+     * Gets the block's material at the time of the snapshot
+     *
+     * @return the material
+     */
+    public BlockMaterial getMaterial() {
+        return this.material;
+    }
 
-	public short getData() {
-		return this.data;
-	}
+    public short getData() {
+        return this.data;
+    }
 
-	@Override
-	public String toString() {
-		return "BlockSnapshot { material: " + this.material + " , data:" + this.data + ", x: " + x + ", y: " + y + ", z: " + z + "}";
-	}
+    @Override
+    public String toString() {
+        return "BlockSnapshot { material: " + this.material + " , data:" + this.data + ", x: " + x + ", y: " + y + ", z: " + z + "}";
+    }
 
-	@Override
-	public int hashCode() {
-		return ShortPairHashed.key(this.material.getId(), this.data);
-	}
+    @Override
+    public int hashCode() {
+        return ShortPairHashed.key(this.material.getId(), this.data);
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (o instanceof BlockSnapshot) {
-			BlockSnapshot other = (BlockSnapshot) o;
-			return other.x == x && other.y == y && other.z == z && other.material.equals(material) && other.data == data;
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof BlockSnapshot) {
+            BlockSnapshot other = (BlockSnapshot) o;
+            return other.x == x && other.y == y && other.z == z && other.material.equals(material) && other.data == data;
+        }
+        return false;
+    }
 
-	public boolean isMaterial(Material... materials) {
-		if (this.material == null) {
-			for (Material material : materials) {
-				if (material == null) {
-					return true;
-				}
-			}
-			return false;
-		} else {
-			return this.material.isMaterial(materials);
-		}
-	}
+    public boolean isMaterial(Material... materials) {
+        if (this.material == null) {
+            for (Material material : materials) {
+                if (material == null) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return this.material.isMaterial(materials);
+        }
+    }
 }

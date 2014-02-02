@@ -28,16 +28,16 @@ import com.flowpowered.api.component.ComponentOwner;
 import com.flowpowered.api.geo.World;
 
 public abstract class WorldComponent extends Component {
-	@Override
-	public boolean attachTo(ComponentOwner owner) {
-		if (!(owner instanceof World)) {
-			throw new IllegalStateException("WorldComponents are only allowed to be attached to Worlds.");
-		}
-		return super.attachTo(owner);
-	}
+    @Override
+    public boolean attachTo(ComponentOwner owner) {
+        if (!(owner instanceof World)) {
+            throw new IllegalStateException("WorldComponents are only allowed to be attached to Worlds.");
+        }
+        return super.attachTo(owner);
+    }
 
-	@Override
-	public World getOwner() {
-		return (World) super.getOwner();
-	}
+    @Override
+    public World getOwner() {
+        return (World) super.getOwner();
+    }
 }

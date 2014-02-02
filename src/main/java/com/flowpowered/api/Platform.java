@@ -27,9 +27,9 @@ package com.flowpowered.api;
  * Platform describes whether the plugin was written for the client, the server, or for both.
  */
 public enum Platform {
-	SERVER(false, true),
-	CLIENT(true, false),
-	SINGLEPLAYER(true, true);
+    SERVER(false, true),
+    CLIENT(true, false),
+    SINGLEPLAYER(true, true);
 
     private final boolean client, server;
 

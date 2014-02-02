@@ -28,15 +28,15 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.PhysicsManager;
 
 public class LocalPhysicsTask extends LocalManagerRunnableFactory {
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((PhysicsManager) manager).runPhysics(sequence);
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((PhysicsManager) manager).runPhysics(sequence);
+            }
+        };
+    }
 
     @Override
     public TickStage getTickStage() {

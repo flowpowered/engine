@@ -33,61 +33,61 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * A snapshotable object that supports primitive booleans
  */
 public class SnapshotableBoolean implements Snapshotable {
-	private AtomicBoolean next;
-	private boolean snapshot;
+    private AtomicBoolean next;
+    private boolean snapshot;
 
-	public SnapshotableBoolean(SnapshotManager manager, boolean initial) {
-		next = new AtomicBoolean(initial);
-		snapshot = initial;
-		manager.add(this);
-	}
+    public SnapshotableBoolean(SnapshotManager manager, boolean initial) {
+        next = new AtomicBoolean(initial);
+        snapshot = initial;
+        manager.add(this);
+    }
 
-	/**
-	 * Sets the next value for the Snapshotable
-	 */
-	@DelayedWrite
-	public void set(boolean next) {
-		this.next.set(next);
-	}
+    /**
+     * Sets the next value for the Snapshotable
+     */
+    @DelayedWrite
+    public void set(boolean next) {
+        this.next.set(next);
+    }
 
-	/**
-	 * Sets the next value but only if the current next value is the given value
-	 *
-	 * @return true on success
-	 */
-	public boolean compareAndSet(boolean expect, boolean next) {
-		return this.next.compareAndSet(expect, next);
-	}
+    /**
+     * Sets the next value but only if the current next value is the given value
+     *
+     * @return true on success
+     */
+    public boolean compareAndSet(boolean expect, boolean next) {
+        return this.next.compareAndSet(expect, next);
+    }
 
-	/**
-	 * Gets the snapshot value for
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public boolean get() {
-		return snapshot;
-	}
+    /**
+     * Gets the snapshot value for
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public boolean get() {
+        return snapshot;
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the unstable Live "next" value
-	 */
-	@LiveRead
-	public boolean getLive() {
-		return next.get();
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the unstable Live "next" value
+     */
+    @LiveRead
+    public boolean getLive() {
+        return next.get();
+    }
 
-	public boolean isDirty() {
-		return snapshot != next.get();
-	}
+    public boolean isDirty() {
+        return snapshot != next.get();
+    }
 
-	/**
-	 * Copies the next value to the snapshot value
-	 */
-	@Override
-	public void copySnapshot() {
-		snapshot = next.get();
-	}
+    /**
+     * Copies the next value to the snapshot value
+     */
+    @Override
+    public void copySnapshot() {
+        snapshot = next.get();
+    }
 }

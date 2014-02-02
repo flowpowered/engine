@@ -28,24 +28,24 @@ import com.flowpowered.api.scheduler.TickStage;
 
 public interface AsyncManager {
 
-	/**
-	 * Checks if the current sequence is 
-	 *
+    /**
+     * Checks if the current sequence is 
+     *
      * @param stage the current TickStage
      * @param sequence the current sequence
      * @return true if the AsyncManager should be called, false if not
-	 */
-	public boolean checkSequence(TickStage stage, int sequence);
+     */
+    public boolean checkSequence(TickStage stage, int sequence);
 
-	/**
-	 * Gets the execution thread associated with this manager
-	 */
-	public Thread getExecutionThread();
+    /**
+     * Gets the execution thread associated with this manager
+     */
+    public Thread getExecutionThread();
 
-	/**
-	 * Sets the execution thread associated with this manager
-	 */
-	public void setExecutionThread(Thread t);
+    /**
+     * Sets the execution thread associated with this manager
+     */
+    public void setExecutionThread(Thread t);
 
-	public ShortBitMask getTickStages();
+    public ShortBitMask getTickStages();
 }

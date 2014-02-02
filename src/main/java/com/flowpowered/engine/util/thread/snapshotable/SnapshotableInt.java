@@ -31,48 +31,48 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * A snapshotable object that supports primitive ints
  */
 public class SnapshotableInt implements Snapshotable {
-	private volatile int next;
-	private int snapshot;
+    private volatile int next;
+    private int snapshot;
 
-	public SnapshotableInt(SnapshotManager manager, int initial) {
-		next = initial;
-		snapshot = initial;
-		manager.add(this);
-	}
+    public SnapshotableInt(SnapshotManager manager, int initial) {
+        next = initial;
+        snapshot = initial;
+        manager.add(this);
+    }
 
-	/**
-	 * Sets the next value for the Snapshotable
-	 */
-	@DelayedWrite
-	public void set(int next) {
-		this.next = next;
-	}
+    /**
+     * Sets the next value for the Snapshotable
+     */
+    @DelayedWrite
+    public void set(int next) {
+        this.next = next;
+    }
 
-	/**
-	 * Gets the snapshot value for
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public int get() {
-		return snapshot;
-	}
+    /**
+     * Gets the snapshot value for
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public int get() {
+        return snapshot;
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the unstable Live "next" value
-	 */
-	@LiveRead
-	public int getLive() {
-		return next;
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the unstable Live "next" value
+     */
+    @LiveRead
+    public int getLive() {
+        return next;
+    }
 
-	/**
-	 * Copies the next value to the snapshot value
-	 */
-	@Override
-	public void copySnapshot() {
-		snapshot = next;
-	}
+    /**
+     * Copies the next value to the snapshot value
+     */
+    @Override
+    public void copySnapshot() {
+        snapshot = next;
+    }
 }

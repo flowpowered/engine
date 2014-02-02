@@ -28,15 +28,15 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.FinalizeManager;
 
 public class FinalizeTask extends LocalManagerRunnableFactory {
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((FinalizeManager) manager).finalizeRun();
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((FinalizeManager) manager).finalizeRun();
+            }
+        };
+    }
 
     @Override
     public TickStage getTickStage() {

@@ -25,10 +25,10 @@ package com.flowpowered.api.scheduler.tickable;
 
 public interface Tickable {
 
-	/**
-	 * Called on each tick.
-	 *
-	 * @param dt time since the last tick in seconds
-	 */
-	void tick(float dt);
+    /**
+     * Called on each tick.
+     *
+     * @param dt time since the last tick in seconds
+     */
+    void tick(float dt);
 }

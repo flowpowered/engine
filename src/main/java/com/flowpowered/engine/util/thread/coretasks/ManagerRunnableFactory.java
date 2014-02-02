@@ -27,11 +27,11 @@ import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
 public interface ManagerRunnableFactory {
-	public ManagerRunnable getTask(AsyncManager manager, int sequence);
+    public ManagerRunnable getTask(AsyncManager manager, int sequence);
 
-	public int getMaxSequence();
+    public int getMaxSequence();
 
-	public int getMinSequence();
+    public int getMinSequence();
 
     public TickStage getTickStage();
 }

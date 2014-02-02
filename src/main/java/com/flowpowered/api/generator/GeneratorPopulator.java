@@ -29,5 +29,5 @@ import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
  * Represents a populator for a generator which should operate on a material buffer.
  */
 public interface GeneratorPopulator {
-	public void populate(CuboidBlockMaterialBuffer blockData, int x, int y, int z, long seed);
+    public void populate(CuboidBlockMaterialBuffer blockData, int x, int y, int z, long seed);
 }

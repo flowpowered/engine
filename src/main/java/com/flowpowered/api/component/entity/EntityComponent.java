@@ -35,45 +35,45 @@ import com.flowpowered.math.GenericMath;
  * Represents a component who shapes the logic behind an {@link Entity}.
  */
 public abstract class EntityComponent extends Component {
-	@Override
-	public final boolean attachTo(ComponentOwner owner) {
-		if (!(owner instanceof Entity)) {
-			throw new IllegalStateException("EntityComponents may only be attached to Entities.");
-		}
-		return super.attachTo(owner);
-	}
+    @Override
+    public final boolean attachTo(ComponentOwner owner) {
+        if (!(owner instanceof Entity)) {
+            throw new IllegalStateException("EntityComponents may only be attached to Entities.");
+        }
+        return super.attachTo(owner);
+    }
 
-	@Override
-	public Entity getOwner() {
-		return (Entity) super.getOwner();
-	}
+    @Override
+    public Entity getOwner() {
+        return (Entity) super.getOwner();
+    }
 
-	/**
-	 * Returns a deterministic random number generator
-	 *
-	 * @return random the random generator
-	 */
-	public final Random getRandom() {
-		return GenericMath.getRandom();
-	}
+    /**
+     * Returns a deterministic random number generator
+     *
+     * @return random the random generator
+     */
+    public final Random getRandom() {
+        return GenericMath.getRandom();
+    }
 
-	public final Engine getEngine() {
-		final Entity owner = getOwner();
-		if (owner == null) {
-			throw new IllegalStateException("Can not access the engine w/o an owner");
-		}
-		return owner.getEngine();
-	}
+    public final Engine getEngine() {
+        final Entity owner = getOwner();
+        if (owner == null) {
+            throw new IllegalStateException("Can not access the engine w/o an owner");
+        }
+        return owner.getEngine();
+    }
 
-	/**
-	 * Called when the owner comes within range of another owner with an attached {@link ObserverComponent}. <p> TODO EntityObservedEvent
-	 */
-	public void onObserved() {
-	}
+    /**
+     * Called when the owner comes within range of another owner with an attached {@link ObserverComponent}. <p> TODO EntityObservedEvent
+     */
+    public void onObserved() {
+    }
 
-	/**
-	 * Called when the owner is out of range of any owners with attached {@link ObserverComponent}s. <p> TODO EntityUnObservedEvent
-	 */
-	public void onUnObserved() {
-	}
+    /**
+     * Called when the owner is out of range of any owners with attached {@link ObserverComponent}s. <p> TODO EntityUnObservedEvent
+     */
+    public void onUnObserved() {
+    }
 }

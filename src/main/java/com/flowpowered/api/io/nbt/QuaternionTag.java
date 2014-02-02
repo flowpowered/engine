@@ -33,46 +33,46 @@ import org.spout.nbt.Tag;
 import org.spout.nbt.util.NBTMapper;
 
 public class QuaternionTag extends ListTag<FloatTag> {
-	public QuaternionTag(String name, Quaternionf q) {
-		super(name, FloatTag.class, quaternionToList(q));
-	}
+    public QuaternionTag(String name, Quaternionf q) {
+        super(name, FloatTag.class, quaternionToList(q));
+    }
 
-	private static List<FloatTag> quaternionToList(Quaternionf q) {
-		List<FloatTag> list = new ArrayList<>(4);
-		list.add(new FloatTag("", q.getX()));
-		list.add(new FloatTag("", q.getY()));
-		list.add(new FloatTag("", q.getZ()));
-		list.add(new FloatTag("", q.getW()));
-		return list;
-	}
+    private static List<FloatTag> quaternionToList(Quaternionf q) {
+        List<FloatTag> list = new ArrayList<>(4);
+        list.add(new FloatTag("", q.getX()));
+        list.add(new FloatTag("", q.getY()));
+        list.add(new FloatTag("", q.getZ()));
+        list.add(new FloatTag("", q.getW()));
+        return list;
+    }
 
-	@SuppressWarnings ("unchecked")
-	public static Quaternionf getValue(Tag<?> tag) {
-		try {
-			return getValue((ListTag<FloatTag>) tag);
-		} catch (ClassCastException e) {
-			return null;
-		}
-	}
+    @SuppressWarnings ("unchecked")
+    public static Quaternionf getValue(Tag<?> tag) {
+        try {
+            return getValue((ListTag<FloatTag>) tag);
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
 
-	public static Quaternionf getValue(ListTag<FloatTag> list) {
-		if (list == null) {
-			return null;
-		}
-		return getValue(list.getValue());
-	}
+    public static Quaternionf getValue(ListTag<FloatTag> list) {
+        if (list == null) {
+            return null;
+        }
+        return getValue(list.getValue());
+    }
 
-	public static Quaternionf getValue(List<FloatTag> list) {
-		if (list == null || list.size() != 4) {
-			return null;
-		}
-		Float x = NBTMapper.toTagValue(list.get(0), Float.class, null);
-		Float y = NBTMapper.toTagValue(list.get(1), Float.class, null);
-		Float z = NBTMapper.toTagValue(list.get(2), Float.class, null);
-		Float w = NBTMapper.toTagValue(list.get(3), Float.class, null);
-		if (x == null || y == null || z == null || w == null) {
-			return null;
-		}
-		return new Quaternionf(x, y, z, w);
-	}
+    public static Quaternionf getValue(List<FloatTag> list) {
+        if (list == null || list.size() != 4) {
+            return null;
+        }
+        Float x = NBTMapper.toTagValue(list.get(0), Float.class, null);
+        Float y = NBTMapper.toTagValue(list.get(1), Float.class, null);
+        Float z = NBTMapper.toTagValue(list.get(2), Float.class, null);
+        Float w = NBTMapper.toTagValue(list.get(3), Float.class, null);
+        if (x == null || y == null || z == null || w == null) {
+            return null;
+        }
+        return new Quaternionf(x, y, z, w);
+    }
 }

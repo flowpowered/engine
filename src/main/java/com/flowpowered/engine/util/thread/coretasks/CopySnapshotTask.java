@@ -28,15 +28,15 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
 
 public class CopySnapshotTask extends LocalManagerRunnableFactory {
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((CopySnapshotManager) manager).copySnapshotRun(sequence);
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((CopySnapshotManager) manager).copySnapshotRun(sequence);
+            }
+        };
+    }
 
     @Override
     public int getMaxSequence() {
