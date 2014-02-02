@@ -143,7 +143,7 @@ public class RegionSource implements Iterable<Region> {
      * @return true if exists, false if doesn't exist
      */
     public static boolean regionFileExists(World world, int x, int y, int z) {
-        if (!Flow.getPlatform(). isServer()) {
+        if (!world.getEngine().getPlatform().isServer()) {
             return false;
         }
         File worldDirectory = ((ServerWorld) world).getDirectory();

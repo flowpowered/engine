@@ -23,12 +23,12 @@
  */
 package com.flowpowered.api;
 
-import com.flowpowered.events.EventManager;
-import com.flowpowered.filesystem.FileSystem;
 
 /**
  * Represents the Flow core, to get singleton {@link Engine} instance
+ * @deprecated Use of this class is being phased out, because singletons make programmers lazy.
  */
+@Deprecated
 public final class Flow {
     private static Engine instance = null;
 
@@ -53,55 +53,4 @@ public final class Flow {
         return instance;
     }
 
-    /**
-     * Ends this game instance safely. All worlds, players, and configuration data is saved, and all threads are ended cleanly.<br/> <br/> Players will be sent a default disconnect message.
-     */
-    public static void stop() {
-        instance.stop();
-    }
-
-    /**
-     * Returns the game's {@link EventManager} Event listener registration and calling is handled through this.
-     *
-     * @return Our EventManager instance
-     */
-    public static EventManager getEventManager() {
-        return instance.getEventManager();
-    }
-    /**
-     * Returns the {@link Platform} that the game is currently running on.
-     *
-     * @return current platform type
-     */
-    public static Platform getPlatform() {
-        return instance.getPlatform();
-    }
-
-    /**
-     * Returns true if the game is running in debug mode <br/> <br/> To start debug mode, start Flow with -debug
-     *
-     * @return true if server is started with the -debug flag, false if not
-     */
-    public static boolean debugMode() {
-        return instance.debugMode();
-    }
-
-    /**
-     * Returns the String version of the API.
-     *
-     * @return version
-     */
-    public static String getAPIVersion() {
-        return instance.getClass().getPackage().getImplementationVersion();
-    }
-
-    /**
-     * Gets an abstract representation of the engine's {@link FileSystem}.<br/> <br/> The Filesystem handles the loading of all resources.<br/> <br/> On the client, loading a resource will load the
-     * resource from the harddrive.<br/> On the server, it will notify all clients to load the resource, as well as provide a representation of that resource.
-     *
-     * @return filesystem from the engine.
-     */
-    public static FileSystem getFileSystem() {
-        return instance.getFileSystem();
-    }
 }

@@ -180,7 +180,7 @@ public class Network {
      * @param live A copy of the owner's live transform state
      */
     public void finalizeRun(final Transform live) {
-        if (!Flow.getPlatform().isServer()) {
+        if (!entity.getWorld().getEngine().getPlatform().isServer()) {
             return;
         }
         //Entity changed chunks as observer OR observer status changed so update

@@ -30,7 +30,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.api.input.MouseEvent;
 import com.flowpowered.commons.queue.SubscribableQueue;
@@ -77,7 +76,7 @@ public class InputThread extends TickingElement {
                         Keyboard.getEventCharacter(), Keyboard.getEventKey(),
                         Keyboard.getEventKeyState(), Keyboard.getEventNanoseconds());
                 // TEST CODE
-                FlowSingleplayerImpl e = (FlowSingleplayerImpl) Flow.getEngine();
+                FlowSingleplayerImpl e = (FlowSingleplayerImpl) scheduler.getEngine();
                 if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
                     e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
                 } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {

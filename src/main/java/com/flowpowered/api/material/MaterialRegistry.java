@@ -66,7 +66,7 @@ public abstract class MaterialRegistry {
         if (setup) {
             throw new IllegalStateException("Can not setup material registry twice!");
         }
-        if (Flow.getPlatform().isServer()) {
+        if (Flow.getEngine().getPlatform().isServer()) {
             setupServer();
         } else {
             setupClient();
