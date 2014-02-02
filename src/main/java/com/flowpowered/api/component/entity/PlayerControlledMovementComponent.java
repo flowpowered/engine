@@ -28,7 +28,6 @@ import java.util.List;
 import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.input.MouseEvent;
-import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector3f;
@@ -42,7 +41,7 @@ public class PlayerControlledMovementComponent extends EntityComponent {
 
     @Override
     public void onTick(float dt) {
-        FlowPlayer controller = (FlowPlayer) this.controller;
+        Player controller = this.controller;
         if (controller == null) {
             return;
         }

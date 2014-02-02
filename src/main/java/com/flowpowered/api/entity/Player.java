@@ -26,6 +26,7 @@ package com.flowpowered.api.entity;
 import java.util.List;
 
 import com.flowpowered.api.geo.discrete.TransformProvider;
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.commands.CommandSender;
 
 public interface Player extends CommandSender {
@@ -136,6 +137,8 @@ public interface Player extends CommandSender {
     TransformProvider getTransformProvider();
 
     void setTransformProvider(TransformProvider provider);
+
+    public List<InputSnapshot> getInput();
 
     PlayerSnapshot snapshot();
 }
