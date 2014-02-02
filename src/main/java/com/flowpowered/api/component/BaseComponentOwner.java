@@ -27,13 +27,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.apache.logging.log4j.Level;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import com.flowpowered.api.Flow;
+import com.flowpowered.api.Engine;
 import com.flowpowered.commons.datatable.ManagedHashMap;
 import com.flowpowered.events.Listener;
 
@@ -43,12 +41,14 @@ public class BaseComponentOwner implements ComponentOwner {
      */
     private final BiMap<Class<? extends Component>, Component> components = HashBiMap.create();
     private final ManagedHashMap data;
+    private final Engine engine;
 
-    public BaseComponentOwner() {
-        data = new ManagedHashMap();
+    public BaseComponentOwner(Engine engine) {
+        this(engine, new ManagedHashMap());
     }
 
-    public BaseComponentOwner(ManagedHashMap data) {
+    public BaseComponentOwner(Engine engine, ManagedHashMap data) {
+        this.engine = engine;
         this.data = data;
     }
 
@@ -115,21 +115,21 @@ public class BaseComponentOwner implements ComponentOwner {
             if (component != null) {
                 try {
                     attachComponent(key, component, attach);
-                } catch (Exception e) {
-                    Flow.getLogger().log(Level.ERROR, "Error while attaching component " + type + ": ", e);
+                } catch (RuntimeException e) {
+                    engine.getLogger().error("Error while attaching component " + type + ": ", e);
                 }
             }
             return component;
         }
     }
 
-    protected void attachComponent(Class<? extends Component> key, Component component, boolean attach) throws Exception {
+    protected void attachComponent(Class<? extends Component> key, Component component, boolean attach) {
         if (component.attachTo(this)) {
             components.put(key, component);
             if (attach) {
                 try {
                     component.onAttached();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     // Remove the component from the component map if onAttached can't be
                     // called, pass exception to next catch block.
                     components.remove(key);
@@ -154,11 +154,11 @@ public class BaseComponentOwner implements ComponentOwner {
                 components.inverse().remove(component);
                 try {
                     component.onDetached();
-                    if (component instanceof Listener) {
-                        Flow.getEventManager().unRegisterEvents((Listener) component);
-                    }
                 } catch (Exception e) {
-                    Flow.getLogger().log(Level.ERROR, "Error detaching component " + type + " from holder: ", e);
+                    engine.getLogger().error("Error detaching component " + type + " from holder: ", e);
+                }
+                if (component instanceof Listener) {
+                    engine.getEventManager().unRegisterEvents((Listener) component);
                 }
             }
 

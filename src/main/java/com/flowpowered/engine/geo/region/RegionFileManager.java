@@ -27,7 +27,8 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.flowpowered.api.Flow;
+import org.apache.logging.log4j.Logger;
+
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
@@ -44,16 +45,18 @@ public class RegionFileManager {
     private final File regionDirectory;
     private final ConcurrentHashMap<String, BAAWrapper> cache = new ConcurrentHashMap<>();
     private final TimeoutThread timeoutThread;
+    private final Logger logger;
 
-    public RegionFileManager(File worldDirectory) {
-        this(worldDirectory, "region");
+    public RegionFileManager(File worldDirectory, Logger logger) {
+        this(worldDirectory, "region", logger);
     }
 
-    public RegionFileManager(File worldDirectory, String prefix) {
-        this.regionDirectory = new File(worldDirectory, prefix);
-        this.regionDirectory.mkdirs();
-        this.timeoutThread = new TimeoutThread(worldDirectory);
-        this.timeoutThread.start();
+    public RegionFileManager(File worldDirectory, String prefix, Logger logger) {
+        this.logger = logger;
+        regionDirectory = new File(worldDirectory, prefix);
+        regionDirectory.mkdirs();
+        timeoutThread = new TimeoutThread(worldDirectory);
+        timeoutThread.start();
     }
 
     public BAAWrapper getBAAWrapper(int rx, int ry, int rz) {
@@ -93,11 +96,11 @@ public class RegionFileManager {
         try {
             timeoutThread.join();
         } catch (InterruptedException ie) {
-            Flow.getLogger().info("Interrupted when trying to stop RegionFileManager timeout thread");
+            logger.info("Interrupted when trying to stop RegionFileManager timeout thread");
         }
         for (BAAWrapper regionFile : cache.values()) {
             if (!regionFile.attemptClose()) {
-                Flow.getLogger().info("Unable to close region file " + regionFile.getFilename());
+                logger.info("Unable to close region file " + regionFile.getFilename());
             }
         }
     }

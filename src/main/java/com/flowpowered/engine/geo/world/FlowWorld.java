@@ -82,6 +82,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     private final WorldSnapshot snapshot;
 
     public FlowWorld(FlowEngine engine, String name, UUID uid, long age) {
+        super(engine);
         this.engine = engine;
         this.name = name;
         this.uid = uid;

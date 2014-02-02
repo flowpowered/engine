@@ -30,20 +30,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.flowpowered.commons.Named;
-import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
+import org.apache.logging.log4j.Logger;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
+import com.flowpowered.commons.Named;
+import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
 import com.flowpowered.math.GenericMath;
 
 public class RegionGenerator implements Named {
-    private final static ExecutorService pool = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() * 2 + 1, "RegionGenerator - async pool");
+    private static AtomicReference<ExecutorService> pool = new AtomicReference<>();
     private final FlowRegion region;
     private final FlowServerWorld world;
     private final Lock[][][] sectionLocks;
@@ -58,6 +58,7 @@ public class RegionGenerator implements Named {
 
     @SuppressWarnings ("unchecked")
     public RegionGenerator(FlowRegion region, int width) {
+        initExecutorService(region.getWorld().getEngine().getLogger());
         if (GenericMath.roundUpPow2(width) != width || width > Region.CHUNKS.SIZE || width < 0) {
             throw new IllegalArgumentException("Width must be a power of 2 and can't be more than one region width");
         }
@@ -65,25 +66,25 @@ public class RegionGenerator implements Named {
         int sections = Region.CHUNKS.SIZE / width;
 
         this.width = width;
-        this.mask = width - 1;
-        this.generatedChunks = new AtomicReference[sections][sections][sections];
-        this.sectionLocks = new Lock[sections][sections][sections];
+        mask = width - 1;
+        generatedChunks = new AtomicReference[sections][sections][sections];
+        sectionLocks = new Lock[sections][sections][sections];
 
         for (int x = 0; x < sections; x++) {
             for (int z = 0; z < sections; z++) {
                 for (int y = 0; y < sections; y++) {
-                    this.generatedChunks[x][z][y] = new AtomicReference<>(GenerateState.NONE);
-                    this.sectionLocks[x][z][y] = new NamedReentrantLock(x, z);
+                    generatedChunks[x][z][y] = new AtomicReference<>(GenerateState.NONE);
+                    sectionLocks[x][z][y] = new NamedReentrantLock(x, z);
                 }
             }
         }
 
-        this.shift = GenericMath.multiplyToShift(width);
+        shift = GenericMath.multiplyToShift(width);
         this.region = region;
-        this.world = (FlowServerWorld) region.getWorld();
-        this.baseChunkX = region.getChunkX();
-        this.baseChunkY = region.getChunkY();
-        this.baseChunkZ = region.getChunkZ();
+        world = (FlowServerWorld) region.getWorld();
+        baseChunkX = region.getChunkX();
+        baseChunkY = region.getChunkY();
+        baseChunkZ = region.getChunkZ();
     }
 
     /**
@@ -95,7 +96,7 @@ public class RegionGenerator implements Named {
      */
     public void generateChunk(final int chunkX, final int chunkY, final int chunkZ, boolean wait) {
         if (!wait) {
-            pool.submit(new Runnable() {
+            pool.get().submit(new Runnable() {
                 @Override
                 public void run() {
                     generateChunk0(chunkX, chunkY, chunkZ, false);
@@ -110,7 +111,7 @@ public class RegionGenerator implements Named {
         // Represent the coords of the section of the region
         // Values are from 0 to width
         final int sectionX = (chunkXWorld & Region.CHUNKS.MASK) >> shift;
-        final int sectionY = (chunkYWorld & Region.CHUNKS.MASK) >> shift;
+                final int sectionY = (chunkYWorld & Region.CHUNKS.MASK) >> shift;
         final int sectionZ = (chunkZWorld & Region.CHUNKS.MASK) >> shift;
         // Represent the local chunk coords of the base of the section
         // Values start at 0 and are spaced by width chunks
@@ -142,7 +143,7 @@ public class RegionGenerator implements Named {
             int generationIndex = generationCounter.getAndIncrement();
 
             while (generationIndex == -1) {
-                Flow.getLogger().info("Ran out of generation index ids, starting again");
+                world.getEngine().getLogger().info("Ran out of generation index ids, starting again");
                 generationIndex = generationCounter.getAndIncrement();
             }
 
@@ -186,22 +187,35 @@ public class RegionGenerator implements Named {
             sectionLock.unlock();
         }
     }
-
-    public static void shutdownExecutorService() {
-        pool.shutdown();
+    
+    private static void initExecutorService(Logger logger) {
+        if (pool.get() == null) {
+            pool.compareAndSet(null, LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() * 2 + 1, "RegionGenerator - async pool", logger));
+        }
     }
 
-    public static void awaitExecutorServiceTermination() {
+    public static void shutdownExecutorService() {
+        ExecutorService p = pool.get();
+        if (p != null) {
+            p.shutdown();
+        }
+    }
+
+    public static void awaitExecutorServiceTermination(Logger logger) {
         boolean interrupted = false;
+        ExecutorService p = pool.get();
+        if (p == null) {
+            return;
+        }
         try {
             boolean done = false;
             while (!done) {
                 try {
-                    if (pool.awaitTermination(10, TimeUnit.SECONDS)) {
+                    if (p.awaitTermination(10, TimeUnit.SECONDS)) {
                         done = true;
                         break;
                     }
-                    Flow.getLogger().info("Waited 10 seconds for region generator pool to shutdown");
+                    logger.info("Waited 10 seconds for region generator pool to shutdown");
                 } catch (InterruptedException e) {
                     interrupted = true;
                 }

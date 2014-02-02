@@ -194,8 +194,8 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             checkChunkLoaded(generatedChunk, loadopt);
             return generatedChunk;
         }
-        Flow.getLogger().error("Chunk failed to generate!  (" + loadopt + ")");
-        Flow.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
+        engine.getLogger().error("Chunk failed to generate!  (" + loadopt + ")");
+        engine.getLogger().info("Region " + this + ", chunk " + worldX + ", " + worldY + ", " + worldZ);
         Thread.dumpStack();
         return null;
     }
@@ -208,7 +208,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
                     ChunkDataForRegion dataForRegion = new ChunkDataForRegion();
                     FlowChunk newChunk = ChunkFiles.loadChunk(this, x, y, z, stream, dataForRegion);
                     if (newChunk == null) {
-                        Flow.getLogger().error("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
+                        engine.getLogger().error("Unable to load chunk at location " + (getChunkX() + x) + ", " + (getChunkY() + y) + ", " + (getChunkZ() + z) + " in region " + this + ", regenerating chunks");
                         return null;
                     }
                     FlowChunk c = setChunk(newChunk, x, y, z, dataForRegion);
@@ -218,7 +218,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
                     stream.close();
                 }
             } catch (IOException e) {
-                Flow.getLogger().log(Level.WARN, "IOException when loading chunk!", e);
+                engine.getLogger().log(Level.WARN, "IOException when loading chunk!", e);
             }
         }
         return null;

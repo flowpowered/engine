@@ -59,7 +59,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
         this.spawnLocation.set(new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE));
         this.generator = generator;
         this.seed = seed;
-        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name));
+        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name), engine.getLogger());
     }
 
     public FlowServerWorld(FlowEngine engine, String name, WorldGenerator generator) {
@@ -67,7 +67,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
         this.spawnLocation.set(new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE));
         this.generator = generator;
         this.seed = new Random().nextLong();
-        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name));
+        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name), engine.getLogger());
     }
 
     @Override

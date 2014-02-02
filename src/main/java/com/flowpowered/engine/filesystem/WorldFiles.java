@@ -32,6 +32,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
+
 import org.spout.nbt.ByteArrayTag;
 import org.spout.nbt.ByteTag;
 import org.spout.nbt.CompoundMap;
@@ -42,7 +44,6 @@ import org.spout.nbt.stream.NBTInputStream;
 import org.spout.nbt.stream.NBTOutputStream;
 import org.spout.nbt.util.NBTMapper;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.Server;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
@@ -59,6 +60,8 @@ public class WorldFiles {
     public static final byte WORLD_VERSION = 1;
 
     public static <E extends FlowEngine & Server> FlowServerWorld loadWorld(E engine, WorldGenerator generator, String worldName) {
+        final Logger logger = engine.getLogger();
+
         File worldDir = new File(FlowFileSystem.WORLDS_DIRECTORY, worldName);
         worldDir.mkdirs();
         File worldFile = new File(worldDir, "world.dat");
@@ -94,29 +97,31 @@ public class WorldFiles {
                 try {
                     ns.close();
                 } catch (IOException e) {
-                    Flow.info("Cannot close world file");
+                    logger.info("Cannot close world file");
                 }
             }
-            Flow.info("Loading world [{}]", worldName);
+            logger.info("Loading world [{}]", worldName);
             world = loadWorldImpl(engine, worldName, map, generator, itemMap);
         } catch (FileNotFoundException ioe) {
-            Flow.info("Creating new world named [{}]", worldName);
+            logger.info("Creating new world named [{}]", worldName);
 
             world = new FlowServerWorld(engine, worldName, generator);
             world.save();
         } catch (IOException ioe) {
-            Flow.severe("Error reading file for world " + worldName, ioe);
+            logger.error("Error reading file for world " + worldName, ioe);
         }
         return world;
     }
 
     private static FlowServerWorld loadWorldImpl(FlowEngine engine, String name, CompoundMap map, WorldGenerator fallbackGenerator, StringToUniqueIntegerMap itemMap) {
+        final Logger logger = engine.getLogger();
+
         byte version = SafeCast.toByte(NBTMapper.toTagValue(map.get("version")), (byte) -1);
         if (version > WORLD_VERSION) {
-            Flow.severe("World version " + version + " exceeds maximum allowed value of " + WORLD_VERSION);
+            logger.error("World version " + version + " exceeds maximum allowed value of " + WORLD_VERSION);
             return null;
         } else if (version < WORLD_VERSION) {
-            Flow.severe("Outdated World version " + version);
+            logger.error("Outdated World version " + version);
             return null;
         }
 
@@ -126,7 +131,7 @@ public class WorldFiles {
         Long age = SafeCast.toLong(NBTMapper.toTagValue(map.get("age")), 0);
         UUID uuid = UUIDTag.getValue(map.get("uuid"));
 
-        WorldGenerator generator = findGenerator(generatorName, fallbackGenerator);
+        WorldGenerator generator = findGenerator(logger, generatorName, fallbackGenerator);
 
         FlowServerWorld world = new FlowServerWorld(engine, name, uuid, age, generator, seed);
 
@@ -139,16 +144,16 @@ public class WorldFiles {
         try {
             dataMap.deserialize(extraData);
         } catch (IOException e) {
-            Flow.severe("Could not deserialize datatable for world: " + name, e);
+            logger.error("Could not deserialize datatable for world: " + name, e);
         }
 
         return world;
     }
 
-    private static WorldGenerator findGenerator(String wanted, WorldGenerator given) {
+    private static WorldGenerator findGenerator(Logger logger, String wanted, WorldGenerator given) {
         // TODO: lookup class name
         if (!wanted.equals(given.getClass().getName())) {
-            Flow.severe("World was saved last with the generator: " + wanted + " but is being loaded with: " + given.getClass().getName() + " THIS MAY CAUSE WORLD CORRUPTION!");
+            logger.error("World was saved last with the generator: " + wanted + " but is being loaded with: " + given.getClass().getName() + " THIS MAY CAUSE WORLD CORRUPTION!");
         }
         return given;
     }
@@ -173,7 +178,7 @@ public class WorldFiles {
             ns = new NBTOutputStream(is, false);
             ns.writeTag(new CompoundTag("world_" + world.getName(), map));
         } catch (IOException ioe) {
-            Flow.severe("Error writing file for world " + world.getName());
+            world.getEngine().getLogger().error("Error writing file for world " + world.getName());
         } finally {
             if (ns != null) {
                 try {

@@ -34,10 +34,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.logging.log4j.Logger;
+
 import com.flowpowered.commons.Named;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
-
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.scheduler.Worker;
@@ -58,6 +59,7 @@ import com.flowpowered.engine.util.thread.coretasks.StartTickTask;
 
 public class MainThread extends TickingElement {
     private final FlowScheduler scheduler;
+    private final Logger logger;
     private final AtomicLong currentDelta = new AtomicLong(0);
     private final ManagerRunnableFactory[] managerRunnableFactories = new ManagerRunnableFactory[] {
         null,//TickStart has no ManagerRunnableFactory
@@ -97,8 +99,9 @@ public class MainThread extends TickingElement {
     public MainThread(FlowScheduler scheduler) {
         super("MainThread", 20);
         this.scheduler = scheduler;
+        this.logger = scheduler.getEngine().getLogger();
         final int nThreads = Runtime.getRuntime().availableProcessors() * 2 + 1;
-        executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "FlowScheduler - AsyncManager executor service");
+        executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "FlowScheduler - AsyncManager executor service", scheduler.getEngine().getLogger());
     }
 
     @Override
@@ -110,7 +113,7 @@ public class MainThread extends TickingElement {
     public void onStop() {
             doCopySnapshot();
             RegionGenerator.shutdownExecutorService();
-            RegionGenerator.awaitExecutorServiceTermination();
+            RegionGenerator.awaitExecutorServiceTermination(logger);
 
             scheduler.getTaskManager().heartbeat(FlowScheduler.PULSE_EVERY << 2);
             scheduler.getTaskManager().shutdown(1L);
@@ -121,10 +124,10 @@ public class MainThread extends TickingElement {
                 if (workers.isEmpty()) {
                     break;
                 }
-                Flow.info("Unable to shutdown due to async tasks still running");
+                logger.info("Unable to shutdown due to async tasks still running");
                 for (Worker w : workers) {
                     Object owner = w.getOwner() instanceof Named ? ((Named) w.getOwner()).getName() : w.getOwner();
-                    Flow.info("Task with id of " + w.getTaskId() + " owned by " + owner + " is still running");
+                    logger.info("Task with id of " + w.getTaskId() + " owned by " + owner + " is still running");
                 }
                 if (delay < 8000) {
                     delay <<= 1;
@@ -181,7 +184,7 @@ public class MainThread extends TickingElement {
         }
 
         if (totalUpdates >= UPDATE_THRESHOLD) {
-            Flow.warn("Block updates per tick of " + totalUpdates + " exceeded the threshold " + UPDATE_THRESHOLD + "; " + dynamicUpdates + " dynamic updates, " + physicsUpdates + " block physics updates and " + lightUpdates + " lighting updates");
+            logger.warn("Block updates per tick of " + totalUpdates + " exceeded the threshold " + UPDATE_THRESHOLD + "; " + dynamicUpdates + " dynamic updates, " + physicsUpdates + " block physics updates and " + lightUpdates + " lighting updates");
         }
 
         doFinalizeTick();
@@ -262,15 +265,15 @@ public class MainThread extends TickingElement {
                             try {
                                 futures.get(i).get();
                             } catch (ExecutionException e) {
-                                Flow.warn("Exception thrown when executing a task in tick stage " + stage, e);
+                                logger.warn("Exception thrown when executing a task in tick stage " + stage, e);
                             } catch (InterruptedException e) {
-                                Flow.warn("Interrupted when getting future", e);
+                                logger.warn("Interrupted when getting future", e);
                             }
                         }
                     }
                 });
             } catch (InterruptedException e) {
-                Flow.warn("Main thread interrupted while waiting on tick stage " + stage);
+                logger.warn("Main thread interrupted while waiting on tick stage " + stage);
             }
         }
     }

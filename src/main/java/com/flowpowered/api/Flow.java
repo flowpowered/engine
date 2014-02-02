@@ -23,10 +23,6 @@
  */
 package com.flowpowered.api;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.flowpowered.events.EventManager;
 import com.flowpowered.filesystem.FileSystem;
 
@@ -35,104 +31,9 @@ import com.flowpowered.filesystem.FileSystem;
  */
 public final class Flow {
     private static Engine instance = null;
-    private static final Logger logger = LogManager.getLogger("Flow");
 
     private Flow() {
         throw new IllegalStateException("Can not construct Flow instance");
-    }
-
-    /**
-     * Gets the {@link Logger} instance that is used to write to the console.
-     *
-     * @return logger
-     */
-    public static Logger getLogger() {
-        return logger;
-    }
-
-    /**
-     * Prints the specified object if debug mode is enabled.
-     *
-     * @param obj to print
-     */
-    public static void debug(Object obj) {
-        if (debugMode()) {
-            info(obj.toString());
-        }
-    }
-
-    /**
-     * Logs the specified message to print if debug mode is enabled.
-     *
-     * @param log message
-     * @param t to throw
-     * @see #debugMode()
-     */
-    public static void debug(String log, Throwable t) {
-        if (debugMode()) {
-            info(log, t);
-        }
-    }
-
-    /**
-     * Logs the specified message to print if debug mode is enabled.
-     *
-     * @param log message
-     * @param params of message
-     * @see #debugMode()
-     */
-    public static void debug(String log, Object... params) {
-        if (debugMode()) {
-            info(log, params);
-        }
-    }
-
-    public static void finest(String log, Throwable t) {
-        logger.log(Level.TRACE, log, t);
-    }
-
-    public static void finest(String log, Object... params) {
-        logger.log(Level.TRACE, log, params);
-    }
-
-    public static void finer(String log, Throwable t) {
-        logger.log(Level.TRACE, log, t);
-    }
-
-    public static void finer(String log, Object... params) {
-        logger.log(Level.TRACE, log, params);
-    }
-
-    public static void fine(String log, Throwable t) {
-        logger.log(Level.DEBUG, log, t);
-    }
-
-    public static void fine(String log, Object... params) {
-        logger.log(Level.DEBUG, log, params);
-    }
-
-    public static void info(String log, Throwable t) {
-        logger.log(Level.INFO, log, t);
-    }
-
-    public static void info(String log, Object... params) {
-        logger.log(Level.INFO, log, params);
-    }
-
-    public static void warn(String log, Throwable t) {
-        logger.log(Level.WARN, log, t);
-    }
-
-    public static void warn(String log, Object... params) {
-        logger.log(Level.WARN, log, params);
-    }
-
-    public static void severe(String log, Throwable t) {
-        logger.log(Level.ERROR, log, t);
-    }
-
-    public static void severe(String log, Object... params) {
-        logger.log(Level.ERROR, log, params);
     }
 
     public static void setEngine(Engine game) {
@@ -183,15 +84,6 @@ public final class Flow {
      */
     public static boolean debugMode() {
         return instance.debugMode();
-    }
-
-    /**
-     * Logs the given string using {@Link Logger#info(String)} to the default logger instance.
-     *
-     * @param arg to log
-     */
-    public static void log(String arg) {
-        logger.info(arg);
     }
 
     /**

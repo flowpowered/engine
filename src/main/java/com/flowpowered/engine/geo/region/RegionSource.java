@@ -86,14 +86,14 @@ public class RegionSource implements Iterable<Region> {
         int z = r.getRegionZ();
         boolean success = loadedRegions.remove(x, y, z, r);
         if (!success) {
-            Flow.getLogger().info("Tried to remove region " + r + " but region removal failed");
+            engine.getLogger().info("Tried to remove region " + r + " but region removal failed");
             return;
         }
 
         world.getEngine().getScheduler().removeAsyncManager(r);
 
         if (regionsLoaded.decrementAndGet() < 0) {
-            Flow.getLogger().info("Regions loaded dropped below zero");
+            engine.getLogger().info("Regions loaded dropped below zero");
         }
     }
 
