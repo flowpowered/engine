@@ -103,6 +103,10 @@ public class RenderThread extends TickingElement {
         updateLight(client.getWorld().getAge());
         renderer.render();
     }
+    
+    public Client getEngine() {
+        return client;
+    }
 
     public FlowRenderer getRenderer() {
         return renderer;

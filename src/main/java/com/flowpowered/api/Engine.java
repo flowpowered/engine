@@ -23,6 +23,8 @@
  */
 package com.flowpowered.api;
 
+import org.apache.logging.log4j.Logger;
+
 import com.flowpowered.commons.Named;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.filesystem.FileSystem;
@@ -42,6 +44,8 @@ public interface Engine extends Named {
     public String getVersion();
 
     public Platform getPlatform();
+    
+    public Logger getLogger();
 
     /**
      * Ends this engine instance safely. All worlds, players, and configuration data is saved, and all threads are ended cleanly.<br/> <br/> Players will be sent a default disconnect message.

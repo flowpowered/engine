@@ -50,18 +50,18 @@ public class FlowTaskManager implements TaskManager {
     private final AtomicBoolean alive;
     private final AtomicLong upTime;
     private final Object scheduleLock = new Object();
-    private final Scheduler scheduler;
+    private final FlowScheduler scheduler;
     private final ExecutorService pool = Executors.newFixedThreadPool(20, new MarkedNamedThreadFactory("Scheduler Thread Pool Thread", false));
 
-    public FlowTaskManager(Scheduler scheduler) {
+    public FlowTaskManager(FlowScheduler scheduler) {
         this(scheduler, null, 0L);
     }
 
-    public FlowTaskManager(Scheduler scheduler, AsyncManager manager) {
+    public FlowTaskManager(FlowScheduler scheduler, AsyncManager manager) {
         this(scheduler, manager, 0L);
     }
 
-    public FlowTaskManager(Scheduler scheduler, AsyncManager manager, long age) {
+    public FlowTaskManager(FlowScheduler scheduler, AsyncManager manager, long age) {
         this.taskQueue = new TaskPriorityQueue(manager, FlowScheduler.PULSE_EVERY / 4);
         this.alive = new AtomicBoolean(true);
         this.upTime = new AtomicLong(age);
@@ -140,7 +140,7 @@ public class FlowTaskManager implements TaskManager {
                     currentTask.pulse();
                     repeatSchedule(currentTask);
                 } else {
-                    Flow.getLogger().info("Async repeating task submitted");
+                    scheduler.getEngine().getLogger().info("Async repeating task submitted");
                 }
             }
             if (taskQueue.complete(q, upTime)) {

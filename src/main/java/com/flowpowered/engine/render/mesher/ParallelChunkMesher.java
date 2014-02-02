@@ -57,7 +57,7 @@ public class ParallelChunkMesher {
     public ParallelChunkMesher(RenderThread renderThread, ChunkMesher mesher) {
         this.renderer = renderThread;
         this.mesher = mesher;
-        this.executor = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(4, "ParallelChunkMesher");
+        this.executor = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(4, "ParallelChunkMesher", renderer.getEngine().getLogger());
         executor.setKeepAliveTime(60, TimeUnit.SECONDS);
         executor.allowCoreThreadTimeOut(true);
     }

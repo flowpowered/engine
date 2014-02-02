@@ -60,6 +60,7 @@ public final class FlowScheduler implements Scheduler {
      */
     public static final int TARGET_FPS = 60;
     private final FlowTaskManager taskManager;
+    private final Engine engine;
     // SchedulerElements
     private final MainThread mainThread;
     private final RenderThread renderThread;
@@ -69,6 +70,7 @@ public final class FlowScheduler implements Scheduler {
      * Creates a new task scheduler.
      */
     public FlowScheduler(Engine engine) {
+        this.engine = engine;
         mainThread = new MainThread(this);
 
         if (engine.getPlatform().isClient()) {
@@ -197,6 +199,10 @@ public final class FlowScheduler implements Scheduler {
 
     public FlowTaskManager getTaskManager() {
         return taskManager;
+    }
+    
+    public Engine getEngine() {
+        return engine;
     }
 
     @Override

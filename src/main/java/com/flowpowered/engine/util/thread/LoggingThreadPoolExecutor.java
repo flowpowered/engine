@@ -34,30 +34,37 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.api.Flow;
 import com.flowpowered.engine.scheduler.MarkedNamedThreadFactory;
 
 public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
-    public static LoggingThreadPoolExecutor newFixedThreadExecutorWithMarkedName(int nThreads, String name) {
+    public static LoggingThreadPoolExecutor newFixedThreadExecutorWithMarkedName(int nThreads, String name, Logger logger) {
         return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
-                new MarkedNamedThreadFactory(name, true));
+                new MarkedNamedThreadFactory(name, true), logger);
     }
+    
+    private Logger logger;
 
-    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, Logger logger) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+        this.logger = logger;
     }
 
-    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, Logger logger) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
+        this.logger = logger;
     }
 
-    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler, Logger logger) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
+        this.logger = logger;
     }
 
-    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler, Logger logger) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+        this.logger = logger;
     }
 
     @Override
@@ -75,7 +82,7 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
         if (t != null) {
-            Flow.getLogger().log(Level.WARN, "Exception in core task", t);
+            logger.warn("Exception in core task", t);
         }
     }
 }

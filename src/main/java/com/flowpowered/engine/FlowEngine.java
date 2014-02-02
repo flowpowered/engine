@@ -25,12 +25,13 @@ package com.flowpowered.engine;
 
 import java.io.PrintStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.flowpowered.commons.LoggerOutputStream;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.events.SimpleEventManager;
-
 import com.flowpowered.api.Engine;
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.material.MaterialRegistry;
@@ -51,6 +52,7 @@ public abstract class FlowEngine implements Engine {
     private SyncedStringMap itemMap;
     private PrintStream realSystemOut;
     private PrintStream realSystemErr;
+    private final Logger logger = LogManager.getLogger("Flow");
 
 
     public FlowEngine(FlowApplication args) {
@@ -63,16 +65,21 @@ public abstract class FlowEngine implements Engine {
     public String getVersion() {
         return getClass().getPackage().getImplementationVersion();
     }
+    
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
 
     public void init() {
         // Make sure we log something and let log4j2 initialize before we redirect System.out and System.err
         // Otherwise it could try to log to the redirected stdout causing infinite loop.
-        Flow.getLogger().info("Initializing Engine.");
+        logger.info("Initializing Engine.");
         // Just in case.
         realSystemOut = System.out;
         realSystemErr = System.err;
         //And now redirect the streams to a logger.
-        String loggerName = Flow.getLogger().getName();
+        String loggerName = logger.getName();
         System.setOut(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDOUT"), Level.INFO), true));
         System.setErr(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDERR"), Level.WARN), true));
         itemMap = MaterialRegistry.setupRegistry();

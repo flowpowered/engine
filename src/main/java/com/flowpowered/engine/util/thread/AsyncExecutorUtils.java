@@ -30,18 +30,26 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.api.Flow;
 
 public class AsyncExecutorUtils {
     private static final String LINE = "------------------------------";
+    private static final Logger defaultLogger = LogManager.getLogger("Flow." + AsyncExecutorUtils.class.getSimpleName());
 
     /**
      * Logs all threads, the thread details, and active stack traces
      */
     public static void dumpAllStacks() {
-        Logger log = Flow.getLogger();
+        dumpAllStacks(defaultLogger);
+    }
+    
+    /**
+     * Logs all threads, the thread details, and active stack traces to the given logger
+     */
+    public static void dumpAllStacks(Logger log) {
         Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
         Iterator<Entry<Thread, StackTraceElement[]>> i = traces.entrySet().iterator();
         while (i.hasNext()) {
@@ -64,7 +72,13 @@ public class AsyncExecutorUtils {
      * Scans for deadlocked threads
      */
     public static void checkForDeadlocks() {
-        Logger log = Flow.getLogger();
+        checkForDeadlocks(defaultLogger);
+    }
+    
+    /**
+     * Scans for deadlocked threads and prints them to the given logger
+     */
+    public static void checkForDeadlocks(Logger log) {
         ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
         long[] ids = tmx.findDeadlockedThreads();
         if (ids != null) {
@@ -83,10 +97,14 @@ public class AsyncExecutorUtils {
      * @param t the thread
      */
     public static void dumpStackTrace(Thread t) {
+        dumpStackTrace(t, defaultLogger);
+    }
+    
+    public static void dumpStackTrace(Thread t, Logger logger) {
         StackTraceElement[] stackTrace = t.getStackTrace();
-        Flow.getLogger().info("Stack trace for Thread " + t.getName());
+        logger.info("Stack trace for Thread " + t.getName());
         for (StackTraceElement e : stackTrace) {
-            Flow.getLogger().info("\tat " + e);
+            logger.info("\tat " + e);
         }
     }
 }

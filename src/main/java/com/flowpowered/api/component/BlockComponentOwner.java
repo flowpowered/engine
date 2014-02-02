@@ -37,7 +37,7 @@ public class BlockComponentOwner extends BaseComponentOwner {
     private final World world;
 
     public BlockComponentOwner(ManagedHashMap chunkData, int x, int y, int z, World world) {
-        super(new ManagedHashMap(chunkData, "" + (x & Chunk.BLOCKS.MASK) + "," + (y & Chunk.BLOCKS.MASK) + "," + (z & Chunk.BLOCKS.MASK)));
+        super(world.getEngine(), new ManagedHashMap(chunkData, "" + (x & Chunk.BLOCKS.MASK) + "," + (y & Chunk.BLOCKS.MASK) + "," + (z & Chunk.BLOCKS.MASK)));
         this.x = x;
         this.y = y;
         this.z = z;
