@@ -47,6 +47,7 @@ import com.flowpowered.math.vector.Vector3f;
 import org.lwjgl.opengl.GLContext;
 
 import com.flowpowered.api.render.Renderer;
+import com.flowpowered.engine.render.stage.GaussianBlurStage;
 import com.flowpowered.engine.render.stage.LightingStage;
 import com.flowpowered.engine.render.stage.RenderGUIStage;
 import com.flowpowered.engine.render.stage.RenderModelsStage;
@@ -121,6 +122,7 @@ public class FlowRenderer implements Renderer {
     private RenderModelsStage renderModelsStage;
     private ShadowMappingStage shadowMappingStage;
     private SSAOStage ssaoStage;
+    private GaussianBlurStage gaussianBlurStage;
     private LightingStage lightingStage;
     private RenderTransparentModelsStage renderTransparentModelsStage;
     private RenderGUIStage renderGUIStage;
@@ -171,98 +173,51 @@ public class FlowRenderer implements Renderer {
     }
 
     private void initEffects() {
-        final Texture colors = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        colors.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colors.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colors.setMagFilter(FilterMode.LINEAR);
-        colors.setMinFilter(FilterMode.LINEAR);
-        colors.create();
-
-        final Texture normals = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        normals.create();
-
-        final Texture depths = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
-        depths.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        depths.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        depths.create();
-
-        final Texture vertexNormals = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        vertexNormals.create();
-
-        final Texture materials = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        materials.create();
-
-        final Texture shadows = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        shadows.create();
-
-        final Texture occlusions = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RED, InternalFormat.R8);
-        occlusions.create();
-
-        final Texture colors2 = createTexture(WINDOW_SIZE.getFloorX(), WINDOW_SIZE.getFloorY(), Format.RGBA, InternalFormat.RGBA8);
-        colors2.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colors2.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colors2.setMagFilter(FilterMode.LINEAR);
-        colors2.setMinFilter(FilterMode.LINEAR);
-        colors2.create();
-
-        // TODO: maybe make the stage outputs local to them?
-
-        final int blurSize = 4;
+        final int blurSize = 5;
         // Render models
         renderModelsStage = new RenderModelsStage(this);
-        renderModelsStage.setColorsOutput(colors);
-        renderModelsStage.setNormalsOutput(normals);
-        renderModelsStage.setDepthsOutput(depths);
-        renderModelsStage.setVertexNormalsOutput(vertexNormals);
-        renderModelsStage.setMaterialsOutput(materials);
         renderModelsStage.create();
         // Shadows
         shadowMappingStage = new ShadowMappingStage(this);
-        shadowMappingStage.setNormalsInput(vertexNormals);
-        shadowMappingStage.setDepthsInput(depths);
+        shadowMappingStage.setNormalsInput(renderModelsStage.getVertexNormalsOutput());
+        shadowMappingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
         shadowMappingStage.setKernelSize(8);
         shadowMappingStage.setNoiseSize(blurSize);
         shadowMappingStage.setBias(0.005f);
         shadowMappingStage.setRadius(0.0004f);
-        shadowMappingStage.setShadowsOutput(shadows);
         shadowMappingStage.create();
         // SSAO
         ssaoStage = new SSAOStage(this);
-        ssaoStage.setNormalsInput(normals);
-        ssaoStage.setDepthsInput(depths);
+        ssaoStage.setNormalsInput(renderModelsStage.getNormalsOutput());
+        ssaoStage.setDepthsInput(renderModelsStage.getDepthsOutput());
         ssaoStage.setKernelSize(8);
         ssaoStage.setNoiseSize(blurSize);
         ssaoStage.setRadius(0.5f);
         ssaoStage.setThreshold(0.15f);
         ssaoStage.setPower(2);
-        ssaoStage.setOcclusionOutput(occlusions);
         ssaoStage.create();
         // Lighting
         lightingStage = new LightingStage(this);
-        lightingStage.setColorsInput(colors);
-        lightingStage.setNormalsInput(normals);
-        lightingStage.setDepthsInput(depths);
-        lightingStage.setMaterialInput(materials);
-        lightingStage.setOcclusionsInput(occlusions);
-        lightingStage.setShadowsInput(shadows);
-        lightingStage.setColorsOutput(colors2);
+        lightingStage.setColorsInput(renderModelsStage.getColorsOutput());
+        lightingStage.setNormalsInput(renderModelsStage.getNormalsOutput());
+        lightingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
+        lightingStage.setMaterialInput(renderModelsStage.getMaterialsOutput());
+        lightingStage.setOcclusionsInput(ssaoStage.getOcclusionsOutput());
+        lightingStage.setShadowsInput(shadowMappingStage.getShadowsOutput());
         lightingStage.create();
+        // Gaussian blur
+        gaussianBlurStage = new GaussianBlurStage(this);
+        gaussianBlurStage.setColorsInput(lightingStage.getColorsOutput());
+        gaussianBlurStage.setKernelSize(blurSize);
+        gaussianBlurStage.create();
         // Transparent models
         renderTransparentModelsStage = new RenderTransparentModelsStage(this);
-        renderTransparentModelsStage.setDepthsInput(depths);
-        renderTransparentModelsStage.setColorsOutput(colors2);
+        renderTransparentModelsStage.setDepthsInput(renderModelsStage.getDepthsOutput());
+        renderTransparentModelsStage.setColorsInput(renderModelsStage.getColorsOutput());
         renderTransparentModelsStage.create();
         // Render GUI
         renderGUIStage = new RenderGUIStage(this);
         renderGUIStage.create();
-    }
-
-    private Texture createTexture(int width, int height, Format format, InternalFormat internalFormat) {
-        final Texture texture = glFactory.createTexture();
-        texture.setFormat(format);
-        texture.setInternalFormat(internalFormat);
-        texture.setImageData(null, width, height);
-        return texture;
     }
 
     private void initPrograms() {
@@ -271,7 +226,7 @@ public class FlowRenderer implements Renderer {
         loadProgram("font");
         loadProgram("ssao");
         loadProgram("shadow");
-        loadProgram("blur");
+        loadProgram("gaussianBlur");
         loadProgram("lighting");
         loadProgram("motionBlur");
         loadProgram("edaa");
@@ -314,7 +269,7 @@ public class FlowRenderer implements Renderer {
         uniforms.add(new FloatUniform("shininess", 0.8f));
         // Screen material
         screenMaterial = new Material(programs.get("screen"));
-        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsOutput());
+        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsInput());
     }
 
     private void initVertexArrays() {
@@ -333,7 +288,7 @@ public class FlowRenderer implements Renderer {
         final Model model1 = new Model(sphere, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
         model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 0, 0, 0.3)));
-      addTransparentModel(model1);
+        addTransparentModel(model1);
         final Model model2 = model1.getInstance();
         model2.setPosition(new Vector3f(0, 22, 6));
         model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
@@ -395,6 +350,7 @@ public class FlowRenderer implements Renderer {
         shadowMappingStage.destroy();
         ssaoStage.destroy();
         lightingStage.destroy();
+        gaussianBlurStage.destroy();
         renderTransparentModelsStage.destroy();
         renderGUIStage.destroy();
     }
@@ -428,6 +384,7 @@ public class FlowRenderer implements Renderer {
         shadowMappingStage.render();
         ssaoStage.render();
         lightingStage.render();
+        gaussianBlurStage.render();
         renderTransparentModelsStage.render();
         renderGUIStage.render();
         // Update the previous frame uniforms

@@ -21,29 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
- *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package com.flowpowered.engine.render.stage;
 
 import java.nio.ByteBuffer;
@@ -86,9 +63,9 @@ public class ShadowMappingStage extends Creatable {
     private final Texture noiseTexture;
     private final FrameBuffer depthFrameBuffer;
     private final FrameBuffer frameBuffer;
+    private final Texture shadowsOutput;
     private Texture normalsInput;
     private Texture depthsInput;
-    private Texture shadowsOutput;
     private final Matrix4Uniform inverseViewMatrixUniform = new Matrix4Uniform("inverseViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
@@ -107,6 +84,7 @@ public class ShadowMappingStage extends Creatable {
         noiseTexture = glFactory.createTexture();
         depthFrameBuffer = glFactory.createFrameBuffer();
         frameBuffer = glFactory.createFrameBuffer();
+        shadowsOutput = glFactory.createTexture();
     }
 
     @Override
@@ -139,6 +117,11 @@ public class ShadowMappingStage extends Creatable {
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
+        // Create the shadows texture
+        shadowsOutput.setFormat(Format.RED);
+        shadowsOutput.setInternalFormat(InternalFormat.R8);
+        shadowsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        shadowsOutput.create();
         // Create the depth texture
         lightDepthsTexture.setFormat(Format.DEPTH);
         lightDepthsTexture.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
@@ -191,9 +174,7 @@ public class ShadowMappingStage extends Creatable {
         noiseTexture.destroy();
         depthFrameBuffer.destroy();
         frameBuffer.destroy();
-        if (shadowsOutput.isCreated()) {
-            shadowsOutput.destroy();
-        }
+        shadowsOutput.destroy();
         super.destroy();
     }
 
@@ -228,11 +209,6 @@ public class ShadowMappingStage extends Creatable {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
-    }
-
-    public void setShadowsOutput(Texture texture) {
-        texture.checkCreated();
-        shadowsOutput = texture;
     }
 
     public Texture getShadowsOutput() {

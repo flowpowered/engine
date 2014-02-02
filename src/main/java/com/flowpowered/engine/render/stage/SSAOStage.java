@@ -21,29 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/**
- * This file is part of Client, licensed under the MIT License (MIT).
- *
- * Copyright (c) 2013 Spoutcraft <http://spoutcraft.org/>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package com.flowpowered.engine.render.stage;
 
 import java.nio.ByteBuffer;
@@ -78,9 +55,9 @@ public class SSAOStage extends Creatable {
     private final Material material;
     private final Texture noiseTexture;
     private final FrameBuffer frameBuffer;
+    private final Texture occlusionsOutput;
     private Texture normalsInput;
     private Texture depthsInput;
-    private Texture occlusionsOutput;
     private Pipeline pipeline;
     private int kernelSize = 8;
     private float radius = 0.5f;
@@ -94,6 +71,7 @@ public class SSAOStage extends Creatable {
         final GLFactory glFactory = renderer.getGLFactory();
         noiseTexture = glFactory.createTexture();
         frameBuffer = glFactory.createFrameBuffer();
+        occlusionsOutput = glFactory.createTexture();
     }
 
     @Override
@@ -123,12 +101,17 @@ public class SSAOStage extends Creatable {
             noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
             noiseTextureBuffer.put((byte) (noise.getFloorZ() & 0xff));
         }
-        // Create the texture
+        // Create the noise texture
         noiseTexture.setFormat(Format.RGB);
         noiseTexture.setInternalFormat(InternalFormat.RGB8);
         noiseTextureBuffer.flip();
         noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
+        // Create the occlusions texture
+        occlusionsOutput.setFormat(Format.RED);
+        occlusionsOutput.setInternalFormat(InternalFormat.R8);
+        occlusionsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        occlusionsOutput.create();
         // Create the material
         material.addTexture(0, normalsInput);
         material.addTexture(1, depthsInput);
@@ -196,11 +179,6 @@ public class SSAOStage extends Creatable {
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
-    }
-
-    public void setOcclusionOutput(Texture texture) {
-        texture.checkCreated();
-        occlusionsOutput = texture;
     }
 
     public Texture getOcclusionsOutput() {

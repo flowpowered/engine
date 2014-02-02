@@ -36,6 +36,10 @@ import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.FilterMode;
+import org.spout.renderer.api.gl.Texture.Format;
+import org.spout.renderer.api.gl.Texture.InternalFormat;
+import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
 /**
@@ -44,11 +48,11 @@ import org.spout.renderer.api.model.Model;
 public class RenderModelsStage extends Creatable {
     private final FlowRenderer renderer;
     private final FrameBuffer frameBuffer;
-    private Texture colorsOutput;
-    private Texture normalsOutput;
-    private Texture depthsOutput;
-    private Texture vertexNormalsOutput;
-    private Texture materialsOutput;
+    private final Texture colorsOutput;
+    private final Texture normalsOutput;
+    private final Texture depthsOutput;
+    private final Texture vertexNormalsOutput;
+    private final Texture materialsOutput;
     private final List<Model> models = new ArrayList<>();
     private final Camera camera = Camera.createPerspective(FlowRenderer.FIELD_OF_VIEW, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY(), FlowRenderer.NEAR_PLANE, FlowRenderer.FAR_PLANE);
     private Pipeline pipeline;
@@ -56,6 +60,11 @@ public class RenderModelsStage extends Creatable {
     public RenderModelsStage(FlowRenderer renderer) {
         this.renderer = renderer;
         final GLFactory glFactory = renderer.getGLFactory();
+        colorsOutput = glFactory.createTexture();
+        normalsOutput = glFactory.createTexture();
+        depthsOutput = glFactory.createTexture();
+        vertexNormalsOutput = glFactory.createTexture();
+        materialsOutput = glFactory.createTexture();
         frameBuffer = glFactory.createFrameBuffer();
     }
 
@@ -64,6 +73,37 @@ public class RenderModelsStage extends Creatable {
         if (isCreated()) {
             throw new IllegalStateException("Render models stage has already been created");
         }
+        // Create the colors texture
+        colorsOutput.setFormat(Format.RGBA);
+        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
+        colorsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
+        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        colorsOutput.setMagFilter(FilterMode.LINEAR);
+        colorsOutput.setMinFilter(FilterMode.LINEAR);
+        colorsOutput.create();
+        // Create the normals texture
+        normalsOutput.setFormat(Format.RGBA);
+        normalsOutput.setInternalFormat(InternalFormat.RGBA8);
+        normalsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        normalsOutput.create();
+        // Create the detphs texture
+        depthsOutput.setFormat(Format.DEPTH);
+        depthsOutput.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
+        depthsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        depthsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
+        depthsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        depthsOutput.create();
+        // Create the vertex normals texture
+        vertexNormalsOutput.setFormat(Format.RGBA);
+        vertexNormalsOutput.setInternalFormat(InternalFormat.RGBA8);
+        vertexNormalsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        vertexNormalsOutput.create();
+        // Create the materials texture
+        materialsOutput.setFormat(Format.RGBA);
+        materialsOutput.setInternalFormat(InternalFormat.RGBA8);
+        materialsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        materialsOutput.create();
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR1, normalsOutput);
@@ -81,21 +121,11 @@ public class RenderModelsStage extends Creatable {
     public void destroy() {
         checkCreated();
         frameBuffer.destroy();
-        if (colorsOutput.isCreated()) {
-            colorsOutput.destroy();
-        }
-        if (normalsOutput.isCreated()) {
-            normalsOutput.destroy();
-        }
-        if (depthsOutput.isCreated()) {
-            depthsOutput.destroy();
-        }
-        if (vertexNormalsOutput.isCreated()) {
-            vertexNormalsOutput.destroy();
-        }
-        if (materialsOutput.isCreated()) {
-            materialsOutput.destroy();
-        }
+        colorsOutput.destroy();
+        normalsOutput.destroy();
+        depthsOutput.destroy();
+        vertexNormalsOutput.destroy();
+        materialsOutput.destroy();
         super.destroy();
     }
 
@@ -108,45 +138,20 @@ public class RenderModelsStage extends Creatable {
         return colorsOutput;
     }
 
-    public void setColorsOutput(Texture texture) {
-        texture.checkCreated();
-        colorsOutput = texture;
-    }
-
     public Texture getNormalsOutput() {
         return normalsOutput;
-    }
-
-    public void setNormalsOutput(Texture texture) {
-        texture.checkCreated();
-        normalsOutput = texture;
     }
 
     public Texture getDepthsOutput() {
         return depthsOutput;
     }
 
-    public void setDepthsOutput(Texture texture) {
-        texture.checkCreated();
-        depthsOutput = texture;
-    }
-
     public Texture getVertexNormalsOutput() {
         return vertexNormalsOutput;
     }
 
-    public void setVertexNormalsOutput(Texture texture) {
-        texture.checkCreated();
-        vertexNormalsOutput = texture;
-    }
-
     public Texture getMaterialsOutput() {
         return materialsOutput;
-    }
-
-    public void setMaterialsOutput(Texture texture) {
-        texture.checkCreated();
-        materialsOutput = texture;
     }
 
     public Camera getCamera() {

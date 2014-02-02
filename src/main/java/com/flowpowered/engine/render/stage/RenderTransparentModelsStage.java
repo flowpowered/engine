@@ -55,8 +55,8 @@ public class RenderTransparentModelsStage extends Creatable {
     private final FrameBuffer weightedSumFrameBuffer;
     private final FrameBuffer frameBuffer;
     private Texture depthsInput;
-    private Texture colorsOutput;
-    private Texture velocitiesOutput;
+    private Texture colorsInput;
+    private Texture velocitiesInput;
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
@@ -104,8 +104,8 @@ public class RenderTransparentModelsStage extends Creatable {
         weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, depthsInput);
         weightedSumFrameBuffer.create();
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
-        //frameBuffer.attach(AttachmentPoint.COLOR1, velocitiesOutput);
+        frameBuffer.attach(AttachmentPoint.COLOR0, colorsInput);
+        //frameBuffer.attach(AttachmentPoint.COLOR1, velocitiesInput);
         frameBuffer.create();
         // Create the pipeline
         pipeline = new PipelineBuilder().disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
@@ -124,12 +124,6 @@ public class RenderTransparentModelsStage extends Creatable {
         layerCounts.destroy();
         weightedSumFrameBuffer.destroy();
         frameBuffer.destroy();
-        if (colorsOutput.isCreated()) {
-            colorsOutput.destroy();
-        }
-        //if (velocitiesOutput.isCreated()) {
-        //    velocitiesOutput.destroy();
-        //}
         super.destroy();
     }
 
@@ -143,22 +137,22 @@ public class RenderTransparentModelsStage extends Creatable {
         depthsInput = texture;
     }
 
-    public Texture getColorsOutput() {
-        return colorsOutput;
+    public Texture getColorsInput() {
+        return colorsInput;
     }
 
-    public void setColorsOutput(Texture texture) {
+    public void setColorsInput(Texture texture) {
         texture.checkCreated();
-        colorsOutput = texture;
+        colorsInput = texture;
     }
 
-    public Texture getVelocitiesOutput() {
-        return velocitiesOutput;
+    public Texture getVelocitiesInput() {
+        return velocitiesInput;
     }
 
-    public void setVelocitiesOutput(Texture texture) {
+    public void setVelocitiesInput(Texture texture) {
         texture.checkCreated();
-        velocitiesOutput = texture;
+        velocitiesInput = texture;
     }
 
     /**

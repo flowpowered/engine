@@ -34,7 +34,12 @@ import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
+import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.FilterMode;
+import org.spout.renderer.api.gl.Texture.Format;
+import org.spout.renderer.api.gl.Texture.InternalFormat;
+import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
 /**
@@ -44,19 +49,21 @@ public class LightingStage extends Creatable {
     private final FlowRenderer renderer;
     private final Material material;
     private final FrameBuffer frameBuffer;
+    private final Texture colorsOutput;
     private Texture colorsInput;
     private Texture normalsInput;
     private Texture depthsInput;
     private Texture materialInput;
     private Texture occlusionsInput;
     private Texture shadowsInput;
-    private Texture colorsOutput;
     private Pipeline pipeline;
 
     public LightingStage(FlowRenderer renderer) {
         this.renderer = renderer;
         material = new Material(renderer.getProgram("lighting"));
-        frameBuffer = renderer.getGLFactory().createFrameBuffer();
+        final GLFactory glFactory = renderer.getGLFactory();
+        frameBuffer = glFactory.createFrameBuffer();
+        colorsOutput = glFactory.createTexture();
     }
 
     @Override
@@ -64,6 +71,15 @@ public class LightingStage extends Creatable {
         if (isCreated()) {
             throw new IllegalStateException("Lighting stage has already been created");
         }
+        // Create the colors texture
+        colorsOutput.setFormat(Format.RGBA);
+        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
+        colorsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
+        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        colorsOutput.setMagFilter(FilterMode.LINEAR);
+        colorsOutput.setMinFilter(FilterMode.LINEAR);
+        colorsOutput.create();
         // Create the material
         material.addTexture(0, colorsInput);
         material.addTexture(1, normalsInput);
@@ -89,9 +105,7 @@ public class LightingStage extends Creatable {
     @Override
     public void destroy() {
         checkCreated();
-        if (colorsOutput.isCreated()) {
-            colorsOutput.destroy();
-        }
+        colorsOutput.destroy();
         super.destroy();
     }
 
@@ -132,10 +146,5 @@ public class LightingStage extends Creatable {
 
     public Texture getColorsOutput() {
         return colorsOutput;
-    }
-
-    public void setColorsOutput(Texture texture) {
-        texture.checkCreated();
-        colorsOutput = texture;
     }
 }
