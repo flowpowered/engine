@@ -187,11 +187,12 @@ public class FlowPlayer implements Player {
         this.transformProvider = provider;
     }
 
-    public void setInput(List<InputSnapshot> inputList) {
-        input = inputList;
-    }
-
+    @Override
     public List<InputSnapshot> getInput() {
         return Collections.unmodifiableList(input);
+    }
+
+    public void setInput(List<InputSnapshot> inputList) {
+        input = inputList;
     }
 }
