@@ -36,6 +36,8 @@ import com.flowpowered.math.vector.Vector3f;
 
 public class Point implements Serializable {
     public static final Point INVALID = new Point(null, Vector3f.ZERO);
+    private static final Field worldField = getWorldField();
+
     private final transient World world;
     private final Vector3f vector;
 
@@ -106,16 +108,25 @@ public class Point implements Serializable {
         in.defaultReadObject();
         String world = in.readUTF();
         World w = Flow.getEngine().getWorldManager().getWorld(world, true);
-        try {
-            Field field;
-
-            field = Point.class.getDeclaredField("world");
-            field.setAccessible(true);
-            field.set(this, w);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            if (Flow.debugMode()) {
-                e.printStackTrace();
+        if (worldField != null) {
+            try {
+                worldField.set(this, w);
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                if (Flow.getEngine().debugMode()) {
+                    e.printStackTrace();
+                }
             }
         }
+    }
+
+    private static Field getWorldField() {
+        Field field = null;
+        try {
+            field = Point.class.getDeclaredField("world");
+            field.setAccessible(true);
+        } catch (NoSuchFieldException | SecurityException e) {
+            e.printStackTrace();
+        }
+        return field;
     }
 }

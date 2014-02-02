@@ -148,11 +148,12 @@ public class FlowBlock implements Block {
 
     @Override
     public boolean setMaterial(BlockMaterial material, int data, Cause<?> cause) {
+        FlowChunk chunk = this.getChunk();
         // TODO once stable, remove this
-        if (Flow.getPlatform() != Platform.SERVER) {
+        if (!chunk.getWorld().getEngine().getPlatform().isServer()) {
             throw new UnsupportedOperationException("Temporary lockdown of setMaterial. Server only!");
         }
-        return this.getChunk().setBlockMaterial(x, y, z, material, (short) data, cause);
+        return chunk.setBlockMaterial(x, y, z, material, (short) data, cause);
     }
 
     @Override
