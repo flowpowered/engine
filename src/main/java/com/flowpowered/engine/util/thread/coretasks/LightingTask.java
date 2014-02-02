@@ -28,20 +28,20 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LightingManager;
 
 public class LightingTask extends SequencedManagerRunnableFactory {
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((LightingManager) manager).runLighting(sequence);
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((LightingManager) manager).runLighting(sequence);
+            }
+        };
+    }
 
-	@Override
-	public int getMinSequence() {
-		return 0;
-	}
+    @Override
+    public int getMinSequence() {
+        return 0;
+    }
 
     @Override
     public TickStage getTickStage() {

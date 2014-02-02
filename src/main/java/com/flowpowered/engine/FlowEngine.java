@@ -59,10 +59,10 @@ public abstract class FlowEngine implements Engine {
         this.fileSystem = new FlowFileSystem();
     }
 
-	@Override
-	public String getVersion() {
-		return getClass().getPackage().getImplementationVersion();
-	}
+    @Override
+    public String getVersion() {
+        return getClass().getPackage().getImplementationVersion();
+    }
 
     public void init() {
         // Make sure we log something and let log4j2 initialize before we redirect System.out and System.err

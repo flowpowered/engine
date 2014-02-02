@@ -26,13 +26,13 @@ package com.flowpowered.api.io.regionfile;
 import com.flowpowered.api.io.bytearrayarray.BAAClosedException;
 
 public class SRFClosedException extends BAAClosedException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public SRFClosedException(String message, Throwable t) {
-		super(message, t);
-	}
+    public SRFClosedException(String message, Throwable t) {
+        super(message, t);
+    }
 
-	public SRFClosedException(String message) {
-		super(message);
-	}
+    public SRFClosedException(String message) {
+        super(message);
+    }
 }

@@ -31,48 +31,48 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * A snapshotable object that supports primitive shorts
  */
 public class SnapshotableShort implements Snapshotable {
-	private volatile short next;
-	private short snapshot;
+    private volatile short next;
+    private short snapshot;
 
-	public SnapshotableShort(SnapshotManager manager, short initial) {
-		next = initial;
-		snapshot = initial;
-		manager.add(this);
-	}
+    public SnapshotableShort(SnapshotManager manager, short initial) {
+        next = initial;
+        snapshot = initial;
+        manager.add(this);
+    }
 
-	/**
-	 * Sets the next value for the Snapshotable
-	 */
-	@DelayedWrite
-	public void set(short next) {
-		this.next = next;
-	}
+    /**
+     * Sets the next value for the Snapshotable
+     */
+    @DelayedWrite
+    public void set(short next) {
+        this.next = next;
+    }
 
-	/**
-	 * Gets the snapshot value for
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public short get() {
-		return snapshot;
-	}
+    /**
+     * Gets the snapshot value for
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public short get() {
+        return snapshot;
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the unstable Live "next" value
-	 */
-	@LiveRead
-	public short getLive() {
-		return next;
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the unstable Live "next" value
+     */
+    @LiveRead
+    public short getLive() {
+        return next;
+    }
 
-	/**
-	 * Copies the next value to the snapshot value
-	 */
-	@Override
-	public void copySnapshot() {
-		snapshot = next;
-	}
+    /**
+     * Copies the next value to the snapshot value
+     */
+    @Override
+    public void copySnapshot() {
+        snapshot = next;
+    }
 }

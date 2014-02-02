@@ -25,10 +25,10 @@ package com.flowpowered.api.scheduler;
 
 public interface Scheduler extends TaskManager {
 
-	/**
-	 * Determines if the server is under heavy load.<br> <br> The server is considered under heavy load if the previous tick went over time, or if the current tick has gone over time.
-	 *
-	 * @return true if the server is under heavy load
-	 */
-	public boolean isServerOverloaded();
+    /**
+     * Determines if the server is under heavy load.<br> <br> The server is considered under heavy load if the previous tick went over time, or if the current tick has gone over time.
+     *
+     * @return true if the server is under heavy load
+     */
+    public boolean isServerOverloaded();
 }

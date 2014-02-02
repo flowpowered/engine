@@ -33,43 +33,43 @@ import org.spout.nbt.Tag;
 import org.spout.nbt.util.NBTMapper;
 
 public class UUIDTag extends ListTag<LongTag> {
-	public UUIDTag(String name, UUID u) {
-		super(name, LongTag.class, UUIDToList(u));
-	}
+    public UUIDTag(String name, UUID u) {
+        super(name, LongTag.class, UUIDToList(u));
+    }
 
-	private static List<LongTag> UUIDToList(UUID u) {
-		List<LongTag> list = new ArrayList<>(2);
-		list.add(new LongTag("", u.getMostSignificantBits()));
-		list.add(new LongTag("", u.getLeastSignificantBits()));
-		return list;
-	}
+    private static List<LongTag> UUIDToList(UUID u) {
+        List<LongTag> list = new ArrayList<>(2);
+        list.add(new LongTag("", u.getMostSignificantBits()));
+        list.add(new LongTag("", u.getLeastSignificantBits()));
+        return list;
+    }
 
-	@SuppressWarnings ("unchecked")
-	public static UUID getValue(Tag<?> tag) {
-		try {
-			return getValue((ListTag<LongTag>) tag);
-		} catch (ClassCastException e) {
-			return null;
-		}
-	}
+    @SuppressWarnings ("unchecked")
+    public static UUID getValue(Tag<?> tag) {
+        try {
+            return getValue((ListTag<LongTag>) tag);
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
 
-	public static UUID getValue(ListTag<LongTag> list) {
-		if (list == null) {
-			return null;
-		}
-		return getValue(list.getValue());
-	}
+    public static UUID getValue(ListTag<LongTag> list) {
+        if (list == null) {
+            return null;
+        }
+        return getValue(list.getValue());
+    }
 
-	public static UUID getValue(List<LongTag> list) {
-		if (list == null || list.size() != 2) {
-			return null;
-		}
-		Long m = NBTMapper.toTagValue(list.get(0), Long.class, null);
-		Long l = NBTMapper.toTagValue(list.get(1), Long.class, null);
+    public static UUID getValue(List<LongTag> list) {
+        if (list == null || list.size() != 2) {
+            return null;
+        }
+        Long m = NBTMapper.toTagValue(list.get(0), Long.class, null);
+        Long l = NBTMapper.toTagValue(list.get(1), Long.class, null);
 
-		if (m == null || l == null) {
-			return null;
-		}
-		return new UUID(m, l);
-	}
+        if (m == null || l == null) {
+            return null;
+        }
+        return new UUID(m, l);
+    }
 }

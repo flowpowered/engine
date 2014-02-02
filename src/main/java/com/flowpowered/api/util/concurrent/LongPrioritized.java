@@ -24,8 +24,8 @@
 package com.flowpowered.api.util.concurrent;
 
 public interface LongPrioritized {
-	/**
-	 * Gets the priority of this object
-	 */
-	public long getPriority();
+    /**
+     * Gets the priority of this object
+     */
+    public long getPriority();
 }

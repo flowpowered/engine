@@ -24,8 +24,8 @@
 package com.flowpowered.api.geo.cuboid;
 
 public interface BlockContainer extends CubicContainer {
-	/**
-	 * Sets the state for the next block in the sequence.
-	 */
-	public void setBlockFullState(int state);
+    /**
+     * Sets the state for the next block in the sequence.
+     */
+    public void setBlockFullState(int state);
 }

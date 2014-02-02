@@ -29,19 +29,19 @@ import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.material.BlockMaterial;
 
 public final class Air extends BlockMaterial {
-	@SuppressWarnings ("unchecked")
-	public Air() {
-		super("Air", (short) 0, null);
-		this.setTransparent().setInvisible();
-	}
+    @SuppressWarnings ("unchecked")
+    public Air() {
+        super("Air", (short) 0, null);
+        this.setTransparent().setInvisible();
+    }
 
-	@Override
-	public boolean isPlacementObstacle() {
-		return false;
-	}
+    @Override
+    public boolean isPlacementObstacle() {
+        return false;
+    }
 
-	@Override
-	public boolean onDestroy(Block block, Cause<?> cause) {
-		return false;
-	}
+    @Override
+    public boolean onDestroy(Block block, Cause<?> cause) {
+        return false;
+    }
 }

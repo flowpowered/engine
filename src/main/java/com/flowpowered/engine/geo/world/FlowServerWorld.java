@@ -45,14 +45,14 @@ import com.flowpowered.engine.filesystem.FlowFileSystem;
 public class FlowServerWorld extends FlowWorld implements ServerWorld {
     private final WorldGenerator generator;
     private final long seed;
-	/**
-	 * The spawn position.
-	 */
-	private final AtomicReference<Transform> spawnLocation = new AtomicReference<>();
-	/**
-	 * RegionFile manager for the world
-	 */
-	private final RegionFileManager regionFileManager;
+    /**
+     * The spawn position.
+     */
+    private final AtomicReference<Transform> spawnLocation = new AtomicReference<>();
+    /**
+     * RegionFile manager for the world
+     */
+    private final RegionFileManager regionFileManager;
 
     public FlowServerWorld(FlowEngine engine, String name, UUID uid, long age, WorldGenerator generator, long seed) {
         super(engine, name, uid, age);
@@ -121,10 +121,10 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
         getChunk(chunk.getFloorX(), chunk.getFloorY(), chunk.getFloorZ(), LoadOption.LOAD_GEN_NOWAIT);
     }
 
-	public BAAWrapper getRegionFile(int rx, int ry, int rz) {
-		if (regionFileManager == null) {
-			throw new IllegalStateException("Client does not have file manager");
-		}
-		return regionFileManager.getBAAWrapper(rx, ry, rz);
-	}
+    public BAAWrapper getRegionFile(int rx, int ry, int rz) {
+        if (regionFileManager == null) {
+            throw new IllegalStateException("Client does not have file manager");
+        }
+        return regionFileManager.getBAAWrapper(rx, ry, rz);
+    }
 }

@@ -29,8 +29,8 @@ import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.math.Vector3;
 
 public class Solid extends BlockMaterial {
-	public Solid(String name) {
-		super((short) 0, name, new BoxShape(new Vector3(1f, 1f, 1f)));
-		setHardness(100);
-	}
+    public Solid(String name) {
+        super((short) 0, name, new BoxShape(new Vector3(1f, 1f, 1f)));
+        setHardness(100);
+    }
 }

@@ -32,18 +32,18 @@ import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
  * Generates an empty world using air blocks
  */
 public class EmptyWorldGenerator implements WorldGenerator {
-	@Override
-	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-		blockData.flood(BlockMaterial.AIR);
-	}
+    @Override
+    public void generate(CuboidBlockMaterialBuffer blockData, World world) {
+        blockData.flood(BlockMaterial.AIR);
+    }
 
-	@Override
-	public Populator[] getPopulators() {
-		return new Populator[0];
-	}
+    @Override
+    public Populator[] getPopulators() {
+        return new Populator[0];
+    }
 
-	@Override
-	public String getName() {
-		return "EmptyWorld";
-	}
+    @Override
+    public String getName() {
+        return "EmptyWorld";
+    }
 }

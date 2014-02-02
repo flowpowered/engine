@@ -30,23 +30,23 @@ import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.StartTickManager;
 
 public class StartTickTask extends LocalManagerRunnableFactory {
-	private final int stage;
+    private final int stage;
     private final AtomicLong delta;
 
-	public StartTickTask(int stage, AtomicLong delta) {
-		this.stage = stage;
+    public StartTickTask(int stage, AtomicLong delta) {
+        this.stage = stage;
         this.delta = delta;
-	}
+    }
 
-	@Override
-	public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
-		return new ManagerRunnable(manager) {
-			@Override
-			public void runTask() {
-				((StartTickManager) manager).startTickRun(stage, delta.get());
-			}
-		};
-	}
+    @Override
+    public ManagerRunnable getTask(final AsyncManager manager, final int sequence) {
+        return new ManagerRunnable(manager) {
+            @Override
+            public void runTask() {
+                ((StartTickManager) manager).startTickRun(stage, delta.get());
+            }
+        };
+    }
 
     @Override
     public TickStage getTickStage() {

@@ -39,114 +39,114 @@ import com.flowpowered.api.entity.EntitySnapshot;
 import com.flowpowered.api.geo.discrete.Transform;
 
 public class FlowEntitySnapshot implements EntitySnapshot {
-	private final WeakReference<Entity> entity;
-	private final int entityId;
-	private final UUID uniqueId;
-	private final Transform location;
-	private final String worldName;
-	private final UUID worldId;
-	private final SerializableMap dataMap;
-	private final boolean savable;
-	private final List<Class<? extends Component>> components;
-	private final long time = System.currentTimeMillis();
+    private final WeakReference<Entity> entity;
+    private final int entityId;
+    private final UUID uniqueId;
+    private final Transform location;
+    private final String worldName;
+    private final UUID worldId;
+    private final SerializableMap dataMap;
+    private final boolean savable;
+    private final List<Class<? extends Component>> components;
+    private final long time = System.currentTimeMillis();
 
-	public FlowEntitySnapshot(Entity e) {
-		if (e.isRemoved()) {
-			throw new IllegalArgumentException("Can not take a snapshot of a removed entity");
-		}
+    public FlowEntitySnapshot(Entity e) {
+        if (e.isRemoved()) {
+            throw new IllegalArgumentException("Can not take a snapshot of a removed entity");
+        }
 
-		this.entity = new WeakReference<>(e);
-		this.entityId = e.getId();
-		this.uniqueId = e.getUID();
-		//this.location = e.getPhysics().getTransform();
+        this.entity = new WeakReference<>(e);
+        this.entityId = e.getId();
+        this.uniqueId = e.getUID();
+        //this.location = e.getPhysics().getTransform();
         this.location = null;
-		this.worldName = e.getWorld().getName();
-		this.worldId = e.getWorld().getUID();
-		this.savable = e.isSavable();
-		if (e.getData().size() > 0) {
-			this.dataMap = e.getData().deepCopy();
-		} else {
-			this.dataMap = new ManagedHashMap();
-		}
-		components = new ArrayList<>();
-		for (Component c : e.values()) {
-			if (c.isDetachable()) {
-				this.components.add(c.getClass());
-			}
-		}
-	}
+        this.worldName = e.getWorld().getName();
+        this.worldId = e.getWorld().getUID();
+        this.savable = e.isSavable();
+        if (e.getData().size() > 0) {
+            this.dataMap = e.getData().deepCopy();
+        } else {
+            this.dataMap = new ManagedHashMap();
+        }
+        components = new ArrayList<>();
+        for (Component c : e.values()) {
+            if (c.isDetachable()) {
+                this.components.add(c.getClass());
+            }
+        }
+    }
 
-	public FlowEntitySnapshot(UUID id, Transform t, UUID worldId, byte[] dataMap, List<Class<? extends Component>> types) {
-		this.entity = new WeakReference<>(null);
-		this.entityId = -1;
-		this.uniqueId = id;
-		this.location = t;
-		this.worldName = null;
-		this.worldId = worldId;
-		this.savable = true;
-		this.dataMap = new ManagedHashMap();
-		if (dataMap != null) {
-			try {
-				this.dataMap.deserialize(dataMap);
-			} catch (IOException e) {
-				throw new RuntimeException("Unable to deserialize data", e);
-			}
-		}
-		this.components = new ArrayList<>(types);
-	}
+    public FlowEntitySnapshot(UUID id, Transform t, UUID worldId, byte[] dataMap, List<Class<? extends Component>> types) {
+        this.entity = new WeakReference<>(null);
+        this.entityId = -1;
+        this.uniqueId = id;
+        this.location = t;
+        this.worldName = null;
+        this.worldId = worldId;
+        this.savable = true;
+        this.dataMap = new ManagedHashMap();
+        if (dataMap != null) {
+            try {
+                this.dataMap.deserialize(dataMap);
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to deserialize data", e);
+            }
+        }
+        this.components = new ArrayList<>(types);
+    }
 
-	@Override
-	public Entity getReference() {
-		return entity.get();
-	}
+    @Override
+    public Entity getReference() {
+        return entity.get();
+    }
 
-	@Override
-	public final int getId() {
-		return entityId;
-	}
+    @Override
+    public final int getId() {
+        return entityId;
+    }
 
-	@Override
-	public final UUID getUID() {
-		return uniqueId;
-	}
+    @Override
+    public final UUID getUID() {
+        return uniqueId;
+    }
 
-	@Override
-	public final Transform getTransform() {
-		return location;
-	}
+    @Override
+    public final Transform getTransform() {
+        return location;
+    }
 
-	@Override
-	public final UUID getWorldUID() {
-		return worldId;
-	}
+    @Override
+    public final UUID getWorldUID() {
+        return worldId;
+    }
 
-	@Override
-	public String getWorldName() {
-		return worldName;
-	}
+    @Override
+    public String getWorldName() {
+        return worldName;
+    }
 
-	@Override
-	public final SerializableMap getDataMap() {
-		return dataMap;
-	}
+    @Override
+    public final SerializableMap getDataMap() {
+        return dataMap;
+    }
 
-	@Override
-	public boolean isSavable() {
-		return savable;
-	}
+    @Override
+    public boolean isSavable() {
+        return savable;
+    }
 
-	@Override
-	public List<Class<? extends Component>> getComponents() {
-		return components;
-	}
+    @Override
+    public List<Class<? extends Component>> getComponents() {
+        return components;
+    }
 
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 
-	@Override
-	public long getSnapshotTime() {
-		return time;
-	}
+    @Override
+    public long getSnapshotTime() {
+        return time;
+    }
 }

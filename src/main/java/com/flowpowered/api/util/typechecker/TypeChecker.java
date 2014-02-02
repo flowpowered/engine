@@ -27,40 +27,40 @@ import org.spout.nbt.Tag;
 
 public class TypeChecker<T> extends com.flowpowered.commons.typechecker.TypeChecker<T> {
 
-	public TypeChecker(Class<T> clazz) {
-		super(clazz);
-	}
+    public TypeChecker(Class<T> clazz) {
+        super(clazz);
+    }
 
-	/**
-	 * Checks and casts an object contained in a tag to the specified type.
-	 *
-	 * @param tag The Tag containing the object to be checked
-	 *
-	 * @return The object contained in the tag, cast to the specified class
-	 *
-	 * @throws ClassCastException if casting fails
-	 */
-	public final T checkTag(Tag<?> tag) {
-		return check(tag.getValue());
-	}
+    /**
+     * Checks and casts an object contained in a tag to the specified type.
+     *
+     * @param tag The Tag containing the object to be checked
+     *
+     * @return The object contained in the tag, cast to the specified class
+     *
+     * @throws ClassCastException if casting fails
+     */
+    public final T checkTag(Tag<?> tag) {
+        return check(tag.getValue());
+    }
 
-	/**
-	 * Checks and casts an object to the specified type. If casting fails, a default value is returned.
-	 *
-	 * @param tag          The Tag containing the object to be checked
-	 * @param defaultValue The default value to be returned if casting fails
-	 *
-	 * @return The object contained in the tag, cast to the specified class, or the default value, if casting fails
-	 */
-	public final T checkTag(Tag<?> tag, T defaultValue) {
-		if (tag == null) {
-			return defaultValue;
-		}
+    /**
+     * Checks and casts an object to the specified type. If casting fails, a default value is returned.
+     *
+     * @param tag          The Tag containing the object to be checked
+     * @param defaultValue The default value to be returned if casting fails
+     *
+     * @return The object contained in the tag, cast to the specified class, or the default value, if casting fails
+     */
+    public final T checkTag(Tag<?> tag, T defaultValue) {
+        if (tag == null) {
+            return defaultValue;
+        }
 
-		try {
-			return check(tag.getValue());
-		} catch (ClassCastException e) {
-			return defaultValue;
-		}
-	}
+        try {
+            return check(tag.getValue());
+        } catch (ClassCastException e) {
+            return defaultValue;
+        }
+    }
 }

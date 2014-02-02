@@ -24,14 +24,14 @@
 package com.flowpowered.api.util.cuboid.procedure;
 
 public interface CuboidBlockMaterialProcedure {
-	/**
-	 * Procedure for iterating over a CuboidBlockMaterialBuffer
-	 *
-	 * @param x the x coordinate
-	 * @param y the y coordinate
-	 * @param z the z coordinate
-	 * @param id the id
-	 * @param data the data
-	 */
-	public boolean execute(int x, int y, int z, short id, short data);
+    /**
+     * Procedure for iterating over a CuboidBlockMaterialBuffer
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @param id the id
+     * @param data the data
+     */
+    public boolean execute(int x, int y, int z, short id, short data);
 }

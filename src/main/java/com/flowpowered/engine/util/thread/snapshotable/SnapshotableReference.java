@@ -35,64 +35,64 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
  * @param <T> the underlying type
  */
 public class SnapshotableReference<T> implements Snapshotable {
-	private AtomicReference<T> next = new AtomicReference<>();
-	private T snapshot;
+    private AtomicReference<T> next = new AtomicReference<>();
+    private T snapshot;
 
-	public SnapshotableReference(SnapshotManager manager, T initial) {
-		next.set(initial);
-		snapshot = initial;
-		manager.add(this);
-	}
+    public SnapshotableReference(SnapshotManager manager, T initial) {
+        next.set(initial);
+        snapshot = initial;
+        manager.add(this);
+    }
 
-	/**
-	 * Sets the next value for the Snapshotable
-	 */
-	@DelayedWrite
-	public void set(T next) {
-		this.next.set(next);
-	}
+    /**
+     * Sets the next value for the Snapshotable
+     */
+    @DelayedWrite
+    public void set(T next) {
+        this.next.set(next);
+    }
 
-	/**
-	 * Sets the live value to update, if the live value is equal to expect.
-	 *
-	 * @param expect the expected value
-	 * @param update the new value
-	 * @return true on success
-	 */
-	@DelayedWrite
-	public boolean compareAndSet(T expect, T update) {
-		return next.compareAndSet(expect, update);
-	}
+    /**
+     * Sets the live value to update, if the live value is equal to expect.
+     *
+     * @param expect the expected value
+     * @param update the new value
+     * @return true on success
+     */
+    @DelayedWrite
+    public boolean compareAndSet(T expect, T update) {
+        return next.compareAndSet(expect, update);
+    }
 
-	/**
-	 * Gets the snapshot value for
-	 *
-	 * @return the stable snapshot value
-	 */
-	@SnapshotRead
-	public T get() {
-		return snapshot;
-	}
+    /**
+     * Gets the snapshot value for
+     *
+     * @return the stable snapshot value
+     */
+    @SnapshotRead
+    public T get() {
+        return snapshot;
+    }
 
-	/**
-	 * Gets the live value
-	 *
-	 * @return the unstable Live "next" value
-	 */
-	@LiveRead
-	public T getLive() {
-		return next.get();
-	}
+    /**
+     * Gets the live value
+     *
+     * @return the unstable Live "next" value
+     */
+    @LiveRead
+    public T getLive() {
+        return next.get();
+    }
 
-	public boolean isDirty() {
-		return snapshot != next.get();
-	}
+    public boolean isDirty() {
+        return snapshot != next.get();
+    }
 
-	/**
-	 * Copies the next value to the snapshot value
-	 */
-	@Override
-	public void copySnapshot() {
-		snapshot = next.get();
-	}
+    /**
+     * Copies the next value to the snapshot value
+     */
+    @Override
+    public void copySnapshot() {
+        snapshot = next.get();
+    }
 }

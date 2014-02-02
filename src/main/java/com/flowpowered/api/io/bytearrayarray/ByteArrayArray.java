@@ -32,61 +32,61 @@ import java.io.OutputStream;
  * array.<br> <br> The number of blocks in the array is determined at creation.
  */
 public interface ByteArrayArray {
-	/**
-	 * Gets a DataInputStream for reading a block.<br> <br> This method creates a snapshot of the block.
-	 *
-	 * @param i the index of the block
-	 * @return a DataInputStream for the block
-	 * @throws IOException on error
-	 */
-	public InputStream getInputStream(int i) throws IOException;
+    /**
+     * Gets a DataInputStream for reading a block.<br> <br> This method creates a snapshot of the block.
+     *
+     * @param i the index of the block
+     * @return a DataInputStream for the block
+     * @throws IOException on error
+     */
+    public InputStream getInputStream(int i) throws IOException;
 
-	/**
-	 * Gets a DataOutputStream for writing to a block.<br> <br> WARNING:  This locks the block until the output stream is closed.<br>
-	 *
-	 * @param i the block index
-	 * @return a DataOutputStream for the block
-	 */
-	public OutputStream getOutputStream(int i) throws IOException;
+    /**
+     * Gets a DataOutputStream for writing to a block.<br> <br> WARNING:  This locks the block until the output stream is closed.<br>
+     *
+     * @param i the block index
+     * @return a DataOutputStream for the block
+     */
+    public OutputStream getOutputStream(int i) throws IOException;
 
-	/**
-	 * Attempts to close the map.  This method will only succeed if no block DataOutputStreams are active.
-	 *
-	 * @return true on success
-	 */
-	public boolean attemptClose() throws IOException;
+    /**
+     * Attempts to close the map.  This method will only succeed if no block DataOutputStreams are active.
+     *
+     * @return true on success
+     */
+    public boolean attemptClose() throws IOException;
 
-	/**
-	 * Checks if the access timeout has expired
-	 *
-	 * @return true on timeout
-	 */
-	public boolean isTimedOut();
+    /**
+     * Checks if the access timeout has expired
+     *
+     * @return true on timeout
+     */
+    public boolean isTimedOut();
 
-	/**
-	 * Attempts to close map if the file has timed out.<br> <br> This will fail if there are any open DataOutputStreams
-	 */
-	public void closeIfTimedOut() throws IOException;
+    /**
+     * Attempts to close map if the file has timed out.<br> <br> This will fail if there are any open DataOutputStreams
+     */
+    public void closeIfTimedOut() throws IOException;
 
-	/**
-	 * Gets if the map is closed
-	 *
-	 * @return true if the file is closed
-	 */
-	public boolean isClosed();
+    /**
+     * Gets if the map is closed
+     *
+     * @return true if the file is closed
+     */
+    public boolean isClosed();
 
-	/**
-	 * Checks if any data exists at the block index.
-	 *
-	 * @param i the block index
-	 * @return true if it exists
-	 */
-	boolean exists(int i) throws IOException;
+    /**
+     * Checks if any data exists at the block index.
+     *
+     * @param i the block index
+     * @return true if it exists
+     */
+    boolean exists(int i) throws IOException;
 
-	/**
-	 * Deletes the data at the block index.
-	 *
-	 * @param i the block index
-	 */
-	void delete(int i) throws IOException;
+    /**
+     * Deletes the data at the block index.
+     *
+     * @param i the block index
+     */
+    void delete(int i) throws IOException;
 }

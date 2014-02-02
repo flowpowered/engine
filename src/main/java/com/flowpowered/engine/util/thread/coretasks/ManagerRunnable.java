@@ -28,20 +28,20 @@ import java.util.concurrent.Callable;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
 public abstract class ManagerRunnable implements Callable<Void> {
-	private final AsyncManager manager;
+    private final AsyncManager manager;
 
-	public ManagerRunnable(AsyncManager manager) {
-		this.manager = manager;
-	}
+    public ManagerRunnable(AsyncManager manager) {
+        this.manager = manager;
+    }
 
-	@Override
-	public final Void call() {
-		manager.setExecutionThread(Thread.currentThread());
+    @Override
+    public final Void call() {
+        manager.setExecutionThread(Thread.currentThread());
         runTask();
         return null;
-	}
+    }
 
-	protected abstract void runTask();
+    protected abstract void runTask();
 
     @Override
     public int hashCode() {

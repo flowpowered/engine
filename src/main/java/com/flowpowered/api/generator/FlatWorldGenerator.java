@@ -31,34 +31,34 @@ import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
  * Generates a flat world of a material
  */
 public class FlatWorldGenerator implements WorldGenerator {
-	private final BlockMaterial material;
+    private final BlockMaterial material;
 
-	public FlatWorldGenerator() {
-		material = BlockMaterial.SOLID_BLUE;
-	}
+    public FlatWorldGenerator() {
+        material = BlockMaterial.SOLID_BLUE;
+    }
 
-	public FlatWorldGenerator(BlockMaterial material) {
-		this.material = material;
-	}
+    public FlatWorldGenerator(BlockMaterial material) {
+        this.material = material;
+    }
 
-	@Override
-	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
+    @Override
+    public void generate(CuboidBlockMaterialBuffer blockData, World world) {
         int flooredY = blockData.getBase().getFloorY();
-		if (flooredY < 0) {
+        if (flooredY < 0) {
             blockData.setHorizontalLayer(flooredY, (blockData.getSize().getFloorY() / 2), material);
-			blockData.flood(material);
-		} else {
+            blockData.flood(material);
+        } else {
             blockData.flood(BlockMaterial.AIR);
         }
-	}
+    }
 
-	@Override
-	public Populator[] getPopulators() {
-		return new Populator[0];
-	}
+    @Override
+    public Populator[] getPopulators() {
+        return new Populator[0];
+    }
 
-	@Override
-	public String getName() {
-		return "FlatWorld";
+    @Override
+    public String getName() {
+        return "FlatWorld";
     }
 }

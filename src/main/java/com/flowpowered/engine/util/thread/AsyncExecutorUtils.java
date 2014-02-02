@@ -35,58 +35,58 @@ import org.apache.logging.log4j.Logger;
 import com.flowpowered.api.Flow;
 
 public class AsyncExecutorUtils {
-	private static final String LINE = "------------------------------";
+    private static final String LINE = "------------------------------";
 
-	/**
-	 * Logs all threads, the thread details, and active stack traces
-	 */
-	public static void dumpAllStacks() {
-		Logger log = Flow.getLogger();
-		Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
-		Iterator<Entry<Thread, StackTraceElement[]>> i = traces.entrySet().iterator();
-		while (i.hasNext()) {
-			Entry<Thread, StackTraceElement[]> entry = i.next();
-			Thread thread = entry.getKey();
-			log.info(LINE);
+    /**
+     * Logs all threads, the thread details, and active stack traces
+     */
+    public static void dumpAllStacks() {
+        Logger log = Flow.getLogger();
+        Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
+        Iterator<Entry<Thread, StackTraceElement[]>> i = traces.entrySet().iterator();
+        while (i.hasNext()) {
+            Entry<Thread, StackTraceElement[]> entry = i.next();
+            Thread thread = entry.getKey();
+            log.info(LINE);
 
-			log.info("Current Thread: " + thread.getName());
-			log.info("    PID: " + thread.getId() + " | Alive: " + thread.isAlive() + " | State: " + thread.getState());
-			log.info("    Stack:");
-			StackTraceElement[] stack = entry.getValue();
-			for (int line = 0; line < stack.length; line++) {
-				log.info("        " + stack[line].toString());
-			}
-		}
-		log.info(LINE);
-	}
+            log.info("Current Thread: " + thread.getName());
+            log.info("    PID: " + thread.getId() + " | Alive: " + thread.isAlive() + " | State: " + thread.getState());
+            log.info("    Stack:");
+            StackTraceElement[] stack = entry.getValue();
+            for (int line = 0; line < stack.length; line++) {
+                log.info("        " + stack[line].toString());
+            }
+        }
+        log.info(LINE);
+    }
 
-	/**
-	 * Scans for deadlocked threads
-	 */
-	public static void checkForDeadlocks() {
-		Logger log = Flow.getLogger();
-		ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
-		long[] ids = tmx.findDeadlockedThreads();
-		if (ids != null) {
-			log.info("Checking for deadlocks");
-			ThreadInfo[] infos = tmx.getThreadInfo(ids, true, true);
-			log.info("The following threads are deadlocked:");
-			for (ThreadInfo ti : infos) {
-				log.info(ti.toString());
-			}
-		}
-	}
+    /**
+     * Scans for deadlocked threads
+     */
+    public static void checkForDeadlocks() {
+        Logger log = Flow.getLogger();
+        ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+        long[] ids = tmx.findDeadlockedThreads();
+        if (ids != null) {
+            log.info("Checking for deadlocks");
+            ThreadInfo[] infos = tmx.getThreadInfo(ids, true, true);
+            log.info("The following threads are deadlocked:");
+            for (ThreadInfo ti : infos) {
+                log.info(ti.toString());
+            }
+        }
+    }
 
-	/**
-	 * Dumps the stack for the given Thread
-	 *
-	 * @param t the thread
-	 */
-	public static void dumpStackTrace(Thread t) {
-		StackTraceElement[] stackTrace = t.getStackTrace();
-		Flow.getLogger().info("Stack trace for Thread " + t.getName());
-		for (StackTraceElement e : stackTrace) {
-			Flow.getLogger().info("\tat " + e);
-		}
-	}
+    /**
+     * Dumps the stack for the given Thread
+     *
+     * @param t the thread
+     */
+    public static void dumpStackTrace(Thread t) {
+        StackTraceElement[] stackTrace = t.getStackTrace();
+        Flow.getLogger().info("Stack trace for Thread " + t.getName());
+        for (StackTraceElement e : stackTrace) {
+            Flow.getLogger().info("\tat " + e);
+        }
+    }
 }

@@ -33,57 +33,57 @@ import org.spout.nbt.CompoundTag;
 import org.spout.nbt.Tag;
 
 public class TransformTag extends CompoundTag {
-	public TransformTag(String name, Transform t) {
-		this(name, t.getPosition().getVector(), t.getRotation(), t.getScale());
-	}
+    public TransformTag(String name, Transform t) {
+        this(name, t.getPosition().getVector(), t.getRotation(), t.getScale());
+    }
 
-	public TransformTag(String name, float px, float py, float pz, float qx, float qy, float qz, float qw, float sx, float sy, float sz) {
-		this(name, new Vector3f(px, py, pz), new Quaternionf(qx, qy, qz, qw), new Vector3f(sx, sy, sz));
-	}
+    public TransformTag(String name, float px, float py, float pz, float qx, float qy, float qz, float qw, float sx, float sy, float sz) {
+        this(name, new Vector3f(px, py, pz), new Quaternionf(qx, qy, qz, qw), new Vector3f(sx, sy, sz));
+    }
 
-	public TransformTag(String name, Vector3f p, Quaternionf q, Vector3f s) {
-		super(name, toMap(p, q, s));
-	}
+    public TransformTag(String name, Vector3f p, Quaternionf q, Vector3f s) {
+        super(name, toMap(p, q, s));
+    }
 
-	private static CompoundMap toMap(Vector3f p, Quaternionf q, Vector3f s) {
-		CompoundMap map = new CompoundMap();
-		map.put(new Vector3Tag("pos", p));
-		map.put(new QuaternionTag("rot", q));
-		map.put(new Vector3Tag("scale", s));
-		return map;
-	}
+    private static CompoundMap toMap(Vector3f p, Quaternionf q, Vector3f s) {
+        CompoundMap map = new CompoundMap();
+        map.put(new Vector3Tag("pos", p));
+        map.put(new QuaternionTag("rot", q));
+        map.put(new Vector3Tag("scale", s));
+        return map;
+    }
 
-	public static Transform getValue(World w, Tag<?> tag) {
-		try {
-			return getValue(w, (CompoundTag) tag);
-		} catch (ClassCastException e) {
-			return null;
-		}
-	}
+    public static Transform getValue(World w, Tag<?> tag) {
+        try {
+            return getValue(w, (CompoundTag) tag);
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
 
-	public static Transform getValue(World w, CompoundTag map) {
-		if (map == null || w == null) {
-			return null;
-		}
-		return getValue(w, map.getValue());
-	}
+    public static Transform getValue(World w, CompoundTag map) {
+        if (map == null || w == null) {
+            return null;
+        }
+        return getValue(w, map.getValue());
+    }
 
-	public static Transform getValue(World w, CompoundMap map) {
-		if (map == null || w == null) {
-			return null;
-		}
-		Vector3f pVector = Vector3Tag.getValue(map.get("pos"));
+    public static Transform getValue(World w, CompoundMap map) {
+        if (map == null || w == null) {
+            return null;
+        }
+        Vector3f pVector = Vector3Tag.getValue(map.get("pos"));
 
-		Quaternionf r = QuaternionTag.getValue(map.get("rot"));
+        Quaternionf r = QuaternionTag.getValue(map.get("rot"));
 
-		Vector3f s = Vector3Tag.getValue(map.get("scale"));
+        Vector3f s = Vector3Tag.getValue(map.get("scale"));
 
-		if (pVector == null || r == null || s == null) {
-			return null;
-		}
+        if (pVector == null || r == null || s == null) {
+            return null;
+        }
 
-		Point p = new Point(w, pVector);
+        Point p = new Point(w, pVector);
 
-		return new Transform(p, r, s);
-	}
+        return new Transform(p, r, s);
+    }
 }

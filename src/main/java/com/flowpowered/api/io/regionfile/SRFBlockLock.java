@@ -29,86 +29,86 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 public class SRFBlockLock implements Lock {
-	private final AtomicInteger lockCounter;
-	private final Lock lock;
+    private final AtomicInteger lockCounter;
+    private final Lock lock;
 
-	public SRFBlockLock(Lock lock, AtomicInteger lockCounter) {
-		this.lock = lock;
-		this.lockCounter = lockCounter;
-	}
+    public SRFBlockLock(Lock lock, AtomicInteger lockCounter) {
+        this.lock = lock;
+        this.lockCounter = lockCounter;
+    }
 
-	@Override
-	public void lock() {
-		incrementLockCounter();
-		lock.lock();
-	}
+    @Override
+    public void lock() {
+        incrementLockCounter();
+        lock.lock();
+    }
 
-	@Override
-	public void lockInterruptibly() throws InterruptedException {
-		throw new UnsupportedOperationException("");
-	}
+    @Override
+    public void lockInterruptibly() throws InterruptedException {
+        throw new UnsupportedOperationException("");
+    }
 
-	@Override
-	public Condition newCondition() {
-		throw new UnsupportedOperationException("");
-	}
+    @Override
+    public Condition newCondition() {
+        throw new UnsupportedOperationException("");
+    }
 
-	@Override
-	public boolean tryLock() {
-		throw new UnsupportedOperationException("");
-	}
+    @Override
+    public boolean tryLock() {
+        throw new UnsupportedOperationException("");
+    }
 
-	@Override
-	public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-		throw new UnsupportedOperationException("");
-	}
+    @Override
+    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+        throw new UnsupportedOperationException("");
+    }
 
-	@Override
-	public void unlock() {
-		lock.unlock();
-		decrementLockCounter();
-	}
+    @Override
+    public void unlock() {
+        lock.unlock();
+        decrementLockCounter();
+    }
 
-	/**
-	 * Increments the lock counter.<br>
-	 *
-	 * @return the number of blocks locked or FILE_CLOSED
-	 */
-	private int incrementLockCounter() {
-		while (true) {
-			int oldValue = this.lockCounter.get();
+    /**
+     * Increments the lock counter.<br>
+     *
+     * @return the number of blocks locked or FILE_CLOSED
+     */
+    private int incrementLockCounter() {
+        while (true) {
+            int oldValue = this.lockCounter.get();
 
-			if (oldValue == SimpleRegionFile.FILE_CLOSED) {
-				return SimpleRegionFile.FILE_CLOSED;
-			}
+            if (oldValue == SimpleRegionFile.FILE_CLOSED) {
+                return SimpleRegionFile.FILE_CLOSED;
+            }
 
-			int newValue = oldValue + 1;
-			if (this.lockCounter.compareAndSet(oldValue, newValue)) {
-				return newValue;
-			}
-		}
-	}
+            int newValue = oldValue + 1;
+            if (this.lockCounter.compareAndSet(oldValue, newValue)) {
+                return newValue;
+            }
+        }
+    }
 
-	/**
-	 * Increments the lock counter.<br>
-	 *
-	 * @return the number of blocks locked or FILE_CLOSED
-	 */
-	private int decrementLockCounter() {
-		while (true) {
-			int oldValue = this.lockCounter.get();
+    /**
+     * Increments the lock counter.<br>
+     *
+     * @return the number of blocks locked or FILE_CLOSED
+     */
+    private int decrementLockCounter() {
+        while (true) {
+            int oldValue = this.lockCounter.get();
 
-			int newValue = oldValue - 1;
+            int newValue = oldValue - 1;
 
-			if (oldValue == SimpleRegionFile.FILE_CLOSED) {
-				newValue = SimpleRegionFile.FILE_CLOSED;
-			} else if (oldValue <= 0) {
-				throw new RuntimeException("Attempt made to decrement lock counter below zero");
-			}
+            if (oldValue == SimpleRegionFile.FILE_CLOSED) {
+                newValue = SimpleRegionFile.FILE_CLOSED;
+            } else if (oldValue <= 0) {
+                throw new RuntimeException("Attempt made to decrement lock counter below zero");
+            }
 
-			if (this.lockCounter.compareAndSet(oldValue, newValue)) {
-				return newValue;
-			}
-		}
-	}
+            if (this.lockCounter.compareAndSet(oldValue, newValue)) {
+                return newValue;
+            }
+        }
+    }
 }

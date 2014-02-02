@@ -27,58 +27,58 @@ import com.flowpowered.api.scheduler.tickable.BasicTickable;
 import com.flowpowered.commons.datatable.SerializableMap;
 
 public abstract class Component extends BasicTickable {
-	private ComponentOwner owner;
+    private ComponentOwner owner;
 
-	/**
-	 * Attaches to a component owner.
-	 *
-	 * @param owner the component owner to attach to
-	 * @return true if successful
-	 */
-	public boolean attachTo(ComponentOwner owner) {
-		this.owner = owner;
-		return true;
-	}
+    /**
+     * Attaches to a component owner.
+     *
+     * @param owner the component owner to attach to
+     * @return true if successful
+     */
+    public boolean attachTo(ComponentOwner owner) {
+        this.owner = owner;
+        return true;
+    }
 
-	/**
-	 * Gets the component owner that owns this component.
-	 *
-	 * @return the component owner
-	 */
-	public ComponentOwner getOwner() {
-		if (owner == null) {
-			throw new IllegalStateException("Trying to access the owner of this component before it was attached");
-		}
-		return owner;
-	}
+    /**
+     * Gets the component owner that owns this component.
+     *
+     * @return the component owner
+     */
+    public ComponentOwner getOwner() {
+        if (owner == null) {
+            throw new IllegalStateException("Trying to access the owner of this component before it was attached");
+        }
+        return owner;
+    }
 
-	/**
-	 * Called when this component is attached to a owner.
-	 */
-	public void onAttached() {
-	}
+    /**
+     * Called when this component is attached to a owner.
+     */
+    public void onAttached() {
+    }
 
-	/**
-	 * Called when this component is detached from a owner.
-	 */
-	public void onDetached() {
-	}
+    /**
+     * Called when this component is detached from a owner.
+     */
+    public void onDetached() {
+    }
 
-	/**
-	 * Specifies whether or not this component can be detached, after it has already been attached to an owner..
-	 *
-	 * @return true if it can be detached
-	 */
-	public boolean isDetachable() {
-		return true;
-	}
+    /**
+     * Specifies whether or not this component can be detached, after it has already been attached to an owner..
+     *
+     * @return true if it can be detached
+     */
+    public boolean isDetachable() {
+        return true;
+    }
 
-	/**
-	 * Gets the {@link SerializableMap} which a ComponentOwner always has <p> This is merely a convenience method.
-	 *
-	 * @return SerializableMap of the owner
-	 */
-	public final SerializableMap getData() {
-		return getOwner().getData();
-	}
+    /**
+     * Gets the {@link SerializableMap} which a ComponentOwner always has <p> This is merely a convenience method.
+     *
+     * @return SerializableMap of the owner
+     */
+    public final SerializableMap getData() {
+        return getOwner().getData();
+    }
 }

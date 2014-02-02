@@ -29,30 +29,30 @@ import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.material.Material;
 
 public class MaterialCause<T extends Material> extends Cause<T> {
-	private final T material;
-	private final Block block;
+    private final T material;
+    private final Block block;
 
-	public MaterialCause(T material, Block block) {
-		this(null, material, block);
-	}
+    public MaterialCause(T material, Block block) {
+        this(null, material, block);
+    }
 
-	public MaterialCause(Cause<?> parent, T material, Block block) {
-		super(parent);
-		this.material = material;
-		this.block = block;
-	}
+    public MaterialCause(Cause<?> parent, T material, Block block) {
+        super(parent);
+        this.material = material;
+        this.block = block;
+    }
 
-	@Override
-	public T getSource() {
-		return material;
-	}
+    @Override
+    public T getSource() {
+        return material;
+    }
 
-	/**
-	 * Gets the block that caused the change
-	 *
-	 * @return block
-	 */
-	public Block getBlock() {
-		return block;
-	}
+    /**
+     * Gets the block that caused the change
+     *
+     * @return block
+     */
+    public Block getBlock() {
+        return block;
+    }
 }

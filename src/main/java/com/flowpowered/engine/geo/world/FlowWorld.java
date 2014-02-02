@@ -129,17 +129,17 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         }
 
         FlowEntity entity = EntityManager.createEntity(new Transform(new Point(this, point), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
-		region.getEntityManager().addEntity(entity);
+        region.getEntityManager().addEntity(entity);
         return entity;
     }
 
     @Override
     public Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes) {
         Entity[] entities = new Entity[points.length];
-		for (int i = 0; i < points.length; i++) {
-			entities[i] = spawnEntity(points[i], option, classes);
-		}
-		return entities;
+        for (int i = 0; i < points.length; i++) {
+            entities[i] = spawnEntity(points[i], option, classes);
+        }
+        return entities;
     }
 
     @Override
@@ -383,15 +383,15 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         return true;
     }
 
-	@Override
-	public FlowBlock getBlock(float x, float y, float z) {
-		return new FlowBlock(this, GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
-	}
+    @Override
+    public FlowBlock getBlock(float x, float y, float z) {
+        return new FlowBlock(this, GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
+    }
 
-	@Override
-	public FlowBlock getBlock(Vector3f position) {
-		return this.getBlock(position.getX(), position.getY(), position.getZ());
-	}
+    @Override
+    public FlowBlock getBlock(Vector3f position) {
+        return this.getBlock(position.getX(), position.getY(), position.getZ());
+    }
 
     @Override
     public boolean commitCuboid(CuboidBlockMaterialBuffer buffer, Cause<?> cause) {

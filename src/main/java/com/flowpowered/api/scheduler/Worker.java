@@ -29,29 +29,29 @@ package com.flowpowered.api.scheduler;
  * Workers are used to execute async tasks.
  */
 public interface Worker {
-	/**
-	 * Returns the taskId for the task being executed by this worker
-	 *
-	 * @return Task id number
-	 */
-	public int getTaskId();
+    /**
+     * Returns the taskId for the task being executed by this worker
+     *
+     * @return Task id number
+     */
+    public int getTaskId();
 
-	/**
-	 * Returns the Object that owns this task
-	 *
-	 * @return The Object that owns the task
-	 */
-	public Object getOwner();
+    /**
+     * Returns the Object that owns this task
+     *
+     * @return The Object that owns the task
+     */
+    public Object getOwner();
 
-	/**
-	 * Attempts to cancel the task.  This will trigger an interrupt for async tasks that are in progress.
-	 */
-	public void cancel();
+    /**
+     * Attempts to cancel the task.  This will trigger an interrupt for async tasks that are in progress.
+     */
+    public void cancel();
 
-	/**
-	 * Gets the task associated with this worker
-	 *
-	 * @return the task
-	 */
-	public Task getTask();
+    /**
+     * Gets the task associated with this worker
+     *
+     * @return the task
+     */
+    public Task getTask();
 }

@@ -28,19 +28,19 @@ import com.flowpowered.events.Cause;
 import com.flowpowered.api.entity.Entity;
 
 public class EntityCause extends Cause<Entity> {
-	private final Entity entity;
+    private final Entity entity;
 
-	public EntityCause(Entity entity) {
-		this(null, entity);
-	}
+    public EntityCause(Entity entity) {
+        this(null, entity);
+    }
 
-	public EntityCause(Cause<?> parent, Entity entity) {
-		super(parent);
-		this.entity = entity;
-	}
+    public EntityCause(Cause<?> parent, Entity entity) {
+        super(parent);
+        this.entity = entity;
+    }
 
-	@Override
-	public Entity getSource() {
-		return entity;
-	}
+    @Override
+    public Entity getSource() {
+        return entity;
+    }
 }

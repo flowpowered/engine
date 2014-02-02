@@ -45,31 +45,31 @@ import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
 
 public class RegionSource implements Iterable<Region> {
-	private final static int REGION_MAP_BITS = 5;
-	private final static AtomicInteger regionsLoaded = new AtomicInteger(0);
-	/**
-	 * A map of loaded regions, mapped to their x and z values.
-	 */
-	private final TripleIntObjectMap<FlowRegion> loadedRegions;
-	/**
-	 * World associated with this region source
-	 */
-	private final FlowWorld world;
+    private final static int REGION_MAP_BITS = 5;
+    private final static AtomicInteger regionsLoaded = new AtomicInteger(0);
+    /**
+     * A map of loaded regions, mapped to their x and z values.
+     */
+    private final TripleIntObjectMap<FlowRegion> loadedRegions;
+    /**
+     * World associated with this region source
+     */
+    private final FlowWorld world;
     private final FlowEngine engine;
 
-	public RegionSource(FlowEngine engine, FlowWorld world) {
+    public RegionSource(FlowEngine engine, FlowWorld world) {
         this.engine = engine;
-		this.world = world;
-		loadedRegions = new TripleIntObjectReferenceArrayMap<>(REGION_MAP_BITS);
-	}
+        this.world = world;
+        loadedRegions = new TripleIntObjectReferenceArrayMap<>(REGION_MAP_BITS);
+    }
 
-	@DelayedWrite
-	public void removeRegion(final FlowRegion r) {
-		TickStage.checkStage(TickStage.SNAPSHOT);
+    @DelayedWrite
+    public void removeRegion(final FlowRegion r) {
+        TickStage.checkStage(TickStage.SNAPSHOT);
 
-		if (!r.getWorld().equals(world)) {
-			throw new IllegalArgumentException("Provided region's world is not the same world as this RegionSource's world!");
-		}
+        if (!r.getWorld().equals(world)) {
+            throw new IllegalArgumentException("Provided region's world is not the same world as this RegionSource's world!");
+        }
 
         /*
         if (!r.isEmpty()) {
@@ -95,89 +95,89 @@ public class RegionSource implements Iterable<Region> {
         if (regionsLoaded.decrementAndGet() < 0) {
             Flow.getLogger().info("Regions loaded dropped below zero");
         }
-	}
+    }
 
-	/**
-	 * Gets the region associated with the region x, y, z coordinates <br/> <p> Will load or generate a region if requested.
-	 *
-	 * @param x the x coordinate
-	 * @param y the y coordinate
-	 * @param z the z coordinate
+    /**
+     * Gets the region associated with the region x, y, z coordinates <br/> <p> Will load or generate a region if requested.
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
      * @param loadopt if {@code loadopt.loadIfNeeded} is false, this may return null
      * @return region
-	 */
-	@LiveRead
-	public FlowRegion getRegion(int x, int y, int z, LoadOption loadopt) {
-		if (loadopt != LoadOption.NO_LOAD) {
-			TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
-		}
+     */
+    @LiveRead
+    public FlowRegion getRegion(int x, int y, int z, LoadOption loadopt) {
+        if (loadopt != LoadOption.NO_LOAD) {
+            TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
+        }
 
-		FlowRegion region = loadedRegions.get(x, y, z);
+        FlowRegion region = loadedRegions.get(x, y, z);
 
-		if (region != null) {
-			return region;
-		}
+        if (region != null) {
+            return region;
+        }
 
-		if (!loadopt.loadIfNeeded()) {
-			return null;
-		}
+        if (!loadopt.loadIfNeeded()) {
+            return null;
+        }
 
         FlowServerWorld serverWorld = (FlowServerWorld) world;
-		region = new FlowRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
-		FlowRegion current = loadedRegions.putIfAbsent(x, y, z, region);
+        region = new FlowRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
+        FlowRegion current = loadedRegions.putIfAbsent(x, y, z, region);
 
-		if (current != null) {
-			return current;
-		}
+        if (current != null) {
+            return current;
+        }
 
         world.getEngine().getScheduler().addAsyncManager(region);
-		return region;
-	}
-	/**
-	 * Test if region file exists
-	 *
-	 * @param world world
-	 * @param x region x coordinate
-	 * @param y region y coordinate
-	 * @param z region z coordinate
-	 * @return true if exists, false if doesn't exist
-	 */
-	public static boolean regionFileExists(World world, int x, int y, int z) {
-		if (!Flow.getPlatform(). isServer()) {
-			return false;
-		}
-		File worldDirectory = ((ServerWorld) world).getDirectory();
-		File regionDirectory = new File(worldDirectory, "region");
-		File regionFile = new File(regionDirectory, "reg" + x + "_" + y + "_" + z + ".spr");
-		return regionFile.exists();
-	}
+        return region;
+    }
+    /**
+     * Test if region file exists
+     *
+     * @param world world
+     * @param x region x coordinate
+     * @param y region y coordinate
+     * @param z region z coordinate
+     * @return true if exists, false if doesn't exist
+     */
+    public static boolean regionFileExists(World world, int x, int y, int z) {
+        if (!Flow.getPlatform(). isServer()) {
+            return false;
+        }
+        File worldDirectory = ((ServerWorld) world).getDirectory();
+        File regionDirectory = new File(worldDirectory, "region");
+        File regionFile = new File(regionDirectory, "reg" + x + "_" + y + "_" + z + ".spr");
+        return regionFile.exists();
+    }
 
-	/**
-	 * True if there is a region loaded at the region x, y, z coordinates
-	 *
-	 * @param x the x coordinate
-	 * @param y the y coordinate
-	 * @param z the z coordinate
-	 * @return true if there is a region loaded
-	 */
-	@LiveRead
-	public boolean hasRegion(int x, int y, int z) {
-		return loadedRegions.get(x, y, z) != null;
-	}
+    /**
+     * True if there is a region loaded at the region x, y, z coordinates
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @return true if there is a region loaded
+     */
+    @LiveRead
+    public boolean hasRegion(int x, int y, int z) {
+        return loadedRegions.get(x, y, z) != null;
+    }
 
-	/**
-	 * Gets an unmodifiable collection of all loaded regions.
-	 *
-	 * @return collection of all regions
-	 */
+    /**
+     * Gets an unmodifiable collection of all loaded regions.
+     *
+     * @return collection of all regions
+     */
     @SuppressWarnings("unchecked")
-	public Collection<Region> getRegions() {
-		return (Collection) Collections.unmodifiableCollection(loadedRegions.valueCollection());
-	}
+    public Collection<Region> getRegions() {
+        return (Collection) Collections.unmodifiableCollection(loadedRegions.valueCollection());
+    }
 
-	@Override
+    @Override
     @SuppressWarnings("unchecked")
-	public Iterator<Region> iterator() {
-		return ((Collection) getRegions()).iterator();
-	}
+    public Iterator<Region> iterator() {
+        return ((Collection) getRegions()).iterator();
+    }
 }

@@ -53,14 +53,14 @@ public class FlowServer extends FlowEngine implements Server {
 
     @Override
     public Collection<Player> getOnlinePlayers() {
-		Map<String, FlowPlayer> playerList = players.get();
-		ArrayList<Player> onlinePlayers = new ArrayList<>(playerList.size());
-		for (FlowPlayer player : playerList.values()) {
-			if (player.isOnline()) {
-				onlinePlayers.add(player);
-			}
-		}
-		return onlinePlayers;
+        Map<String, FlowPlayer> playerList = players.get();
+        ArrayList<Player> onlinePlayers = new ArrayList<>(playerList.size());
+        for (FlowPlayer player : playerList.values()) {
+            if (player.isOnline()) {
+                onlinePlayers.add(player);
+            }
+        }
+        return onlinePlayers;
     }
 
     @Override
@@ -81,17 +81,17 @@ public class FlowServer extends FlowEngine implements Server {
 
     @Override
     public Player getPlayer(String name, boolean exact) {
-		name = name.toLowerCase();
-		if (exact) {
-			for (Player player : players.getValues()) {
-				if (player.getName().equalsIgnoreCase(name)) {
-					return player;
-				}
-			}
-			return null;
-		} else {
-			return StringUtil.getShortest(StringUtil.matchName(players.getValues(), name));
-		}
+        name = name.toLowerCase();
+        if (exact) {
+            for (Player player : players.getValues()) {
+                if (player.getName().equalsIgnoreCase(name)) {
+                    return player;
+                }
+            }
+            return null;
+        } else {
+            return StringUtil.getShortest(StringUtil.matchName(players.getValues(), name));
+        }
     }
 
     @Override

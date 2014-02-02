@@ -31,28 +31,28 @@ import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
  * Generates a solid world of a material
  */
 public class SolidWorldGenerator implements WorldGenerator {
-	private final BlockMaterial material;
+    private final BlockMaterial material;
 
-	public SolidWorldGenerator() {
-		material = BlockMaterial.SOLID_BLUE;
-	}
+    public SolidWorldGenerator() {
+        material = BlockMaterial.SOLID_BLUE;
+    }
 
-	public SolidWorldGenerator(BlockMaterial material) {
-		this.material = material;
-	}
+    public SolidWorldGenerator(BlockMaterial material) {
+        this.material = material;
+    }
 
-	@Override
-	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
+    @Override
+    public void generate(CuboidBlockMaterialBuffer blockData, World world) {
         blockData.flood(material);
-	}
+    }
 
-	@Override
-	public Populator[] getPopulators() {
-		return new Populator[0];
-	}
+    @Override
+    public Populator[] getPopulators() {
+        return new Populator[0];
+    }
 
-	@Override
-	public String getName() {
-		return "SolidWorld";
+    @Override
+    public String getName() {
+        return "SolidWorld";
     }
 }

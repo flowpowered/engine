@@ -50,19 +50,19 @@ import com.flowpowered.math.vector.Vector3f;
 public class FlowChunk extends Chunk {
 
     private final FlowRegion region;
-	/**
-	 * Data map and Datatable associated with it
-	 */
-	protected final ManagedHashMap dataMap;
     /**
-	 * Not thread safe, synchronize on access
-	 */
-	private final TShortObjectHashMap<BlockComponentOwner> blockComponents = new TShortObjectHashMap<>();
+     * Data map and Datatable associated with it
+     */
+    protected final ManagedHashMap dataMap;
+    /**
+     * Not thread safe, synchronize on access
+     */
+    private final TShortObjectHashMap<BlockComponentOwner> blockComponents = new TShortObjectHashMap<>();
     private final int generationIndex;
-	/**
-	 * Storage for block ids, data and auxiliary data. For blocks with data = 0 and auxiliary data = null, the block is stored as a short.
-	 */
-	protected final AtomicBlockStore blockStore;
+    /**
+     * Storage for block ids, data and auxiliary data. For blocks with data = 0 and auxiliary data = null, the block is stored as a short.
+     */
+    protected final AtomicBlockStore blockStore;
 
     public FlowChunk(FlowRegion region, World world, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
         super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
@@ -212,15 +212,15 @@ public class FlowChunk extends Chunk {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-	@Override
-	public FlowBlock getBlock(float x, float y, float z) {
+    @Override
+    public FlowBlock getBlock(float x, float y, float z) {
         return new FlowBlock((FlowWorld) getWorld(), GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
-	}
+    }
 
-	@Override
-	public FlowBlock getBlock(Vector3f position) {
-		return this.getBlock(position.getX(), position.getY(), position.getZ());
-	}
+    @Override
+    public FlowBlock getBlock(Vector3f position) {
+        return this.getBlock(position.getX(), position.getY(), position.getZ());
+    }
 
     @Override
     public boolean commitCuboid(CuboidBlockMaterialBuffer buffer, Cause<?> cause) {
@@ -263,9 +263,9 @@ public class FlowChunk extends Chunk {
     }
 
     @Override
-	public BlockMaterial getBlockMaterial(int x, int y, int z) {
-		int state = blockStore.getFullData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK);
-		return BlockMaterial.get(state);
+    public BlockMaterial getBlockMaterial(int x, int y, int z) {
+        int state = blockStore.getFullData(x & BLOCKS.MASK, y & BLOCKS.MASK, z & BLOCKS.MASK);
+        return BlockMaterial.get(state);
     }
 
     @Override
@@ -282,15 +282,15 @@ public class FlowChunk extends Chunk {
         return blockStore;
     }
 
-	public BlockComponentOwner getBlockComponentOwner(int x, int y, int z, boolean create) {
-		synchronized (blockComponents) {
-			short packed = NibbleQuadHashed.key(x, y, z, 0);
-			BlockComponentOwner value = blockComponents.get(packed);
-			if (value == null && create) {
-				value = new BlockComponentOwner(dataMap, NibbleQuadHashed.key1(packed), NibbleQuadHashed.key2(packed), NibbleQuadHashed.key3(packed), getWorld());
-				blockComponents.put(packed, value);
-			}
-			return value;
-		}
-	}
+    public BlockComponentOwner getBlockComponentOwner(int x, int y, int z, boolean create) {
+        synchronized (blockComponents) {
+            short packed = NibbleQuadHashed.key(x, y, z, 0);
+            BlockComponentOwner value = blockComponents.get(packed);
+            if (value == null && create) {
+                value = new BlockComponentOwner(dataMap, NibbleQuadHashed.key1(packed), NibbleQuadHashed.key2(packed), NibbleQuadHashed.key3(packed), getWorld());
+                blockComponents.put(packed, value);
+            }
+            return value;
+        }
+    }
 }

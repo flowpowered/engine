@@ -28,50 +28,50 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public final class BAAOpenInProgress implements ByteArrayArray {
-	private BAAOpenInProgress() {
-	}
+    private BAAOpenInProgress() {
+    }
 
-	private final static BAAOpenInProgress instance = new BAAOpenInProgress();
+    private final static BAAOpenInProgress instance = new BAAOpenInProgress();
 
-	public static BAAOpenInProgress getInstance() {
-		return instance;
-	}
+    public static BAAOpenInProgress getInstance() {
+        return instance;
+    }
 
-	@Override
-	public DataInputStream getInputStream(int i) throws IOException {
-		return null;
-	}
+    @Override
+    public DataInputStream getInputStream(int i) throws IOException {
+        return null;
+    }
 
-	@Override
-	public DataOutputStream getOutputStream(int i) throws IOException {
-		return null;
-	}
+    @Override
+    public DataOutputStream getOutputStream(int i) throws IOException {
+        return null;
+    }
 
-	@Override
-	public boolean attemptClose() throws IOException {
-		return false;
-	}
+    @Override
+    public boolean attemptClose() throws IOException {
+        return false;
+    }
 
-	@Override
-	public boolean isTimedOut() {
-		return false;
-	}
+    @Override
+    public boolean isTimedOut() {
+        return false;
+    }
 
-	@Override
-	public void closeIfTimedOut() throws IOException {
-	}
+    @Override
+    public void closeIfTimedOut() throws IOException {
+    }
 
-	@Override
-	public boolean isClosed() {
-		return false;
-	}
+    @Override
+    public boolean isClosed() {
+        return false;
+    }
 
-	@Override
-	public boolean exists(int i) throws IOException {
-		return false;
-	}
+    @Override
+    public boolean exists(int i) throws IOException {
+        return false;
+    }
 
-	@Override
-	public void delete(int i) throws IOException {
-	}
+    @Override
+    public void delete(int i) throws IOException {
+    }
 }

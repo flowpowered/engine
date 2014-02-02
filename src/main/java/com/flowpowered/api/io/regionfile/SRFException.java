@@ -26,13 +26,13 @@ package com.flowpowered.api.io.regionfile;
 import com.flowpowered.api.io.bytearrayarray.BAAException;
 
 public class SRFException extends BAAException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public SRFException(String message, Throwable t) {
-		super(message, t);
-	}
+    public SRFException(String message, Throwable t) {
+        super(message, t);
+    }
 
-	public SRFException(String message) {
-		super(message);
-	}
+    public SRFException(String message) {
+        super(message);
+    }
 }

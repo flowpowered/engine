@@ -33,11 +33,11 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 
 public interface EntityPrefab extends Named {
-	public List<Class<? extends Component>> getComponents();
+    public List<Class<? extends Component>> getComponents();
 
-	public Map<String, Object> getData();
+    public Map<String, Object> getData();
 
-	public Entity createEntity(Point point);
+    public Entity createEntity(Point point);
 
-	public Entity createEntity(Transform transform);
+    public Entity createEntity(Transform transform);
 }

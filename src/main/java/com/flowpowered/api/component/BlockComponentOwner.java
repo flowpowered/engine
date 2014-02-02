@@ -30,37 +30,37 @@ import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.cuboid.Chunk;
 
 public class BlockComponentOwner extends BaseComponentOwner {
-	/**
-	 * Stored as world, not chunk, coords
-	 */
-	private final int x, y, z;
-	private final World world;
+    /**
+     * Stored as world, not chunk, coords
+     */
+    private final int x, y, z;
+    private final World world;
 
-	public BlockComponentOwner(ManagedHashMap chunkData, int x, int y, int z, World world) {
-		super(new ManagedHashMap(chunkData, "" + (x & Chunk.BLOCKS.MASK) + "," + (y & Chunk.BLOCKS.MASK) + "," + (z & Chunk.BLOCKS.MASK)));
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.world = world;
-	}
+    public BlockComponentOwner(ManagedHashMap chunkData, int x, int y, int z, World world) {
+        super(new ManagedHashMap(chunkData, "" + (x & Chunk.BLOCKS.MASK) + "," + (y & Chunk.BLOCKS.MASK) + "," + (z & Chunk.BLOCKS.MASK)));
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.world = world;
+    }
 
-	public Block getBlock() {
-		return world.getBlock(x, y, z);
-	}
+    public Block getBlock() {
+        return world.getBlock(x, y, z);
+    }
 
-	public int getX() {
-		return x;
-	}
+    public int getX() {
+        return x;
+    }
 
-	public int getY() {
-		return y;
-	}
+    public int getY() {
+        return y;
+    }
 
-	public int getZ() {
-		return z;
-	}
+    public int getZ() {
+        return z;
+    }
 
-	public World getWorld() {
-		return world;
-	}
+    public World getWorld() {
+        return world;
+    }
 }

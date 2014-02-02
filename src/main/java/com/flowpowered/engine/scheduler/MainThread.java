@@ -78,27 +78,27 @@ public class MainThread extends TickingElement {
     @SuppressWarnings("unchecked")
     private final Set<ManagerRunnable>[][] managerRunnables = new Set[managerRunnableFactories.length][];
 
-	/**
-	 * Update count for physics and dynamic updates
-	 */
-	private final AtomicInteger updates = new AtomicInteger(0);
-	/**
-	 * The threshold before physics and dynamic updates are aborted
-	 */
-	private final static int UPDATE_THRESHOLD = 100000;
-	/**
-	 * A list of all AsyncManagers
-	 */
-	//private final List<AsyncManager> asyncManagers = new ConcurrentList<>();
-	// scheduler executor service
-	protected final ExecutorService executorService;
+    /**
+     * Update count for physics and dynamic updates
+     */
+    private final AtomicInteger updates = new AtomicInteger(0);
+    /**
+     * The threshold before physics and dynamic updates are aborted
+     */
+    private final static int UPDATE_THRESHOLD = 100000;
+    /**
+     * A list of all AsyncManagers
+     */
+    //private final List<AsyncManager> asyncManagers = new ConcurrentList<>();
+    // scheduler executor service
+    protected final ExecutorService executorService;
     private final TPSMonitor tpsMonitor = new TPSMonitor();
 
     public MainThread(FlowScheduler scheduler) {
         super("MainThread", 20);
         this.scheduler = scheduler;
         final int nThreads = Runtime.getRuntime().availableProcessors() * 2 + 1;
-		executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "FlowScheduler - AsyncManager executor service");
+        executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "FlowScheduler - AsyncManager executor service");
     }
 
     @Override
@@ -112,30 +112,30 @@ public class MainThread extends TickingElement {
             RegionGenerator.shutdownExecutorService();
             RegionGenerator.awaitExecutorServiceTermination();
 
-			scheduler.getTaskManager().heartbeat(FlowScheduler.PULSE_EVERY << 2);
-			scheduler.getTaskManager().shutdown(1L);
+            scheduler.getTaskManager().heartbeat(FlowScheduler.PULSE_EVERY << 2);
+            scheduler.getTaskManager().shutdown(1L);
 
-			long delay = 2000;
-			while (!scheduler.getTaskManager().waitForAsyncTasks(delay)) {
-				List<Worker> workers = scheduler.getTaskManager().getActiveWorkers();
-				if (workers.isEmpty()) {
-					break;
-				}
-				Flow.info("Unable to shutdown due to async tasks still running");
-				for (Worker w : workers) {
-					Object owner = w.getOwner() instanceof Named ? ((Named) w.getOwner()).getName() : w.getOwner();
+            long delay = 2000;
+            while (!scheduler.getTaskManager().waitForAsyncTasks(delay)) {
+                List<Worker> workers = scheduler.getTaskManager().getActiveWorkers();
+                if (workers.isEmpty()) {
+                    break;
+                }
+                Flow.info("Unable to shutdown due to async tasks still running");
+                for (Worker w : workers) {
+                    Object owner = w.getOwner() instanceof Named ? ((Named) w.getOwner()).getName() : w.getOwner();
                     Flow.info("Task with id of " + w.getTaskId() + " owned by " + owner + " is still running");
-				}
-				if (delay < 8000) {
-					delay <<= 1;
-				}
-			}
+                }
+                if (delay < 8000) {
+                    delay <<= 1;
+                }
+            }
     }
 
     // TODO: config
-	private final boolean DYNAMIC_UPDATES = true;
-	private final boolean BLOCK_PHYSICS = true;
-	private final boolean LIGHTING = true;
+    private final boolean DYNAMIC_UPDATES = true;
+    private final boolean BLOCK_PHYSICS = true;
+    private final boolean LIGHTING = true;
 
     @Override
     public void onTick(long delta) {
@@ -143,9 +143,9 @@ public class MainThread extends TickingElement {
         delta = Math.round(delta * 1e-6d);
         this.currentDelta.set(delta);
 
-		TickStage.setStage(TickStage.TICKSTART);
+        TickStage.setStage(TickStage.TICKSTART);
 
-		scheduler.getTaskManager().heartbeat(delta);
+        scheduler.getTaskManager().heartbeat(delta);
 
         runTasks(TickStage.STAGE1);
 
@@ -191,55 +191,55 @@ public class MainThread extends TickingElement {
     }
 
 
-	private void doPhysics() {
-		int passStartUpdates = updates.get() - 1;
-		int startUpdates = updates.get();
-		while (passStartUpdates < updates.get() && updates.get() < startUpdates + UPDATE_THRESHOLD) {
-			passStartUpdates = updates.get();
+    private void doPhysics() {
+        int passStartUpdates = updates.get() - 1;
+        int startUpdates = updates.get();
+        while (passStartUpdates < updates.get() && updates.get() < startUpdates + UPDATE_THRESHOLD) {
+            passStartUpdates = updates.get();
             runTasks(TickStage.PHYSICS);
             runTasks(TickStage.GLOBAL_PHYSICS);
-		}
-	}
+        }
+    }
 
-	private void doDynamicUpdates() {
-		/*int passStartUpdates = updates.get() - 1;
-		int startUpdates = updates.get();
+    private void doDynamicUpdates() {
+        /*int passStartUpdates = updates.get() - 1;
+        int startUpdates = updates.get();
 
-		TickStage.setStage(TickStage.GLOBAL_DYNAMIC_BLOCKS);
+        TickStage.setStage(TickStage.GLOBAL_DYNAMIC_BLOCKS);
 
-		long earliestTime = FlowScheduler.END_OF_THE_WORLD;
+        long earliestTime = FlowScheduler.END_OF_THE_WORLD;
 
-		for (AsyncManager e : managers) {
-			long firstTime = e.getFirstDynamicUpdateTime();
-			if (firstTime < earliestTime) {
-				earliestTime = firstTime;
-			}
-		}
+        for (AsyncManager e : managers) {
+            long firstTime = e.getFirstDynamicUpdateTime();
+            if (firstTime < earliestTime) {
+                earliestTime = firstTime;
+            }
+        }
 
-		while (passStartUpdates < updates.get() && updates.get() < startUpdates + UPDATE_THRESHOLD) {
-			passStartUpdates = updates.get();
+        while (passStartUpdates < updates.get() && updates.get() < startUpdates + UPDATE_THRESHOLD) {
+            passStartUpdates = updates.get();
 
-			long threshold = earliestTime + FlowScheduler.PULSE_EVERY - 1;
+            long threshold = earliestTime + FlowScheduler.PULSE_EVERY - 1;
 
-			dynamicUpdatesTask.setThreshold(threshold);
+            dynamicUpdatesTask.setThreshold(threshold);
 
-			this.runTasks(managers, dynamicUpdatesTask, "Dynamic Blocks", TickStage.GLOBAL_DYNAMIC_BLOCKS, TickStage.DYNAMIC_BLOCKS);
-		}*/
-	}
+            this.runTasks(managers, dynamicUpdatesTask, "Dynamic Blocks", TickStage.GLOBAL_DYNAMIC_BLOCKS, TickStage.DYNAMIC_BLOCKS);
+        }*/
+    }
 
-	private void doLighting() {
+    private void doLighting() {
         runTasks(TickStage.LIGHTING);
-	}
+    }
 
 
-	private void doFinalizeTick() {
+    private void doFinalizeTick() {
         runTasks(TickStage.FINALIZE);
-	}
+    }
 
-	private void doCopySnapshot() {
+    private void doCopySnapshot() {
         runTasks(TickStage.PRESNAPSHOT);
         runTasks(TickStage.SNAPSHOT);
-	}
+    }
 
     public void runTasks(final TickStage stage) {
         TickStage.setStage(stage);
@@ -275,11 +275,11 @@ public class MainThread extends TickingElement {
         }
     }
 
-	/**
-	 * Adds an async manager to the scheduler
-	 */
+    /**
+     * Adds an async manager to the scheduler
+     */
     @SuppressWarnings("unchecked")
-	public void addAsyncManager(AsyncManager manager) {
+    public void addAsyncManager(AsyncManager manager) {
         for (int stage = 0; stage < managerRunnableFactories.length; stage++) {
             ManagerRunnableFactory taskFactory = managerRunnableFactories[stage];
             if (taskFactory == null) {
@@ -305,12 +305,12 @@ public class MainThread extends TickingElement {
                 }
             }
         }
-	}
+    }
 
-	/**
-	 * Removes an async manager from the scheduler
-	 */
-	public void removeAsyncManager(AsyncManager manager) {
+    /**
+     * Removes an async manager from the scheduler
+     */
+    public void removeAsyncManager(AsyncManager manager) {
         for (int stage = 0; stage < managerRunnableFactories.length; stage++) {
             ManagerRunnableFactory taskFactory = managerRunnableFactories[stage];
             if (taskFactory == null) {
@@ -332,7 +332,7 @@ public class MainThread extends TickingElement {
                 }
             }
         }
-	}
+    }
 
     public int getTPS() {
         return tpsMonitor.getTPS();

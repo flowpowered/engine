@@ -33,81 +33,81 @@ import com.flowpowered.api.util.concurrent.RedirectableConcurrentLinkedQueue;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
 public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<FlowTask> {
-	private final AsyncManager taskManager;
+    private final AsyncManager taskManager;
 
-	public TaskPriorityQueue(AsyncManager manager, long resolution) {
-		super(resolution);
-		taskManager = manager;
-	}
+    public TaskPriorityQueue(AsyncManager manager, long resolution) {
+        super(resolution);
+        taskManager = manager;
+    }
 
-	/**
-	 * Gets the first pending task on the queue.  A task is considered pending if its next call time is less than or equal to the given current time.<br> <br> NOTE: This method should only be called from
-	 * a single thread.
-	 *
-	 * @param currentTime the current time
-	 * @return the first pending task, or null if no task is pending
-	 */
-	public Queue<FlowTask> getPendingTask(long currentTime) {
-		if (Thread.currentThread() != taskManager.getExecutionThread()) {
-			throw new IllegalStateException("getPendingTask() may only be called from the thread that created the TaskPriorityQueue");
-		}
+    /**
+     * Gets the first pending task on the queue.  A task is considered pending if its next call time is less than or equal to the given current time.<br> <br> NOTE: This method should only be called from
+     * a single thread.
+     *
+     * @param currentTime the current time
+     * @return the first pending task, or null if no task is pending
+     */
+    public Queue<FlowTask> getPendingTask(long currentTime) {
+        if (Thread.currentThread() != taskManager.getExecutionThread()) {
+            throw new IllegalStateException("getPendingTask() may only be called from the thread that created the TaskPriorityQueue");
+        }
 
-		return super.poll(currentTime);
-	}
+        return super.poll(currentTime);
+    }
 
-	@Override
-	public boolean add(FlowTask task) {
-		if (task != null) {
-			if (!task.setQueued()) {
-				throw new UnsupportedOperationException("Task was dead when adding to the queue");
-			}
-		}
-		return super.add(task);
-	}
+    @Override
+    public boolean add(FlowTask task) {
+        if (task != null) {
+            if (!task.setQueued()) {
+                throw new UnsupportedOperationException("Task was dead when adding to the queue");
+            }
+        }
+        return super.add(task);
+    }
 
-	@Override
-	public boolean redirect(FlowTask task) {
-		return super.add(task);
-	}
+    @Override
+    public boolean redirect(FlowTask task) {
+        return super.add(task);
+    }
 
-	@Override
-	public boolean remove(FlowTask task) {
-		task.remove();
-		if (!super.remove(task)) {
-			return false;
-		}
+    @Override
+    public boolean remove(FlowTask task) {
+        task.remove();
+        if (!super.remove(task)) {
+            return false;
+        }
 
-		task.setUnqueued();
+        task.setUnqueued();
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("{");
-		boolean first = true;
-		for (FlowTask t : getTasks()) {
-			if (first) {
-				first = false;
-			} else {
-				sb.append(", ");
-			}
-			sb.append("{").append(t.getTaskId()).append(":").append(t.getNextCallTime()).append("}");
-		}
-		return sb.append("}").toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("{");
+        boolean first = true;
+        for (FlowTask t : getTasks()) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append("{").append(t.getTaskId()).append(":").append(t.getNextCallTime()).append("}");
+        }
+        return sb.append("}").toString();
+    }
 
-	public List<FlowTask> getTasks() {
-		List<FlowTask> list = new ArrayList<>();
-		Iterator<RedirectableConcurrentLinkedQueue<FlowTask>> iq = queueMap.values().iterator();
-		while (iq.hasNext()) {
-			Iterator<FlowTask> i = iq.next().iterator();
-			while (i.hasNext()) {
-				FlowTask t = i.next();
-				list.add(t);
-			}
-		}
-		return list;
-	}
+    public List<FlowTask> getTasks() {
+        List<FlowTask> list = new ArrayList<>();
+        Iterator<RedirectableConcurrentLinkedQueue<FlowTask>> iq = queueMap.values().iterator();
+        while (iq.hasNext()) {
+            Iterator<FlowTask> i = iq.next().iterator();
+            while (i.hasNext()) {
+                FlowTask t = i.next();
+                list.add(t);
+            }
+        }
+        return list;
+    }
 }
 

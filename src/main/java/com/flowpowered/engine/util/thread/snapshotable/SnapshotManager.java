@@ -27,19 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SnapshotManager {
-	private List<Snapshotable> managed = new ArrayList<>();
+    private List<Snapshotable> managed = new ArrayList<>();
 
-	public synchronized void add(Snapshotable s) {
-		synchronized (managed) {
-			managed.add(s);
-		}
-	}
+    public synchronized void add(Snapshotable s) {
+        synchronized (managed) {
+            managed.add(s);
+        }
+    }
 
-	public void copyAllSnapshots() {
-		synchronized (managed) {
-			for (int i = 0; i < managed.size(); i++) {
-				managed.get(i).copySnapshot();
-			}
-		}
-	}
+    public void copyAllSnapshots() {
+        synchronized (managed) {
+            for (int i = 0; i < managed.size(); i++) {
+                managed.get(i).copySnapshot();
+            }
+        }
+    }
 }

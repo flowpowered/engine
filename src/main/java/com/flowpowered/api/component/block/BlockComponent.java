@@ -31,54 +31,54 @@ import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.discrete.Point;
 
 public abstract class BlockComponent extends Component {
-	@Override
-	public final boolean attachTo(ComponentOwner owner) {
-		if (!(owner instanceof BlockComponentOwner)) {
-			throw new IllegalStateException("BlockComponents may only be attached to a BlockComponentOwner.");
-		}
-		return super.attachTo(owner);
-	}
+    @Override
+    public final boolean attachTo(ComponentOwner owner) {
+        if (!(owner instanceof BlockComponentOwner)) {
+            throw new IllegalStateException("BlockComponents may only be attached to a BlockComponentOwner.");
+        }
+        return super.attachTo(owner);
+    }
 
-	@Override
-	public final BlockComponentOwner getOwner() {
-		return (BlockComponentOwner) super.getOwner();
-	}
+    @Override
+    public final BlockComponentOwner getOwner() {
+        return (BlockComponentOwner) super.getOwner();
+    }
 
-	/**
-	 * Gets the position of this block component
-	 *
-	 * @return position
-	 */
-	public Point getPoint() {
-		final BlockComponentOwner owner = getOwner();
-		if (owner == null) {
-			throw new IllegalStateException("This component has no owner and therefore no point");
-		}
-		return new Point(owner.getWorld(), owner.getX(), owner.getY(), owner.getZ());
-	}
+    /**
+     * Gets the position of this block component
+     *
+     * @return position
+     */
+    public Point getPoint() {
+        final BlockComponentOwner owner = getOwner();
+        if (owner == null) {
+            throw new IllegalStateException("This component has no owner and therefore no point");
+        }
+        return new Point(owner.getWorld(), owner.getX(), owner.getY(), owner.getZ());
+    }
 
-	/**
-	 * Gets the {@link Block} who owns this component.
-	 *
-	 * The structure of BlockComponents differ from the other {@link ComponentOwner}s. {@link BlockComponentOwner} is what does BlockComponent management but Block itself owns the block. To keep things
-	 * easy to access, this convenience method is provided.
-	 *
-	 * @return the block associated with the BlockComponentOwner
-	 */
-	public Block getBlock() {
-		final BlockComponentOwner owner = getOwner();
-		if (owner == null) {
-			throw new IllegalStateException("This component has no owner and therefore no block");
-		}
-		return owner.getBlock();
-	}
+    /**
+     * Gets the {@link Block} who owns this component.
+     *
+     * The structure of BlockComponents differ from the other {@link ComponentOwner}s. {@link BlockComponentOwner} is what does BlockComponent management but Block itself owns the block. To keep things
+     * easy to access, this convenience method is provided.
+     *
+     * @return the block associated with the BlockComponentOwner
+     */
+    public Block getBlock() {
+        final BlockComponentOwner owner = getOwner();
+        if (owner == null) {
+            throw new IllegalStateException("This component has no owner and therefore no block");
+        }
+        return owner.getBlock();
+    }
 
-	/**
-	 * Called when the owning {@link com.flowpowered.api.geo.cuboid.Block} is collided with an {@link Entity}.
-	 *
-	 * @param point the point where collision occurred.
-	 * @param entity the entity that collided with the owner <p> TODO EntityCollideBlockEvent
-	 */
-	public void onCollided(Point point, Entity entity) {
-	}
+    /**
+     * Called when the owning {@link com.flowpowered.api.geo.cuboid.Block} is collided with an {@link Entity}.
+     *
+     * @param point the point where collision occurred.
+     * @param entity the entity that collided with the owner <p> TODO EntityCollideBlockEvent
+     */
+    public void onCollided(Point point, Entity entity) {
+    }
 }

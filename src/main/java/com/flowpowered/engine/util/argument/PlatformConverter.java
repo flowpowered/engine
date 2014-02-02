@@ -26,7 +26,7 @@ package com.flowpowered.engine.util.argument;
 import com.flowpowered.api.Platform;
 
 public class PlatformConverter extends EnumConverter<Platform> {
-	public PlatformConverter() {
-		super(Platform.class);
-	}
+    public PlatformConverter() {
+        super(Platform.class);
+    }
 }
