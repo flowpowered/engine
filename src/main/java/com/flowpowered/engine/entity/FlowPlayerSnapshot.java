@@ -25,8 +25,8 @@ package com.flowpowered.engine.entity;
 
 import java.lang.ref.WeakReference;
 
-import com.flowpowered.api.entity.Player;
-import com.flowpowered.api.entity.PlayerSnapshot;
+import com.flowpowered.api.player.Player;
+import com.flowpowered.api.player.PlayerSnapshot;
 
 public class FlowPlayerSnapshot implements PlayerSnapshot {
     private final String name;

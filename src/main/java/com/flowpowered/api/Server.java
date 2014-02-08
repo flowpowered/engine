@@ -25,14 +25,13 @@ package com.flowpowered.api;
 
 import java.util.Collection;
 
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.ServerWorldManager;
 
 /**
  * Represents the server-specific implementation.
  */
 public interface Server extends Engine {
-
     /**
      * Gets all players currently online
      *

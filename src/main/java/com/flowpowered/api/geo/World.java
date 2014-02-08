@@ -35,7 +35,7 @@ import com.flowpowered.api.component.Component;
 import com.flowpowered.api.component.ComponentOwner;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.EntityPrefab;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;

@@ -38,7 +38,7 @@ import com.flowpowered.math.vector.Vector3f;
 
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.cuboid.Chunk;

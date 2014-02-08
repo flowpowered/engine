@@ -35,7 +35,7 @@ import com.flowpowered.events.Cause;
 
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.BlockContainer;
 import com.flowpowered.api.geo.cuboid.Chunk;

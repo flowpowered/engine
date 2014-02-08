@@ -28,7 +28,7 @@ import java.util.List;
 
 import com.flowpowered.commons.BitSize;
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.AreaChunkAccess;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.LocalAreaAccess;

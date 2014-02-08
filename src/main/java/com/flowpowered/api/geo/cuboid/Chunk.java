@@ -29,7 +29,7 @@ import java.util.Set;
 import com.flowpowered.commons.BitSize;
 
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.AreaBlockAccess;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
@@ -47,6 +47,10 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
      * Stores the size of the amount of blocks in this Chunk
      */
     public static final BitSize BLOCKS = new BitSize(4);
+	/**
+	 * Mask to convert a block integer coordinate into the point base
+	 */
+	public final static int POINT_BASE_MASK = -BLOCKS.SIZE;
     /**
      * Mask to convert a block integer coordinate into the point base
      */
@@ -261,4 +265,12 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
      * @return a unique generation id, or -1 if the chunk was loaded from disk
      */
     public abstract int getGenerationIndex();
+
+	/**
+	 * Converts a point in such a way that it points to the first block (the base block) of the chunk<br> This is similar to performing the following operation on the x, y and z coordinate:<br> - Convert
+	 * to the chunk coordinate<br> - Multiply by chunk size
+	 */
+	public static Point pointToBase(Point p) {
+		return new Point(p.getWorld(), p.getBlockX() & POINT_BASE_MASK, p.getBlockY() & POINT_BASE_MASK, p.getBlockZ() & POINT_BASE_MASK);
+	}
 }

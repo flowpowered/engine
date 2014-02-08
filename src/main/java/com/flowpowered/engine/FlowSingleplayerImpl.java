@@ -24,8 +24,8 @@
 package com.flowpowered.engine;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
 
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.component.entity.PlayerControlledMovementComponent;
@@ -57,7 +57,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         try {
             DeployNatives.deploy();
         } catch (Exception ex) {
-            Logger.getLogger(FlowSingleplayerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
             return;
         }
         super.init();
@@ -66,8 +66,8 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         FlowPlayer player = new FlowPlayer("Flowy");
         this.player.set(player);
         players.put(player.getName(), player);
-        Entity entity = loadedWorld.spawnEntity(new Vector3f(0, 1, 0), LoadOption.LOAD_GEN);
-        Entity entity2 = loadedWorld.spawnEntity(new Vector3f(0, 1, 0), LoadOption.LOAD_GEN);
+        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
         this.testEntity = entity;
         this.testEntity2 = entity2;
         this.testEntity.add(PlayerControlledMovementComponent.class).setController(player);
@@ -89,6 +89,12 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     }
 
     @Override
+    public boolean stop() {
+        return super.stop();
+        
+    }
+
+    @Override
     public Platform getPlatform() {
         return Platform.SINGLEPLAYER;
     }
@@ -107,4 +113,5 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     public FlowRenderer getRenderer() {
         return getScheduler().getRenderThread().getRenderer();
     }
+
 }

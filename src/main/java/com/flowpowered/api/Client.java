@@ -23,7 +23,7 @@
  */
 package com.flowpowered.api;
 
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.render.Renderer;
 

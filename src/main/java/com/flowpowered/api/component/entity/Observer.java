@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.entity;
+package com.flowpowered.api.component.entity;
 
 import com.flowpowered.engine.util.OutwardIterator;
 import java.io.IOException;
@@ -48,9 +48,9 @@ import com.flowpowered.math.vector.Vector3i;
 /**
  * The networking behind {@link com.flowpowered.api.entity.Entity}s.
  */
-public class Network {
+public class Observer {
     public static final LoadOption LOAD_GEN_NOWAIT = new LoadOption(true, true, false);
-    //TODO: Move all observer code to Network
+    //TODO: Move all observer code to Observer
     public final DefaultedKey<Boolean> IS_OBSERVER = new DefaultedKeyImpl<>("IS_OBSERVER", false);
     /**
      * null means use SYNC_DISTANCE and is generated each update; not observing is {@code new OutwardIterator(0, 0, 0)}; custom Iterators can be used for others We want default to be null so that when it
@@ -66,7 +66,7 @@ public class Network {
     private boolean observeChunksFailed = true;
     private final Entity entity;
 
-    public Network(Entity entity) {
+    public Observer(Entity entity) {
         this.entity = entity;
         setObserver(true);
     }
@@ -123,8 +123,7 @@ public class Network {
         if (observer) {
             liveObserverIterator.set(null);
         } else {
-            // TODO: with OutwardIterator change, change 0, 0, 0, 0 to 0, 0, 0, -1
-            liveObserverIterator.set(new WrappedSerizableIterator(new OutwardIterator(0, 0, 0, 0)));
+            liveObserverIterator.set(new WrappedSerizableIterator(new OutwardIterator(0, 0, 0, -1)));
         }
     }
 
@@ -255,9 +254,6 @@ public class Network {
     }
 
     public void copySnapshot() {
-        if (first) {
-            return;
-        }
         entity.getData().put(OBSERVER_ITERATOR, liveObserverIterator.get());
     }
 }

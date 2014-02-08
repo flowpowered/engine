@@ -35,7 +35,7 @@ import com.flowpowered.api.component.BaseComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.EntityPrefab;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Chunk;

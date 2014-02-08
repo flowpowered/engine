@@ -30,7 +30,7 @@ import java.util.Map;
 import com.flowpowered.commons.StringUtil;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowServerWorldManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
