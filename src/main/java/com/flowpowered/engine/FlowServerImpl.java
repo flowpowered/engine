@@ -23,6 +23,7 @@
  */
 package com.flowpowered.engine;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -33,16 +34,24 @@ import com.flowpowered.api.Platform;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowServerWorldManager;
+import com.flowpowered.engine.network.FlowNetworkServer;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
 public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
     private final FlowServerWorldManager worldManager;
+    private final FlowNetworkServer server = new FlowNetworkServer();
 
     public FlowServerImpl(FlowApplication args) {
         super(args);
         players = new SnapshotableLinkedHashMap<>(snapshotManager);
         worldManager = new FlowServerWorldManager(this);
+    }
+
+    @Override
+    public void start() {
+        server.bind(new InetSocketAddress(25565));
+        super.start();
     }
 
     @Override

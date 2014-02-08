@@ -21,32 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.player.reposition;
+package com.flowpowered.engine.network.handler;
 
-public class NullRepositionManager extends RepositionManagerImpl {
-	private static RepositionManager instance = new NullRepositionManager();
+import com.flowpowered.engine.network.FlowSession;
+import com.flowpowered.engine.network.message.LoginMessage;
+import com.flowpowered.networking.MessageHandler;
+import com.flowpowered.networking.session.BasicSession;
 
-	public static RepositionManager getInstance() {
-		return instance;
-	}
+public class LoginHandler implements MessageHandler<FlowSession, LoginMessage> {
 
-	@Override
-	public double convertX(double x) {
-		return x;
-	}
+    @Override
+    public void handle(FlowSession session, LoginMessage message) {
+        System.out.println("Login from " + session.getAddress());
+    }
 
-	@Override
-	public double convertY(double y) {
-		return y;
-	}
-
-	@Override
-	public double convertZ(double z) {
-		return z;
-	}
-
-	@Override
-	public RepositionManager getInverse() {
-		return getInstance();
-	}
 }

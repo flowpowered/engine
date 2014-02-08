@@ -33,18 +33,21 @@ import com.flowpowered.api.player.Player;
 import com.flowpowered.api.player.PlayerSnapshot;
 import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.api.input.InputSnapshot;
+import com.flowpowered.api.player.PlayerNetwork;
 import com.flowpowered.chat.ChatReceiver;
 import com.flowpowered.commands.CommandException;
 import com.flowpowered.permissions.PermissionDomain;
 
 public class FlowPlayer implements Player {
     private final String name;
+    private final PlayerNetwork network;
 
     private volatile List<InputSnapshot> input = new LinkedList<>();
     private volatile TransformProvider transformProvider;
 
     public FlowPlayer(String name) {
         this.name = name;
+        this.network = new PlayerNetwork(this);
     }
 
     @Override
@@ -194,5 +197,9 @@ public class FlowPlayer implements Player {
 
     public void setInput(List<InputSnapshot> inputList) {
         input = inputList;
+    }
+
+    public PlayerNetwork getNetwork() {
+        return network;
     }
 }

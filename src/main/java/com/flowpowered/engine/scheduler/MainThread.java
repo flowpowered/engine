@@ -41,8 +41,11 @@ import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.input.InputSnapshot;
+import com.flowpowered.api.Server;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.engine.FlowClient;
+import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
@@ -192,6 +195,16 @@ public class MainThread extends TickingElement {
         }
 
         doFinalizeTick();
+
+        if (Flow.getEngine().getPlatform().isServer()) {
+            for (Player p : ((Server) Flow.getEngine()).getOnlinePlayers()) {
+                ((FlowPlayer) p).getNetwork().finalizeRun();
+                ((FlowPlayer) p).getNetwork().preSnapshotRun();
+            }
+        } else {
+            ((FlowClient) scheduler.getEngine()).getPlayer().getNetwork().finalizeRun();
+            ((FlowClient) scheduler.getEngine()).getPlayer().getNetwork().preSnapshotRun();
+        }
 
         doCopySnapshot();
         updateManagers();

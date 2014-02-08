@@ -21,58 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine;
+package com.flowpowered.engine.network;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicReference;
+import com.flowpowered.networking.Message;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
 
-import com.flowpowered.api.Platform;
-import com.flowpowered.engine.entity.FlowPlayer;
-import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.geo.world.FlowWorldManager;
-import com.flowpowered.engine.network.FlowNetworkClient;
-import com.flowpowered.engine.render.FlowRenderer;
+public class FlowSingeplayerSession extends FlowSession {
 
-public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
-    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
-    private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
-    private final FlowWorldManager<FlowWorld> worldManager;
-    private final FlowNetworkClient client = new FlowNetworkClient();
-
-    public FlowClientImpl(FlowApplication args) {
-        super(args);
-        this.worldManager = new FlowWorldManager<>(this);
+    public FlowSingeplayerSession() {
+        super(null);
     }
 
     @Override
-    public void start() {
-        client.connect(new InetSocketAddress(25565));
-        super.start();
+    public void send(Message message) {
+        messageReceived(message);
     }
 
     @Override
-    public Platform getPlatform() {
-        return Platform.CLIENT;
+    public Channel getChannel() {
+        throw new UnsupportedOperationException("FlowSingleplayerSession does not have a channel!");
     }
 
     @Override
-    public FlowWorldManager<FlowWorld> getWorldManager() {
-        return worldManager;
+    public InetSocketAddress getAddress() {
+        return InetSocketAddress.createUnresolved("127.0.0.1", 25565);
     }
 
     @Override
-    public FlowPlayer getPlayer() {
-        return player.get();
+    public String toString() {
+        return "FlowSingeplayerSession{" + '}';
     }
 
     @Override
-    public FlowWorld getWorld() {
-        return activeWorld.get();
+    public boolean isActive() {
+        return true;
     }
 
     @Override
-    public FlowRenderer getRenderer() {
-        return getScheduler().getRenderThread().getRenderer();
+    public void disconnect() {
+        // TODO: just shutdown?
+        throw new UnsupportedOperationException("Can't disconnect a FlowSingleplayerSession!");
+    }
+
+    @Override
+    public <T> void setOption(ChannelOption<T> option, T value) {
+        throw new UnsupportedOperationException("Can't set an option on a FlowSingleplayerSession!");
     }
 
 }

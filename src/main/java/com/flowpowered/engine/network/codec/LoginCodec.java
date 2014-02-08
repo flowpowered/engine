@@ -21,32 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.player.reposition;
+package com.flowpowered.engine.network.codec;
 
-public class NullRepositionManager extends RepositionManagerImpl {
-	private static RepositionManager instance = new NullRepositionManager();
+import java.io.IOException;
+import io.netty.buffer.ByteBuf;
 
-	public static RepositionManager getInstance() {
-		return instance;
+import com.flowpowered.engine.network.message.LoginMessage;
+import com.flowpowered.networking.Codec;
+import com.flowpowered.networking.util.ByteBufUtils;
+
+public class LoginCodec implements Codec<LoginMessage> {
+
+	@Override
+	public ByteBuf encode(ByteBuf buffer, LoginMessage message) throws IOException {
+        ByteBufUtils.writeUTF8(buffer, message.getPlayerName());
+		return buffer;
 	}
 
 	@Override
-	public double convertX(double x) {
-		return x;
-	}
-
-	@Override
-	public double convertY(double y) {
-		return y;
-	}
-
-	@Override
-	public double convertZ(double z) {
-		return z;
-	}
-
-	@Override
-	public RepositionManager getInverse() {
-		return getInstance();
+	public LoginMessage decode(ByteBuf buffer) throws IOException {
+		final String playerName = ByteBufUtils.readUTF8(buffer);
+		return new LoginMessage(playerName);
 	}
 }
