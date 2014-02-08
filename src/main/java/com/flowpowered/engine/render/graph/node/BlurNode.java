@@ -25,8 +25,6 @@ package com.flowpowered.engine.render.graph.node;
 
 import java.util.Arrays;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.RenderGraph;
 import com.flowpowered.math.vector.Vector2f;
 
 import org.spout.renderer.api.Material;
@@ -47,6 +45,8 @@ import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
+
+import com.flowpowered.engine.render.graph.RenderGraph;
 
 /**
  *
@@ -73,7 +73,10 @@ public class BlurNode extends GraphNode {
     private final Texture colorsOutput;
     private Texture colorsInput;
     private Pipeline pipeline;
-    private int kernelSize = 5;
+    private final IntUniform halfKernelSizeUniform = new IntUniform("kernelSize", 0);
+    private final FloatArrayUniform kernelUniform = new FloatArrayUniform("kernel", new float[]{});
+    private final FloatArrayUniform offsetsUniform = new FloatArrayUniform("offsets", new float[]{});
+    private final Vector2Uniform resolutionUniform = new Vector2Uniform("resolution", Vector2f.ONE);
     private KernelGenerator kernelGenerator = GAUSSIAN_KERNEL;
 
     public BlurNode(RenderGraph graph, String name) {
@@ -93,30 +96,10 @@ public class BlurNode extends GraphNode {
         if (isCreated()) {
             throw new IllegalStateException("Guassian blur stage has already been created");
         }
-        // Generate the kernel and offsets
-        int halfKernelSize = (kernelSize - 1) / 2 + 1;
-        float[] kernel = new float[halfKernelSize];
-        float[] offsets = new float[halfKernelSize];
-        float weight0 = kernelGenerator.getWeight(0, kernelSize);
-        kernel[0] = weight0;
-        offsets[0] = 0;
-        float sum = weight0;
-        for (int i = 1; i < kernelSize; i += 2) {
-            final float firstWeight = kernelGenerator.getWeight(i, kernelSize);
-            final float secondWeight = kernelGenerator.getWeight(i + 1, kernelSize);
-            final float weightSum = firstWeight + secondWeight;
-            sum += weightSum * 2;
-            final int index = (i + 1) / 2;
-            kernel[index] = weightSum;
-            offsets[index] = (i * firstWeight + (i + 1) * secondWeight) / weightSum;
-        }
-        for (int i = 0; i < halfKernelSize; i++) {
-            kernel[i] /= sum;
-        }
         // Create the colors texture
         colorsOutput.setFormat(Format.RGBA);
         colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setMagFilter(FilterMode.LINEAR);
@@ -125,22 +108,17 @@ public class BlurNode extends GraphNode {
         // Create the intermediate texture
         intermediateTexture.setFormat(Format.RGBA);
         intermediateTexture.setInternalFormat(InternalFormat.RGBA8);
-        intermediateTexture.setImageData(null, colorsOutput.getWidth(), colorsOutput.getHeight());
+        intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
         intermediateTexture.setWrapS(WrapMode.CLAMP_TO_EDGE);
         intermediateTexture.setWrapT(WrapMode.CLAMP_TO_EDGE);
         intermediateTexture.setMagFilter(FilterMode.LINEAR);
         intermediateTexture.setMinFilter(FilterMode.LINEAR);
         intermediateTexture.create();
-        // Create the shared uniforms
-        final FloatArrayUniform offsetsUniform = new FloatArrayUniform("offsets", offsets);
-        final IntUniform kernelSizeUniform = new IntUniform("kernelSize", halfKernelSize);
-        final FloatArrayUniform kernelUniform = new FloatArrayUniform("kernel", kernel);
-        final Vector2Uniform resolutionUniform = new Vector2Uniform("resolution", new Vector2f(colorsOutput.getWidth(), colorsOutput.getHeight()));
         // Create the horizontal material
         horizontalMaterial.addTexture(0, colorsInput);
         UniformHolder uniforms = horizontalMaterial.getUniforms();
         uniforms.add(offsetsUniform);
-        uniforms.add(kernelSizeUniform);
+        uniforms.add(halfKernelSizeUniform);
         uniforms.add(kernelUniform);
         uniforms.add(resolutionUniform);
         uniforms.add(new BooleanUniform("direction", false));
@@ -148,7 +126,7 @@ public class BlurNode extends GraphNode {
         verticalMaterial.addTexture(0, intermediateTexture);
         uniforms = verticalMaterial.getUniforms();
         uniforms.add(offsetsUniform);
-        uniforms.add(kernelSizeUniform);
+        uniforms.add(halfKernelSizeUniform);
         uniforms.add(kernelUniform);
         uniforms.add(resolutionUniform);
         uniforms.add(new BooleanUniform("direction", true));
@@ -193,7 +171,30 @@ public class BlurNode extends GraphNode {
         if (kernelSize <= 1) {
             throw new IllegalArgumentException("Kernel size must be at least 3");
         }
-        this.kernelSize = kernelSize;
+        // Generate the kernel and offsets
+        final int halfKernelSize = (kernelSize - 1) / 2 + 1;
+        final float[] kernel = new float[halfKernelSize];
+        final float[] offsets = new float[halfKernelSize];
+        float weight0 = kernelGenerator.getWeight(0, kernelSize);
+        kernel[0] = weight0;
+        offsets[0] = 0;
+        float sum = weight0;
+        for (int i = 1; i < kernelSize; i += 2) {
+            final float firstWeight = kernelGenerator.getWeight(i, kernelSize);
+            final float secondWeight = kernelGenerator.getWeight(i + 1, kernelSize);
+            final float weightSum = firstWeight + secondWeight;
+            sum += weightSum * 2;
+            final int index = (i + 1) / 2;
+            kernel[index] = weightSum;
+            offsets[index] = (i * firstWeight + (i + 1) * secondWeight) / weightSum;
+        }
+        for (int i = 0; i < halfKernelSize; i++) {
+            kernel[i] /= sum;
+        }
+        // Update the uniforms
+        halfKernelSizeUniform.set(halfKernelSize);
+        kernelUniform.set(kernel);
+        offsetsUniform.set(offsets);
     }
 
     @Setting
@@ -205,6 +206,7 @@ public class BlurNode extends GraphNode {
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
+        resolutionUniform.set(new Vector2f(texture.getWidth(), texture.getHeight()));
     }
 
     @Output("colors")

@@ -27,9 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.RenderGraph;
-
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
@@ -38,19 +35,22 @@ import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.model.Model;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
+
 /**
  *
  */
 public class RenderGUINode extends GraphNode {
     private final Material material;
     private Texture colorsInput;
-    private final Camera camera = Camera.createOrthographic(1, 0, 1 / FlowRenderer.ASPECT_RATIO, 0, FlowRenderer.NEAR_PLANE, FlowRenderer.FAR_PLANE);
+    private final Camera camera;
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
     public RenderGUINode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("screen"));
+        camera = Camera.createOrthographic(1, 0, 1 / graph.getAspectRatio(), 0, graph.getNearPlane(), graph.getFarPlane());
     }
 
     @Override

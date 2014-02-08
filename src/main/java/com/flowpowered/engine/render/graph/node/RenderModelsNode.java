@@ -26,9 +26,6 @@ package com.flowpowered.engine.render.graph.node;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.RenderGraph;
-
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -43,6 +40,8 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
+
 /**
  *
  */
@@ -54,7 +53,7 @@ public class RenderModelsNode extends GraphNode {
     private final Texture vertexNormalsOutput;
     private final Texture materialsOutput;
     private final List<Model> models = new ArrayList<>();
-    private final Camera camera = Camera.createPerspective(FlowRenderer.FIELD_OF_VIEW, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY(), FlowRenderer.NEAR_PLANE, FlowRenderer.FAR_PLANE);
+    private final Camera camera;
     private Pipeline pipeline;
 
     public RenderModelsNode(RenderGraph graph, String name) {
@@ -66,6 +65,7 @@ public class RenderModelsNode extends GraphNode {
         vertexNormalsOutput = glFactory.createTexture();
         materialsOutput = glFactory.createTexture();
         frameBuffer = glFactory.createFrameBuffer();
+        camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
     }
 
     @Override
@@ -76,7 +76,7 @@ public class RenderModelsNode extends GraphNode {
         // Create the colors texture
         colorsOutput.setFormat(Format.RGBA);
         colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setMagFilter(FilterMode.LINEAR);
@@ -85,24 +85,24 @@ public class RenderModelsNode extends GraphNode {
         // Create the normals texture
         normalsOutput.setFormat(Format.RGBA);
         normalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        normalsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         normalsOutput.create();
         // Create the detphs texture
         depthsOutput.setFormat(Format.DEPTH);
         depthsOutput.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
-        depthsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         depthsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         depthsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         depthsOutput.create();
         // Create the vertex normals texture
         vertexNormalsOutput.setFormat(Format.RGBA);
         vertexNormalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        vertexNormalsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         vertexNormalsOutput.create();
         // Create the materials texture
         materialsOutput.setFormat(Format.RGBA);
         materialsOutput.setInternalFormat(InternalFormat.RGBA8);
-        materialsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         materialsOutput.create();
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);

@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.RenderGraph;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -43,19 +41,19 @@ import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
+
 /**
  *
  */
 public class RenderTransparentModelsNode extends GraphNode {
     private final Material material;
     private final Texture weightedColors;
-    private final Texture weightedVelocities;
     private final Texture layerCounts;
     private final FrameBuffer weightedSumFrameBuffer;
     private final FrameBuffer frameBuffer;
     private Texture depthsInput;
     private Texture colorsInput;
-    private Texture velocitiesInput;
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
@@ -64,7 +62,6 @@ public class RenderTransparentModelsNode extends GraphNode {
         material = new Material(graph.getProgram("transparencyBlending"));
         final GLFactory glFactory = graph.getGLFactory();
         weightedColors = glFactory.createTexture();
-        weightedVelocities = glFactory.createTexture();
         layerCounts = glFactory.createTexture();
         weightedSumFrameBuffer = glFactory.createFrameBuffer();
         frameBuffer = glFactory.createFrameBuffer();
@@ -78,28 +75,21 @@ public class RenderTransparentModelsNode extends GraphNode {
         // Create the weighted colors texture
         weightedColors.setFormat(Format.RGBA);
         weightedColors.setInternalFormat(InternalFormat.RGBA16F);
-        weightedColors.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        weightedColors.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         weightedColors.create();
-        // Create the weighted velocities texture
-        weightedVelocities.setFormat(Format.RG);
-        weightedVelocities.setInternalFormat(InternalFormat.RG16F);
-        weightedVelocities.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
-        weightedVelocities.create();
         // Create the layer counts texture
         layerCounts.setFormat(Format.RED);
         layerCounts.setInternalFormat(InternalFormat.R16F);
-        layerCounts.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        layerCounts.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         layerCounts.create();
         // Create the material
         material.addTexture(0, weightedColors);
-        material.addTexture(1, weightedVelocities);
-        material.addTexture(2, layerCounts);
+        material.addTexture(1, layerCounts);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the weighted sum frame buffer
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
-        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, weightedVelocities);
-        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR2, layerCounts);
+        weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, layerCounts);
         weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, depthsInput);
         weightedSumFrameBuffer.create();
         // Create the frame buffer
@@ -119,7 +109,6 @@ public class RenderTransparentModelsNode extends GraphNode {
     public void destroy() {
         checkCreated();
         weightedColors.destroy();
-        weightedVelocities.destroy();
         layerCounts.destroy();
         weightedSumFrameBuffer.destroy();
         frameBuffer.destroy();
@@ -142,12 +131,6 @@ public class RenderTransparentModelsNode extends GraphNode {
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
-    }
-
-    @Input("velocities")
-    public void setVelocitiesInput(Texture texture) {
-        texture.checkCreated();
-        velocitiesInput = texture;
     }
 
     @Output("colors")

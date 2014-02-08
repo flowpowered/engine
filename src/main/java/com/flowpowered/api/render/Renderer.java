@@ -24,6 +24,7 @@
 package com.flowpowered.api.render;
 
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 
 public interface Renderer {
 
@@ -34,7 +35,7 @@ public interface Renderer {
 	 *
 	 * @return the resolution of the window.
 	 */
-	Vector2f getResolution();
+	Vector2i getResolution();
 
 	/**
 	 * Returns the aspect ratio of the client, in pixels. <p> Ratio = (screen width / screen height)

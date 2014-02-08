@@ -25,14 +25,11 @@ package com.flowpowered.engine.render.graph.node;
 
 import java.util.Arrays;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.RenderGraph;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
-import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
@@ -61,7 +58,7 @@ public class LightingNode extends GraphNode {
     private Texture occlusionsInput;
     private Texture shadowsInput;
     private Pipeline pipeline;
-    private Vector3f lightDirection = Vector3f.UP.negate();
+    private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.UP.negate());
 
     public LightingNode(RenderGraph graph, String name) {
         super(graph, name);
@@ -79,7 +76,7 @@ public class LightingNode extends GraphNode {
         // Create the colors texture
         colorsOutput.setFormat(Format.RGBA);
         colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
         colorsOutput.setMagFilter(FilterMode.LINEAR);
@@ -93,9 +90,9 @@ public class LightingNode extends GraphNode {
         material.addTexture(4, occlusionsInput);
         material.addTexture(5, shadowsInput);
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(new FloatUniform("tanHalfFOV", FlowRenderer.TAN_HALF_FOV));
-        uniforms.add(new FloatUniform("aspectRatio", FlowRenderer.ASPECT_RATIO));
-        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
+        uniforms.add(graph.getTanHalfFOVUniform());
+        uniforms.add(graph.getAspectRatioUniform());
+        uniforms.add(lightDirectionUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
@@ -122,7 +119,7 @@ public class LightingNode extends GraphNode {
 
     @Setting
     public void setLightDirection(Vector3f lightDirection) {
-        this.lightDirection = lightDirection;
+        lightDirectionUniform.set(lightDirection);
     }
 
     @Input("colors")

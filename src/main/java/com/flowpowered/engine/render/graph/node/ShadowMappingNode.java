@@ -27,10 +27,9 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.RenderGraph;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 
 import org.spout.renderer.api.Camera;
@@ -57,6 +56,8 @@ import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.util.CausticUtil;
 import org.spout.renderer.api.util.Rectangle;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
+
 // TODO: cascaded shadow maps, render models for light depths using the basic shader
 public class ShadowMappingNode extends GraphNode {
     private final Material material;
@@ -71,12 +72,14 @@ public class ShadowMappingNode extends GraphNode {
     private final Matrix4Uniform lightViewMatrixUniform = new Matrix4Uniform("lightViewMatrix", new Matrix4f());
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
     private final Camera camera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
+    private Vector2i shadowMapSize = new Vector2i(2048, 2048);
     private Pipeline pipeline;
-    private Vector3f lightDirection = Vector3f.UP.negate();
-    private int kernelSize = 8;
-    private int noiseSize = 4;
-    private float bias = 0.005f;
-    private float radius = 0.0004f;
+    private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.UP.negate());
+    private final IntUniform kernelSizeUniform = new IntUniform("kernelSize", 0);
+    private final Vector2ArrayUniform kernelUniform = new Vector2ArrayUniform("kernel", new Vector2f[]{});
+    private final Vector2Uniform noiseScaleUniform = new Vector2Uniform("noiseScale", Vector2f.ONE);
+    private final FloatUniform biasUniform = new FloatUniform("bias", 0.005f);
+    private final FloatUniform radiusUniform = new FloatUniform("radius", 0.0004f);
 
     public ShadowMappingNode(RenderGraph graph, String name) {
         super(graph, name);
@@ -84,6 +87,8 @@ public class ShadowMappingNode extends GraphNode {
         final GLFactory glFactory = graph.getGLFactory();
         lightDepthsTexture = glFactory.createTexture();
         noiseTexture = glFactory.createTexture();
+        noiseTexture.setFormat(Format.RG);
+        noiseTexture.setInternalFormat(InternalFormat.RG8);
         depthFrameBuffer = glFactory.createFrameBuffer();
         frameBuffer = glFactory.createFrameBuffer();
         shadowsOutput = glFactory.createTexture();
@@ -94,35 +99,12 @@ public class ShadowMappingNode extends GraphNode {
         if (isCreated()) {
             throw new IllegalStateException("Shadow mapping stage has already been created");
         }
-        // Generate the kernel
-        final Vector2f[] kernel = new Vector2f[kernelSize];
-        final Random random = new Random();
-        for (int i = 0; i < kernelSize; i++) {
-            // Create a set of random unit vectors
-            kernel[i] = new Vector2f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1).normalize();
-        }
-        // Generate the noise texture data
-        final int noiseTextureSize = noiseSize * noiseSize;
-        final ByteBuffer noiseTextureBuffer = CausticUtil.createByteBuffer(noiseTextureSize * 3);
-        for (int i = 0; i < noiseTextureSize; i++) {
-            // Random unit vectors around the z axis
-            Vector2f noise = new Vector2f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1).normalize();
-            // Encode to unsigned byte, and place in buffer
-            noise = noise.mul(128).add(128, 128);
-            noiseTextureBuffer.put((byte) (noise.getFloorX() & 0xff));
-            noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
-            noiseTextureBuffer.put((byte) 0);
-        }
         // Create the noise texture
-        noiseTexture.setFormat(Format.RGB);
-        noiseTexture.setInternalFormat(InternalFormat.RGB8);
-        noiseTextureBuffer.flip();
-        noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
         noiseTexture.create();
         // Create the shadows texture
         shadowsOutput.setFormat(Format.RED);
         shadowsOutput.setInternalFormat(InternalFormat.R8);
-        shadowsOutput.setImageData(null, FlowRenderer.WINDOW_SIZE.getFloorX(), FlowRenderer.WINDOW_SIZE.getFloorY());
+        shadowsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         shadowsOutput.create();
         // Create the depth texture
         lightDepthsTexture.setFormat(Format.DEPTH);
@@ -132,7 +114,7 @@ public class ShadowMappingNode extends GraphNode {
         lightDepthsTexture.setMagFilter(FilterMode.LINEAR);
         lightDepthsTexture.setMinFilter(FilterMode.LINEAR);
         lightDepthsTexture.setCompareMode(CompareMode.LESS);
-        lightDepthsTexture.setImageData(null, FlowRenderer.SHADOW_SIZE.getFloorX(), FlowRenderer.SHADOW_SIZE.getFloorY());
+        lightDepthsTexture.setImageData(null, shadowMapSize.getX(), shadowMapSize.getY());
         lightDepthsTexture.create();
         // Create the material
         material.addTexture(0, normalsInput);
@@ -140,18 +122,18 @@ public class ShadowMappingNode extends GraphNode {
         material.addTexture(2, lightDepthsTexture);
         material.addTexture(3, noiseTexture);
         final UniformHolder uniforms = material.getUniforms();
-        uniforms.add(new Vector2Uniform("projection", FlowRenderer.PROJECTION));
-        uniforms.add(new FloatUniform("tanHalfFOV", FlowRenderer.TAN_HALF_FOV));
-        uniforms.add(new FloatUniform("aspectRatio", FlowRenderer.ASPECT_RATIO));
-        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
+        uniforms.add(graph.getProjectionUniform());
+        uniforms.add(graph.getTanHalfFOVUniform());
+        uniforms.add(graph.getAspectRatioUniform());
+        uniforms.add(lightDirectionUniform);
         uniforms.add(inverseViewMatrixUniform);
         uniforms.add(lightViewMatrixUniform);
         uniforms.add(lightProjectionMatrixUniform);
-        uniforms.add(new IntUniform("kernelSize", kernelSize));
-        uniforms.add(new Vector2ArrayUniform("kernel", kernel));
-        uniforms.add(new Vector2Uniform("noiseScale", new Vector2f(shadowsOutput.getWidth(), shadowsOutput.getHeight()).div(noiseSize)));
-        uniforms.add(new FloatUniform("bias", bias));
-        uniforms.add(new FloatUniform("radius", radius));
+        uniforms.add(kernelSizeUniform);
+        uniforms.add(kernelUniform);
+        uniforms.add(noiseScaleUniform);
+        uniforms.add(biasUniform);
+        uniforms.add(radiusUniform);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the depth frame buffer
@@ -162,8 +144,8 @@ public class ShadowMappingNode extends GraphNode {
         frameBuffer.create();
         // Create the pipeline
         final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
-        pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, FlowRenderer.SHADOW_SIZE)).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
-                .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, FlowRenderer.WINDOW_SIZE)).useCamera(renderModelsNode.getCamera())
+        pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, shadowMapSize.toFloat())).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
+                .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, graph.getWindowSize().toFloat())).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created
         super.create();
@@ -189,28 +171,66 @@ public class ShadowMappingNode extends GraphNode {
     }
 
     @Setting
+    public void setShadowMapSize(Vector2i shadowMapSize) {
+        this.shadowMapSize = shadowMapSize;
+    }
+
+    @Setting
     public void setLightDirection(Vector3f lightDirection) {
-        this.lightDirection = lightDirection;
+        lightDirectionUniform.set(lightDirection);
     }
 
     @Setting
     public void setKernelSize(int kernelSize) {
-        this.kernelSize = kernelSize;
+        // Generate the kernel
+        final Vector2f[] kernel = new Vector2f[kernelSize];
+        final Random random = new Random();
+        for (int i = 0; i < kernelSize; i++) {
+            // Create a set of random unit vectors
+            kernel[i] = new Vector2f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1).normalize();
+        }
+        // Update the uniforms
+        kernelSizeUniform.set(kernelSize);
+        kernelUniform.set(kernel);
     }
 
     @Setting
     public void setRadius(float radius) {
-        this.radius = radius;
+        radiusUniform.set(radius);
     }
 
     @Setting
     public void setBias(float bias) {
-        this.bias = bias;
+        biasUniform.set(bias);
     }
 
     @Setting
     public void setNoiseSize(int noiseSize) {
-        this.noiseSize = noiseSize;
+        // Generate the noise texture data
+        final Random random = new Random();
+        final int noiseTextureSize = noiseSize * noiseSize;
+        final ByteBuffer noiseTextureBuffer = CausticUtil.createByteBuffer(noiseTextureSize * 2);
+        for (int i = 0; i < noiseTextureSize; i++) {
+            // Random unit vectors around the z axis
+            Vector2f noise = new Vector2f(random.nextFloat() * 2 - 1, random.nextFloat() * 2 - 1).normalize();
+            // Encode to unsigned byte, and place in buffer
+            noise = noise.mul(128).add(128, 128);
+            noiseTextureBuffer.put((byte) (noise.getFloorX() & 0xff));
+            noiseTextureBuffer.put((byte) (noise.getFloorY() & 0xff));
+        }
+        // Update the uniform
+        noiseScaleUniform.set(new Vector2f(graph.getWindowWidth(), graph.getWindowHeight()).div(noiseSize));
+        // Update the texture
+        boolean wasCreated = false;
+        if (noiseTexture.isCreated()) {
+            noiseTexture.destroy();
+            wasCreated = true;
+        }
+        noiseTextureBuffer.flip();
+        noiseTexture.setImageData(noiseTextureBuffer, noiseSize, noiseSize);
+        if (wasCreated) {
+            noiseTexture.create();
+        }
     }
 
     @Input("normals")
