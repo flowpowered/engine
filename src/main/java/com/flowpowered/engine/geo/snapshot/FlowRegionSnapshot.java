@@ -23,6 +23,7 @@
  */
 package com.flowpowered.engine.geo.snapshot;
 
+import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -36,27 +37,22 @@ import com.flowpowered.math.vector.Vector3i;
 /**
  *
  */
-public class RegionSnapshot {
-    private final ChunkSnapshot[] chunks = new ChunkSnapshot[Region.CHUNKS.VOLUME];
-    private final WorldSnapshot world;
-    private final Vector3i position;
+public class FlowRegionSnapshot extends RegionSnapshot {
+    private final FlowChunkSnapshot[] chunks = new FlowChunkSnapshot[Region.CHUNKS.VOLUME];
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public RegionSnapshot(WorldSnapshot snapshot, Vector3i position) {
-        this.world = snapshot;
-        this.position = position;
+    public FlowRegionSnapshot(FlowWorldSnapshot world, Vector3i position) {
+        super(position, world);
     }
 
-    public Vector3i getPosition() {
-        return position;
-    }
-
-    public ChunkSnapshot getChunk(Vector3i position) {
+    @Override
+    public FlowChunkSnapshot getChunk(Vector3i position) {
         return getChunk(position.getX(), position.getY(), position.getZ());
     }
 
-    public ChunkSnapshot getChunk(int x, int y, int z) {
+    @Override
+    public FlowChunkSnapshot getChunk(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
@@ -66,7 +62,8 @@ public class RegionSnapshot {
         }
     }
 
-    public ChunkSnapshot[] getChunks() {
+    @Override
+    public FlowChunkSnapshot[] getChunks() {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
@@ -76,6 +73,7 @@ public class RegionSnapshot {
         }
     }
 
+    @Override
     public long getUpdateNumber() {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -97,11 +95,11 @@ public class RegionSnapshot {
             FlowChunk[] currentChunks = current.getChunks();
             for (int i = 0; i < Region.CHUNKS.VOLUME; i++) {
                 FlowChunk currentChunk = currentChunks[i];
-                ChunkSnapshot currentSnapshot = chunks[i];
+                FlowChunkSnapshot currentSnapshot = chunks[i];
                 if (currentChunk == null && currentSnapshot == null) {
                     continue;
                 } else if (currentChunk != null && currentSnapshot == null) {
-                    ChunkSnapshot chunkSnapshot = new ChunkSnapshot(world, this, currentChunk.getPosition().toInt());
+                    FlowChunkSnapshot chunkSnapshot = new FlowChunkSnapshot((FlowWorldSnapshot) world, this, currentChunk.getPosition().toInt());
                     chunkSnapshot.update(currentChunk);
                     chunks[i] = chunkSnapshot;
                     changed = true;
@@ -128,10 +126,10 @@ public class RegionSnapshot {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof RegionSnapshot)) {
+        if (!(o instanceof FlowRegionSnapshot)) {
             return false;
         }
-        final RegionSnapshot snapshot = (RegionSnapshot) o;
+        final FlowRegionSnapshot snapshot = (FlowRegionSnapshot) o;
         return position.equals(snapshot.position);
     }
 

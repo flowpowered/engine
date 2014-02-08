@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.geo.snapshot;
+package com.flowpowered.api.geo.snapshot;
 
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.material.BlockMaterial;

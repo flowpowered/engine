@@ -63,8 +63,8 @@ public final class FlowScheduler implements Scheduler {
     private final Engine engine;
     // SchedulerElements
     private final MainThread mainThread;
-    private final RenderThread renderThread;
-    private final InputThread inputThread;
+    private RenderThread renderThread;
+    private InputThread inputThread;
 
     /**
      * Creates a new task scheduler.
@@ -72,14 +72,6 @@ public final class FlowScheduler implements Scheduler {
     public FlowScheduler(Engine engine) {
         this.engine = engine;
         mainThread = new MainThread(this);
-
-        if (engine.getPlatform().isClient()) {
-            inputThread = new InputThread(this);
-            renderThread = new RenderThread((FlowClient) engine, this);
-        } else {
-            inputThread = null;
-            renderThread = null;
-        }
         taskManager = new FlowTaskManager(this);
     }
 
@@ -87,20 +79,22 @@ public final class FlowScheduler implements Scheduler {
         if (mainThread.isRunning()) {
             throw new IllegalStateException("Attempt was made to start the main thread twice");
         }
-
         mainThread.start();
     }
 
-    public void startClientThreads() {
-        if (renderThread.isRunning() || inputThread.isRunning()) {
+    public void startClientThreads(FlowClient client) {
+        if (renderThread != null && renderThread.isRunning() || inputThread != null && inputThread.isRunning()) {
             throw new IllegalStateException("Attempt was made to start the client threads twice");
         }
+
+        inputThread = new InputThread(client.getScheduler());
+        renderThread = new RenderThread(client);
         renderThread.start();
         inputThread.start();
     }
 
     /**
-     * Stops the scheduler
+     * Stops the scheduler. Should only be called from Engine#stop().
      */
     public void stop() {
         mainThread.stop();
@@ -200,7 +194,7 @@ public final class FlowScheduler implements Scheduler {
     public FlowTaskManager getTaskManager() {
         return taskManager;
     }
-    
+
     public Engine getEngine() {
         return engine;
     }

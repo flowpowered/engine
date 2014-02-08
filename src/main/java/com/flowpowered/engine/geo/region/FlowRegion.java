@@ -56,7 +56,7 @@ import com.flowpowered.engine.entity.FlowEntitySnapshot;
 import com.flowpowered.engine.filesystem.ChunkDataForRegion;
 import com.flowpowered.engine.filesystem.ChunkFiles;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
-import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
+import com.flowpowered.engine.geo.snapshot.FlowRegionSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.CompleteAsyncManager;
@@ -83,7 +83,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
      * All live chunks. These are not ticked, but can be accessed.
      */
     protected final AtomicReference<FlowChunk[]> live = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
-    private final RegionSnapshot snapshot;
+    private final FlowRegionSnapshot snapshot;
     private final RenderThread render;
 
     public FlowRegion(FlowEngine engine, FlowWorld world, int x, int y, int z, BAAWrapper chunkStore, RenderThread render) {
@@ -92,7 +92,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         this.generator = new RegionGenerator(this, 4);
         this.chunkStore = chunkStore;
         this.render = render;
-        this.snapshot = new RegionSnapshot(world.getSnapshot(), getPosition().toInt());
+        this.snapshot = new FlowRegionSnapshot(world.getSnapshot(), getPosition().toInt());
 
     }
 
@@ -562,7 +562,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return Arrays.copyOf(get, get.length);
     }
 
-    public RegionSnapshot getSnapshot() {
+    public FlowRegionSnapshot getSnapshot() {
         return snapshot;
     }
 }

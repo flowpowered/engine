@@ -23,57 +23,49 @@
  */
 package com.flowpowered.engine.geo.snapshot;
 
+import com.flowpowered.api.geo.snapshot.WorldSnapshot;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.flowpowered.commons.map.TripleIntObjectMap;
-import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
-import com.flowpowered.math.vector.Vector3i;
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
+import com.flowpowered.commons.map.TripleIntObjectMap;
+import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
+import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Region;
+import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.world.FlowWorld;
 
 /**
  *
  */
-public class WorldSnapshot {
-    private final TripleIntObjectMap<RegionSnapshot> regions = new TTripleInt21ObjectHashMap<>();
-    private final TObjectLongMap<RegionSnapshot> lastUpdate = new TObjectLongHashMap<>();
-    private final UUID id;
-    private final String name;
+public class FlowWorldSnapshot extends WorldSnapshot {
+    private final TripleIntObjectMap<FlowRegionSnapshot> regions = new TTripleInt21ObjectHashMap<>();
+    private final TObjectLongMap<FlowRegionSnapshot> lastUpdate = new TObjectLongHashMap<>();
     private long time;
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public WorldSnapshot(World world) {
-        this.id = world.getUID();
-        this.name = world.getName();
+    public FlowWorldSnapshot(World world) {
+        super(world.getUID(), world.getName());
         this.time = world.getAge();
     }
 
-    public UUID getID() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
+    @Override
     public boolean hasRegion(Vector3i position) {
         return hasRegion(position.getX(), position.getY(), position.getZ());
     }
 
+    @Override
     public boolean hasRegion(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -84,11 +76,13 @@ public class WorldSnapshot {
         }
     }
 
-    public RegionSnapshot getRegion(Vector3i position) {
+    @Override
+    public FlowRegionSnapshot getRegion(Vector3i position) {
         return getRegion(position.getX(), position.getY(), position.getZ());
     }
 
-    public RegionSnapshot getRegion(int x, int y, int z) {
+    @Override
+    public FlowRegionSnapshot getRegion(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
@@ -98,12 +92,13 @@ public class WorldSnapshot {
         }
     }
 
+    @Override
     public Map<Vector3i, RegionSnapshot> getRegions() {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
             final Map<Vector3i, RegionSnapshot> map = new HashMap<>(regions.size());
-            for (RegionSnapshot region : regions.valueCollection()) {
+            for (FlowRegionSnapshot region : regions.valueCollection()) {
                 map.put(region.getPosition(), region);
             }
             return map;
@@ -112,15 +107,17 @@ public class WorldSnapshot {
         }
     }
 
-    public ChunkSnapshot getChunk(Vector3i position) {
+    @Override
+    public FlowChunkSnapshot getChunk(Vector3i position) {
         return getChunk(position.getX(), position.getY(), position.getZ());
     }
 
-    public ChunkSnapshot getChunk(int x, int y, int z) {
+    @Override
+    public FlowChunkSnapshot getChunk(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
-            RegionSnapshot get = regions.get(x >> Region.CHUNKS.BITS, y >> Region.CHUNKS.BITS, z >> Region.CHUNKS.BITS);
+            FlowRegionSnapshot get = regions.get(x >> Region.CHUNKS.BITS, y >> Region.CHUNKS.BITS, z >> Region.CHUNKS.BITS);
             if (get == null) {
                 return null;
             }
@@ -130,6 +127,7 @@ public class WorldSnapshot {
         }
     }
 
+    @Override
     public long getTime() {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -140,6 +138,7 @@ public class WorldSnapshot {
         }
     }
 
+    @Override
     public long getUpdateNumber() {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -161,7 +160,7 @@ public class WorldSnapshot {
             boolean changed = false;
             for (FlowRegion region : current.getFlowRegions()) {
                 final Vector3i position = region.getPosition().toInt();
-                RegionSnapshot regionSnapshot = regions.get(position.getX(), position.getY(), position.getZ());
+                FlowRegionSnapshot regionSnapshot = regions.get(position.getX(), position.getY(), position.getZ());
                 if (regionSnapshot == null) {
                     regionSnapshot = region.getSnapshot();
                     regions.put(position.getX(), position.getY(), position.getZ(), regionSnapshot);
@@ -169,8 +168,8 @@ public class WorldSnapshot {
                 }
                 validRegions.add(position);
             }
-            for (Iterator<RegionSnapshot> iterator = regions.valueCollection().iterator(); iterator.hasNext(); ) {
-                RegionSnapshot next = iterator.next();
+            for (Iterator<FlowRegionSnapshot> iterator = regions.valueCollection().iterator(); iterator.hasNext(); ) {
+                FlowRegionSnapshot next = iterator.next();
                 final Vector3i position = next.getPosition();
                 if (!validRegions.contains(position)) {
                     iterator.remove();
@@ -197,10 +196,10 @@ public class WorldSnapshot {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof WorldSnapshot)) {
+        if (!(o instanceof FlowWorldSnapshot)) {
             return false;
         }
-        final WorldSnapshot snapshot = (WorldSnapshot) o;
+        final FlowWorldSnapshot snapshot = (FlowWorldSnapshot) o;
         return id.equals(snapshot.id);
     }
 

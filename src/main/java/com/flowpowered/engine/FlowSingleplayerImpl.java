@@ -82,14 +82,8 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
 
     @Override
     public void start() {
-        getScheduler().startClientThreads();
+        getScheduler().startClientThreads(this);
         super.start();
-    }
-
-    @Override
-    public boolean stop() {
-        return super.stop();
-
     }
 
     @Override

@@ -52,7 +52,7 @@ import com.flowpowered.engine.entity.FlowEntity;
 import com.flowpowered.engine.geo.region.RegionSource;
 import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
-import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
+import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
 import com.flowpowered.engine.util.thread.StartTickManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
@@ -77,7 +77,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     private final SnapshotManager snapshotManager;
     private final SnapshotableLong age;
     private final RegionSource regionSource;
-    private final WorldSnapshot snapshot;
+    private final FlowWorldSnapshot snapshot;
 
     public FlowWorld(FlowEngine engine, String name, UUID uid, long age) {
         super(engine);
@@ -87,7 +87,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         this.snapshotManager = new SnapshotManager();
         this.age = new SnapshotableLong(snapshotManager, age);
         this.regionSource = new RegionSource(engine, (FlowServerWorld) this);
-        this.snapshot = new WorldSnapshot(this);
+        this.snapshot = new FlowWorldSnapshot(this);
     }
 
     public FlowWorld(FlowEngine engine, String name) {
@@ -422,7 +422,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public WorldSnapshot getSnapshot() {
+    public FlowWorldSnapshot getSnapshot() {
         return snapshot;
     }
 

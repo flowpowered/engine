@@ -21,53 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.scheduler.input;
+package com.flowpowered.api.geo.snapshot;
 
-/**
- *
- */
-public class MouseEvent {
-    private final int x, y;
-    private final int dx, dy;
-    private final int dWheel;
-    private final int button;
-    private final boolean pressedDown;
+import java.util.Map;
+import java.util.UUID;
 
-    public MouseEvent(int x, int y, int dx, int dy, int dWheel, int button, boolean pressedDown) {
-        this.x = x;
-        this.y = y;
-        this.dx = dx;
-        this.dy = dy;
-        this.dWheel = dWheel;
-        this.button = button;
-        this.pressedDown = pressedDown;
+import com.flowpowered.math.vector.Vector3i;
+
+public abstract class WorldSnapshot {
+    protected final UUID id;
+    protected final String name;
+
+    public WorldSnapshot(UUID id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    public int getX() {
-        return x;
+    public UUID getID() {
+        return id;
     }
 
-    public int getY() {
-        return y;
+    public String getName() {
+        return name;
     }
 
-    public int getDX() {
-        return dx;
-    }
 
-    public int getDY() {
-        return dy;
-    }
+    public abstract ChunkSnapshot getChunk(Vector3i position);
 
-    public int getDWheel() {
-        return dWheel;
-    }
+    public abstract ChunkSnapshot getChunk(int x, int y, int z);
 
-    public int getButton() {
-        return button;
-    }
+    public abstract RegionSnapshot getRegion(Vector3i position);
 
-    public boolean wasPressedDown() {
-        return pressedDown;
-    }
+    public abstract RegionSnapshot getRegion(int x, int y, int z);
+
+    public abstract Map<Vector3i, RegionSnapshot> getRegions();
+
+    public abstract long getTime();
+
+    public abstract long getUpdateNumber();
+
+    public abstract boolean hasRegion(Vector3i position);
+
+    public abstract boolean hasRegion(int x, int y, int z);
+
 }
