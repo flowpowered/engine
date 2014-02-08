@@ -33,7 +33,7 @@ import com.flowpowered.api.material.block.BlockFaces;
 import com.flowpowered.api.model.mesher.ChunkMesher;
 import com.flowpowered.api.model.mesh.Mesh;
 import com.flowpowered.api.model.mesh.Mesh.MeshAttribute;
-import com.flowpowered.engine.geo.snapshot.ChunkSnapshotGroup;
+import com.flowpowered.api.geo.snapshot.ChunkSnapshotGroup;
 
 /**
  * The standard chunk mesher. Voxels are meshed as blocks. Occludes any block not visible, including the edge blocks. Can mesh a chunk with 3n^2(n+2) block access operations, n being the size of the

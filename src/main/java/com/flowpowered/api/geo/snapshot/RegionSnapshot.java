@@ -21,20 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.model.mesher;
+package com.flowpowered.api.geo.snapshot;
 
-import com.flowpowered.api.model.mesh.Mesh;
-import com.flowpowered.api.geo.snapshot.ChunkSnapshotGroup;
+import com.flowpowered.math.vector.Vector3i;
 
-/**
- * Converts chunk snapshot groups to meshes for rendering.
- */
-public interface ChunkMesher {
-    /**
-     * Converts the chunk snapshot group to a mesh.
-     *
-     * @param chunk The chunk snapshot group
-     * @return The mesh
-     */
-    public Mesh mesh(ChunkSnapshotGroup chunk);
+public abstract class RegionSnapshot {
+    protected final Vector3i position;
+    protected final WorldSnapshot world;
+
+    public RegionSnapshot(Vector3i position, WorldSnapshot world) {
+        this.position = position;
+        this.world = world;
+    }
+
+    public Vector3i getPosition() {
+        return position;
+    }
+
+    public abstract long getUpdateNumber();
+
+    public abstract ChunkSnapshot getChunk(Vector3i position);
+
+    public abstract ChunkSnapshot getChunk(int x, int y, int z);
+
+    public abstract ChunkSnapshot[] getChunks();
+
 }

@@ -21,11 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.scheduler.input;
+package com.flowpowered.api.input;
 
-/**
- *
- */
 public class KeyboardEvent {
     private final char character;
     private final int key;

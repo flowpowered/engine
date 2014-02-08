@@ -25,17 +25,17 @@ package com.flowpowered.engine.scheduler.input;
 
 import java.util.Queue;
 
-import com.flowpowered.api.Flow;
-import com.flowpowered.commons.queue.SubscribableQueue;
-import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.engine.FlowSingleplayer;
-import com.flowpowered.engine.FlowSingleplayerImpl;
-
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import com.flowpowered.api.Flow;
+import com.flowpowered.api.input.KeyboardEvent;
+import com.flowpowered.api.input.MouseEvent;
+import com.flowpowered.commons.queue.SubscribableQueue;
+import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.engine.FlowSingleplayerImpl;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 
 /**

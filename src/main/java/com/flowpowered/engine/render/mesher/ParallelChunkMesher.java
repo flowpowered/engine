@@ -28,10 +28,11 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.model.mesher.ChunkMesher;
 import com.flowpowered.api.model.mesh.Mesh;
-import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
-import com.flowpowered.engine.geo.snapshot.ChunkSnapshotGroup;
+import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
+import com.flowpowered.api.geo.snapshot.ChunkSnapshotGroup;
 import com.flowpowered.engine.render.model.ChunkModel;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;

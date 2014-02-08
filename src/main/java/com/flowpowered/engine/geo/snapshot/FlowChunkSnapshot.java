@@ -23,6 +23,7 @@
  */
 package com.flowpowered.engine.geo.snapshot;
 
+import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -40,50 +41,23 @@ import com.flowpowered.engine.geo.chunk.FlowChunk;
 /**
  *
  */
-public class ChunkSnapshot {
+public class FlowChunkSnapshot extends ChunkSnapshot {
     private final short[] blockIDs = new short[Chunk.BLOCKS.VOLUME];
     private final short[] blockData = new short[Chunk.BLOCKS.VOLUME];
-    private final WorldSnapshot world;
-    private final RegionSnapshot region;
-    private final Vector3i position;
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public ChunkSnapshot(WorldSnapshot world, RegionSnapshot region, Vector3i position) {
-        this.world = world;
-        this.region = region;
-        this.position = position;
+    public FlowChunkSnapshot(FlowWorldSnapshot world, FlowRegionSnapshot region, Vector3i position) {
+        super(position, region, world);
     }
 
-    public WorldSnapshot getWorld() {
-        return world;
-    }
-
-    public RegionSnapshot getRegion() {
-        return region;
-    }
-
-    public Vector3i getPosition() {
-        return position;
-    }
-
-    public int getX() {
-        return position.getX();
-    }
-
-    public int getY() {
-        return position.getY();
-    }
-
-    public int getZ() {
-        return position.getZ();
-    }
-
-    public ChunkSnapshot getRelativeChunk(Vector3i relative) {
+    @Override
+    public FlowChunkSnapshot getRelativeChunk(Vector3i relative) {
         return getRelativeChunk(relative.getX(), relative.getY(), relative.getZ());
     }
 
-    public ChunkSnapshot getRelativeChunk(int x, int y, int z) {
+    @Override
+    public FlowChunkSnapshot getRelativeChunk(int x, int y, int z) {
         // We check to see if the chunk is in this chunk's region first, to avoid a map lookup for the other region
         final int regionX = getRegion().getPosition().getX();
         final int regionY = getRegion().getPosition().getY();
@@ -96,16 +70,18 @@ public class ChunkSnapshot {
         final int otherRegionZ = otherChunkZ / Region.CHUNKS.SIZE;
         if (regionX == otherRegionX && regionZ == otherRegionZ && regionY == otherRegionY) {
             // Get the chunk from the current region
-            return getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
+            return (FlowChunkSnapshot) getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
         }
-        RegionSnapshot other = getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
+        FlowRegionSnapshot other = (FlowRegionSnapshot) getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
         return other == null ? null : other.getChunk(otherChunkX, otherChunkY, otherChunkZ);
     }
 
+    @Override
     public BlockMaterial getMaterial(Vector3i position) {
         return getMaterial(position.getX(), position.getY(), position.getZ());
     }
 
+    @Override
     public BlockMaterial getMaterial(int x, int y, int z) {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -117,6 +93,7 @@ public class ChunkSnapshot {
         }
     }
 
+    @Override
     public long getUpdateNumber() {
         final Lock lock = this.lock.readLock();
         lock.lock();
@@ -169,7 +146,7 @@ public class ChunkSnapshot {
 
     private void touchNeighbors() {
         for (BlockFace face : BlockFaces.NESWBT) {
-            ChunkSnapshot rel = getRelativeChunk(face.getOffset());
+            FlowChunkSnapshot rel = getRelativeChunk(face.getOffset());
             if (rel != null) {
                 rel.touch();
             }
@@ -181,10 +158,10 @@ public class ChunkSnapshot {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ChunkSnapshot)) {
+        if (!(o instanceof FlowChunkSnapshot)) {
             return false;
         }
-        final ChunkSnapshot that = (ChunkSnapshot) o;
+        final FlowChunkSnapshot that = (FlowChunkSnapshot) o;
         if (!position.equals(that.position)) {
             return false;
         }

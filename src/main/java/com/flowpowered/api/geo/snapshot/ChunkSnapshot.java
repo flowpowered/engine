@@ -21,20 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.model.mesher;
+package com.flowpowered.api.geo.snapshot;
 
-import com.flowpowered.api.model.mesh.Mesh;
-import com.flowpowered.api.geo.snapshot.ChunkSnapshotGroup;
+import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.math.vector.Vector3i;
 
-/**
- * Converts chunk snapshot groups to meshes for rendering.
- */
-public interface ChunkMesher {
-    /**
-     * Converts the chunk snapshot group to a mesh.
-     *
-     * @param chunk The chunk snapshot group
-     * @return The mesh
-     */
-    public Mesh mesh(ChunkSnapshotGroup chunk);
+public abstract class ChunkSnapshot {
+    protected final Vector3i position;
+    protected final RegionSnapshot region;
+    protected final WorldSnapshot world;
+
+    public ChunkSnapshot(Vector3i position, RegionSnapshot region, WorldSnapshot world) {
+        this.position = position;
+        this.region = region;
+        this.world = world;
+    }
+
+    public RegionSnapshot getRegion() {
+        return region;
+    }
+
+    public WorldSnapshot getWorld() {
+        return world;
+    }
+
+    public Vector3i getPosition() {
+        return position;
+    }
+
+    public int getX() {
+        return position.getX();
+    }
+
+    public int getY() {
+        return position.getY();
+    }
+
+    public int getZ() {
+        return position.getZ();
+    }
+
+    public abstract BlockMaterial getMaterial(Vector3i position);
+
+    public abstract BlockMaterial getMaterial(int x, int y, int z);
+
+    public abstract ChunkSnapshot getRelativeChunk(Vector3i relative);
+
+    public abstract ChunkSnapshot getRelativeChunk(int x, int y, int z);
+
+    public abstract long getUpdateNumber();
 }

@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
-import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
+import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
 
 public class RegionFileManager {
     /**
@@ -80,7 +80,7 @@ public class RegionFileManager {
      * @param c the chunk snapshot
      * @return the DataOutputStream
      */
-    public OutputStream getChunkOutputStream(ChunkSnapshot c) {
+    public OutputStream getChunkOutputStream(FlowChunkSnapshot c) {
         int rx = c.getX() >> Region.CHUNKS.BITS;
         int ry = c.getY() >> Region.CHUNKS.BITS;
         int rz = c.getZ() >> Region.CHUNKS.BITS;

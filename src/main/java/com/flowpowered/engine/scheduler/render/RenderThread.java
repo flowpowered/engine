@@ -30,20 +30,19 @@ import java.util.Queue;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
+import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
+import com.flowpowered.api.geo.snapshot.RegionSnapshot;
+import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.FlowSingleplayerImpl;
-import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
-import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
-import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
+import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
 import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
 import com.flowpowered.engine.render.model.ChunkModel;
-import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.input.InputThread;
-import com.flowpowered.engine.scheduler.input.KeyboardEvent;
 import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
@@ -69,13 +68,13 @@ public class RenderThread extends TickingElement {
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
-    public RenderThread(FlowClient client, FlowScheduler scheduler) {
+    public RenderThread(FlowClient client) {
         super("RenderThread", FPS);
         this.client = client;
         this.scheduler = scheduler;
         this.renderer = new FlowRenderer();
         this.frustum = new ViewFrustum();
-        this.input = scheduler.getInputThread();
+        this.input = client.getScheduler().getInputThread();
         this.mesher = new ParallelChunkMesher(this, new StandardChunkMesher());
     }
 
@@ -117,8 +116,8 @@ public class RenderThread extends TickingElement {
         return mesher;
     }
 
-    // TODO: not thread safe; WorldSnapshot could update in the middle of this
-    private void updateChunkModels(WorldSnapshot world) {
+    // TODO: not thread safe; FlowWorldSnapshot could update in the middle of this
+    private void updateChunkModels(FlowWorldSnapshot world) {
         // If we have no world, remove all chunks
         if (world == null) {
             for (ChunkModel model : chunkModels.values()) {
