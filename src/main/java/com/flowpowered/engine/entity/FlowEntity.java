@@ -23,13 +23,10 @@
  */
 package com.flowpowered.engine.entity;
 
-import java.util.Collection;
 import java.util.UUID;
 
-import com.flowpowered.commons.datatable.ManagedHashMap;
-import com.flowpowered.commons.datatable.ManagedMap;
-
 import com.flowpowered.api.Engine;
+import com.flowpowered.api.component.BaseComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.EntitySnapshot;
@@ -42,19 +39,18 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.region.FlowRegion;
 
-public class FlowEntity implements Entity {
+public class FlowEntity extends BaseComponentOwner implements Entity {
     private final int id;
     private FlowPhysics physics;
-    private ManagedHashMap data;
 
     private Network network;
 
-    public FlowEntity(int id, Transform transform) {
+    public FlowEntity(Engine engine, int id, Transform transform) {
+        super(engine);
         this.id = id;
         this.physics = new FlowPhysics(this);
         this.physics.setTransform(transform);
         this.physics.copySnapshot();
-        this.data = new ManagedHashMap();
         this.network = new Network(this);
     }
 
@@ -111,58 +107,15 @@ public class FlowEntity implements Entity {
     }
 
     @Override
-    public ManagedMap getData() {
-        return data;
-    }
-
-    @Override
     public void tick(float dt) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (Component c : values()) {
+            c.tick(dt/1000);
+        }
     }
 
     @Override
     public World getWorld() {
         return physics.getPosition().getWorld();
-    }
-
-    @Override
-    public <T extends Component> T add(Class<T> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T extends Component> T get(Class<T> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T extends Component> Collection<T> getAll(Class<T> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T> Collection<T> getAllOfType(Class<T> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T extends Component> T getExact(Class<T> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T> T getType(Class<T> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public <T extends Component> T detach(Class<? extends Component> type) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Collection<Component> values() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     void finalizeRun() {

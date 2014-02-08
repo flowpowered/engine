@@ -54,12 +54,13 @@ import com.flowpowered.commons.datatable.SerializableMap;
 import com.flowpowered.commons.sanitation.SafeCast;
 import com.flowpowered.commons.store.BinaryFileStore;
 import com.flowpowered.engine.FlowEngine;
+import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 
 public class WorldFiles {
     public static final byte WORLD_VERSION = 1;
 
-    public static <E extends FlowEngine & Server> FlowServerWorld loadWorld(E engine, WorldGenerator generator, String worldName) {
+    public static FlowServerWorld loadWorld(FlowServer engine, WorldGenerator generator, String worldName) {
         final Logger logger = engine.getLogger();
 
         File worldDir = new File(FlowFileSystem.WORLDS_DIRECTORY, worldName);

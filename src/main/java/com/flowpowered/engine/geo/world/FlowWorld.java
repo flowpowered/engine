@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.flowpowered.commons.bit.ShortBitMask;
-import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
 
 import com.flowpowered.api.component.BaseComponentOwner;
@@ -55,7 +54,6 @@ import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
-import com.flowpowered.engine.util.thread.FinalizeManager;
 import com.flowpowered.engine.util.thread.StartTickManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLong;
@@ -129,7 +127,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
             return null;
         }
 
-        FlowEntity entity = EntityManager.createEntity(new Transform(new Point(this, point), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
+        FlowEntity entity = EntityManager.createEntity(getEngine(), new Transform(new Point(this, point), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
         region.getEntityManager().addEntity(entity);
         return entity;
     }

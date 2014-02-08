@@ -47,7 +47,6 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.block.BlockFace;
-import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.engine.FlowEngine;
@@ -284,7 +283,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             if (this.live.compareAndSet(live, newArray)) {
                 if (dataForRegion != null) {
                     for (FlowEntitySnapshot snapshot : dataForRegion.loadedEntities) {
-                        FlowEntity entity = EntityManager.createEntity(snapshot.getTransform());
+                        FlowEntity entity = EntityManager.createEntity(engine, snapshot.getTransform());
                         entityManager.addEntity(entity);
                     }
                 }
@@ -485,7 +484,21 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     @Override
     public void startTickRun(int stage, long delta) {
+        if (stage == 0) {
+            updateEntities(delta);
+        }
     }
+
+
+	private void updateEntities(float dt) {
+		for (FlowEntity ent : entityManager.getAll()) {
+			try {
+				ent.tick(dt);
+			} catch (Exception e) {
+				engine.getLogger().log(Level.ERROR, "Unhandled exception during tick for " + ent.toString(), e);
+			}
+		}
+	}
 
     @Override
     public void runPhysics(int sequence) {

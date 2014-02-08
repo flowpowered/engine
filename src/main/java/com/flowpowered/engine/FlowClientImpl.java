@@ -23,16 +23,47 @@
  */
 package com.flowpowered.engine;
 
-import com.flowpowered.api.Server;
+import java.util.concurrent.atomic.AtomicReference;
+
+import com.flowpowered.api.Platform;
 import com.flowpowered.engine.entity.FlowPlayer;
-import com.flowpowered.engine.geo.world.FlowServerWorldManager;
+import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.geo.world.FlowWorldManager;
+import com.flowpowered.engine.render.FlowRenderer;
 
-public interface FlowServer extends Server, FlowEngine {
+public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
+    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
+    private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
+    private final FlowWorldManager<FlowWorld> worldManager;
+
+    public FlowClientImpl(FlowApplication args) {
+        super(args);
+        this.worldManager = new FlowWorldManager<>(this);
+    }
 
     @Override
-	FlowPlayer getPlayer(String name, boolean exact);
+    public Platform getPlatform() {
+        return Platform.CLIENT;
+    }
 
     @Override
-    FlowServerWorldManager getWorldManager();
+    public FlowWorldManager<FlowWorld> getWorldManager() {
+        return worldManager;
+    }
+
+    @Override
+    public FlowPlayer getPlayer() {
+        return player.get();
+    }
+
+    @Override
+    public FlowWorld getWorld() {
+        return activeWorld.get();
+    }
+
+    @Override
+    public FlowRenderer getRenderer() {
+        return getScheduler().getRenderThread().getRenderer();
+    }
+
 }
- 

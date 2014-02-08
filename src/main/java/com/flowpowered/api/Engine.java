@@ -41,18 +41,18 @@ public interface Engine extends Named {
      *
      * @return build version
      */
-    public String getVersion();
+    String getVersion();
 
-    public Platform getPlatform();
+    Platform getPlatform();
     
-    public Logger getLogger();
+    Logger getLogger();
 
     /**
      * Ends this engine instance safely. All worlds, players, and configuration data is saved, and all threads are ended cleanly.<br/> <br/> Players will be sent a default disconnect message.
      *
      * @return true for for the first stop
      */
-    public boolean stop();
+    boolean stop();
 
     /**
      * Ends this engine instance safely. All worlds, players, and configuration data is saved, and all threads are ended cleanly. <br/> If any players are connected, will kick them with the given reason.
@@ -60,16 +60,16 @@ public interface Engine extends Named {
      * @param reason for stopping the game instance
      * @return true for for the first stop
      */
-    public boolean stop(String reason);
+    boolean stop(String reason);
 
     /**
      * Returns true if the game is running in debug mode <br/> <br/> To start debug mode, start Flow with -debug
      *
      * @return true if server is started with the -debug flag, false if not
      */
-    public boolean debugMode();
+    boolean debugMode();
 
-    public Scheduler getScheduler();
+    Scheduler getScheduler();
 
     /**
      * Gets an abstract representation of the engine Filesystem. <p> The Filesystem handles the loading of all resources. <p> On the client, loading a resource will load the resource from the harddrive.
@@ -77,14 +77,14 @@ public interface Engine extends Named {
      * 
      * @return the filesystem instance
      */
-    public FileSystem getFileSystem();
+    FileSystem getFileSystem();
 
     /**
      * Returns the game's {@link EventManager} Event listener registration and calling is handled through this.
      *
      * @return Our EventManager instance
      */
-    public EventManager getEventManager();
+    EventManager getEventManager();
 
-    public WorldManager getWorldManager();
+    WorldManager getWorldManager();
 }

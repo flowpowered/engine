@@ -36,17 +36,17 @@ import com.flowpowered.engine.util.argument.PlatformConverter;
  * A main class for launching various platforms
  */
 public class FlowApplication {
-    @Parameter (names = {"--platform", "-platform", "--p", "-p"}, converter = PlatformConverter.class)
+    @Parameter(names = {"--platform", "-platform", "--p", "-p"}, converter = PlatformConverter.class)
     public Platform platform = Platform.SINGLEPLAYER;
-    @Parameter (names = {"--debug", "-debug", "--d", "-d"}, description = "Debug Mode")
+    @Parameter(names = {"--debug", "-debug", "--d", "-d"}, description = "Debug Mode")
     public boolean debug = false;
-    @Parameter (names = {"--protocol"}, description = "Protocol to connect with")
+    @Parameter(names = {"--protocol"}, description = "Protocol to connect with")
     public String protocol = null;
-    @Parameter (names = {"--server"}, description = "Server to connect to")
+    @Parameter(names = {"--server"}, description = "Server to connect to")
     public String server = null;
-    @Parameter (names = {"--port"}, description = "Port to connect to")
+    @Parameter(names = {"--port"}, description = "Port to connect to")
     public int port = -1;
-    @Parameter (names = {"--user"}, description = "User to connect as")
+    @Parameter(names = {"--user"}, description = "User to connect as")
     public String user = null;
 
     public static void main(String[] args) {
@@ -55,16 +55,16 @@ public class FlowApplication {
             JCommander commands = new JCommander(main);
             commands.parse(args);
 
-            FlowEngine engine;
+            FlowEngineImpl engine;
             switch (main.platform) {
                 case CLIENT:
-                    engine = new FlowClient(main);
+                    engine = new FlowClientImpl(main);
                     break;
                 case SERVER:
-                    engine = new FlowServer(main);
+                    engine = new FlowServerImpl(main);
                     break;
                 case SINGLEPLAYER:
-                    engine = new FlowSingleplayer(main);
+                    engine = new FlowSingleplayerImpl(main);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown platform: " + main.platform);
