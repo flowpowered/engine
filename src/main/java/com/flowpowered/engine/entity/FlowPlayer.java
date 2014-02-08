@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.entity.Player;
-import com.flowpowered.api.entity.PlayerSnapshot;
+import com.flowpowered.api.player.Player;
+import com.flowpowered.api.player.PlayerSnapshot;
 import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.chat.ChatReceiver;

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.entity;
+package com.flowpowered.api.player;
 
 import com.flowpowered.api.scheduler.Snapshot;
 

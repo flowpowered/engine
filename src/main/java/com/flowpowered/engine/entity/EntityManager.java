@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
