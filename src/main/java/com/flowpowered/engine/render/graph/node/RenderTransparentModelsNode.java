@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.render.stage;
+package com.flowpowered.engine.render.graph.node;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.flowpowered.engine.render.FlowRenderer;
-import org.spout.renderer.api.Creatable;
+import com.flowpowered.engine.render.graph.RenderGraph;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -46,8 +46,7 @@ import org.spout.renderer.api.model.Model;
 /**
  *
  */
-public class RenderTransparentModelsStage extends Creatable {
-    private final FlowRenderer renderer;
+public class RenderTransparentModelsNode extends GraphNode {
     private final Material material;
     private final Texture weightedColors;
     private final Texture weightedVelocities;
@@ -60,10 +59,10 @@ public class RenderTransparentModelsStage extends Creatable {
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
-    public RenderTransparentModelsStage(FlowRenderer renderer) {
-        this.renderer = renderer;
-        material = new Material(renderer.getProgram("transparencyBlending"));
-        final GLFactory glFactory = renderer.getGLFactory();
+    public RenderTransparentModelsNode(RenderGraph graph, String name) {
+        super(graph, name);
+        material = new Material(graph.getProgram("transparencyBlending"));
+        final GLFactory glFactory = graph.getGLFactory();
         weightedColors = glFactory.createTexture();
         weightedVelocities = glFactory.createTexture();
         layerCounts = glFactory.createTexture();
@@ -96,7 +95,7 @@ public class RenderTransparentModelsStage extends Creatable {
         material.addTexture(1, weightedVelocities);
         material.addTexture(2, layerCounts);
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the weighted sum frame buffer
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, weightedVelocities);
@@ -127,32 +126,33 @@ public class RenderTransparentModelsStage extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getContext());
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
-    public Texture getColorsInput() {
-        return colorsInput;
-    }
-
+    @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
 
-    public Texture getVelocitiesInput() {
-        return velocitiesInput;
-    }
-
+    @Input("velocities")
     public void setVelocitiesInput(Texture texture) {
         texture.checkCreated();
         velocitiesInput = texture;
+    }
+
+    @Output("colors")
+    public Texture getColorsOutput() {
+        return colorsInput;
     }
 
     /**

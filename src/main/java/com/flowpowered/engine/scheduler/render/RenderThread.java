@@ -178,8 +178,8 @@ public class RenderThread extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
-        if (renderer.getRenderModelsStage().getModels().size() > chunkModels.size()) {
-            System.out.println("There are more models in the renderer (" + renderer.getRenderModelsStage().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
+            System.out.println("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
@@ -196,7 +196,7 @@ public class RenderThread extends TickingElement {
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.getRenderModelsStage().removeModel(model);
+        renderer.getRenderModelsNode().removeModel(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
@@ -234,7 +234,7 @@ public class RenderThread extends TickingElement {
             // TODO: Update the camera position to match the player
 
             // TEST CODE!
-            final Camera camera = renderer.getRenderModelsStage().getCamera();
+            final Camera camera = renderer.getRenderModelsNode().getCamera();
             final Vector3f right = camera.getRight();
             final Vector3f up = camera.getUp();
             final Vector3f forward = camera.getForward();
@@ -298,7 +298,7 @@ public class RenderThread extends TickingElement {
         cameraYaw %= 360;
         final Quaternionf yaw = Quaternionf.fromAngleDegAxis(cameraYaw, 1, 0, 0);
         // Set the new camera rotation
-        renderer.getRenderModelsStage().getCamera().setRotation(pitch.mul(yaw));
+        renderer.getRenderModelsNode().getCamera().setRotation(pitch.mul(yaw));
         // Update the last mouse x and y
         this.mouseX = mouseX;
         this.mouseY = mouseY;
@@ -320,7 +320,7 @@ public class RenderThread extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
-        final Vector3f position = renderer.getRenderModelsStage().getCamera().getPosition();
+        final Vector3f position = renderer.getRenderModelsNode().getCamera().getPosition();
         renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
         // TODO: lower light intensity at night
     }

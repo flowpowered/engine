@@ -21,30 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.render.stage;
+package com.flowpowered.engine.render.graph.node;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.engine.render.graph.RenderGraph;
+
 import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.Creatable;
+import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.model.Model;
 
 /**
  *
  */
-public class RenderGUIStage extends Creatable {
-    private final FlowRenderer renderer;
+public class RenderGUINode extends GraphNode {
+    private final Material material;
+    private Texture colorsInput;
     private final Camera camera = Camera.createOrthographic(1, 0, 1 / FlowRenderer.ASPECT_RATIO, 0, FlowRenderer.NEAR_PLANE, FlowRenderer.FAR_PLANE);
     private final List<Model> models = new ArrayList<>();
     private Pipeline pipeline;
 
-    public RenderGUIStage(FlowRenderer renderer) {
-        this.renderer = renderer;
+    public RenderGUINode(RenderGraph graph, String name) {
+        super(graph, name);
+        material = new Material(graph.getProgram("screen"));
     }
 
     @Override
@@ -52,8 +58,12 @@ public class RenderGUIStage extends Creatable {
         if (isCreated()) {
             throw new IllegalStateException("Render models stage has already been created");
         }
+        // Create the material
+        material.addTexture(0, colorsInput);
+        // Create the model
+        final Model model = new Model(graph.getScreen(), material);
         // Create the pipeline
-        pipeline = new PipelineBuilder().useCamera(camera).clearBuffer().renderModels(models).updateDisplay().build();
+        pipeline = new PipelineBuilder().useCamera(camera).clearBuffer().renderModels(Arrays.asList(model)).renderModels(models).updateDisplay().build();
         // Update state to created
         super.create();
     }
@@ -64,9 +74,15 @@ public class RenderGUIStage extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getContext());
+    }
+
+    @Input("colors")
+    public void setColorsInput(Texture colorsInput) {
+        this.colorsInput = colorsInput;
     }
 
     public Camera getCamera() {

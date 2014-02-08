@@ -21,16 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.render.stage;
+package com.flowpowered.engine.render.graph.node;
 
 import java.util.Arrays;
 
 import com.flowpowered.engine.render.FlowRenderer;
-import org.spout.renderer.api.Creatable;
+import com.flowpowered.engine.render.graph.RenderGraph;
+import com.flowpowered.math.vector.Vector3f;
+
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
+import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
@@ -42,26 +45,28 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
+
 /**
  *
  */
-public class LightingStage extends Creatable {
-    private final FlowRenderer renderer;
+public class LightingNode extends GraphNode {
     private final Material material;
     private final FrameBuffer frameBuffer;
     private final Texture colorsOutput;
     private Texture colorsInput;
     private Texture normalsInput;
     private Texture depthsInput;
-    private Texture materialInput;
+    private Texture materialsInput;
     private Texture occlusionsInput;
     private Texture shadowsInput;
     private Pipeline pipeline;
+    private Vector3f lightDirection = Vector3f.UP.negate();
 
-    public LightingStage(FlowRenderer renderer) {
-        this.renderer = renderer;
-        material = new Material(renderer.getProgram("lighting"));
-        final GLFactory glFactory = renderer.getGLFactory();
+    public LightingNode(RenderGraph graph, String name) {
+        super(graph, name);
+        material = new Material(graph.getProgram("lighting"));
+        final GLFactory glFactory = graph.getGLFactory();
         frameBuffer = glFactory.createFrameBuffer();
         colorsOutput = glFactory.createTexture();
     }
@@ -84,15 +89,15 @@ public class LightingStage extends Creatable {
         material.addTexture(0, colorsInput);
         material.addTexture(1, normalsInput);
         material.addTexture(2, depthsInput);
-        material.addTexture(3, materialInput);
+        material.addTexture(3, materialsInput);
         material.addTexture(4, occlusionsInput);
         material.addTexture(5, shadowsInput);
         final UniformHolder uniforms = material.getUniforms();
         uniforms.add(new FloatUniform("tanHalfFOV", FlowRenderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", FlowRenderer.ASPECT_RATIO));
-        uniforms.add(renderer.getLightDirectionUniform());
+        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.create();
@@ -109,41 +114,54 @@ public class LightingStage extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getContext());
     }
 
+    @Setting
+    public void setLightDirection(Vector3f lightDirection) {
+        this.lightDirection = lightDirection;
+    }
+
+    @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
 
+    @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
         normalsInput = texture;
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
-    public void setMaterialInput(Texture texture) {
+    @Input("materials")
+    public void setMaterialsInput(Texture texture) {
         texture.checkCreated();
-        materialInput = texture;
+        materialsInput = texture;
     }
 
+    @Input("occlusions")
     public void setOcclusionsInput(Texture texture) {
         texture.checkCreated();
         occlusionsInput = texture;
     }
 
+    @Input("shadows")
     public void setShadowsInput(Texture texture) {
         texture.checkCreated();
         shadowsInput = texture;
     }
 
+    @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
     }

@@ -34,10 +34,10 @@ import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.engine.render.graph.RenderGraph;
+import com.flowpowered.engine.render.graph.node.*;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
@@ -47,13 +47,6 @@ import com.flowpowered.math.vector.Vector3f;
 import org.lwjgl.opengl.GLContext;
 
 import com.flowpowered.api.render.Renderer;
-import com.flowpowered.engine.render.stage.GaussianBlurStage;
-import com.flowpowered.engine.render.stage.LightingStage;
-import com.flowpowered.engine.render.stage.RenderGUIStage;
-import com.flowpowered.engine.render.stage.RenderModelsStage;
-import com.flowpowered.engine.render.stage.RenderTransparentModelsStage;
-import com.flowpowered.engine.render.stage.SSAOStage;
-import com.flowpowered.engine.render.stage.ShadowMappingStage;
 import com.flowpowered.engine.scheduler.MainThread;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import org.spout.renderer.api.Camera;
@@ -69,13 +62,7 @@ import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
 import org.spout.renderer.api.gl.GLFactory;
-import org.spout.renderer.api.gl.Program;
-import org.spout.renderer.api.gl.Shader;
-import org.spout.renderer.api.gl.Texture;
-import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
-import org.spout.renderer.api.gl.Texture.InternalFormat;
-import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.model.StringModel;
@@ -107,25 +94,22 @@ public class FlowRenderer implements Renderer {
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
     // OpenGL version, factory and context
-    private GLVersion glVersion;
     private GLFactory glFactory;
     private Context context;
-    // Shader programs
-    private final Map<String, Program> programs = new HashMap<>();
     // Included materials
     private Material solidMaterial;
     private Material transparencyMaterial;
     private Material screenMaterial;
-    // Vertex array for stage screens, is reused
-    private VertexArray screenVertexArray;
-    // Stages
-    private RenderModelsStage renderModelsStage;
-    private ShadowMappingStage shadowMappingStage;
-    private SSAOStage ssaoStage;
-    private GaussianBlurStage gaussianBlurStage;
-    private LightingStage lightingStage;
-    private RenderTransparentModelsStage renderTransparentModelsStage;
-    private RenderGUIStage renderGUIStage;
+    // Render graph
+    private RenderGraph graph;
+    // Graph nodes
+    private RenderModelsNode renderModelsNode;
+    private ShadowMappingNode shadowMappingNode;
+    private SSAONode ssaoNode;
+    private BlurNode blurNode;
+    private LightingNode lightingNode;
+    private RenderTransparentModelsNode renderTransparentModelsNode;
+    private RenderGUINode renderGUINode;
     // FPS, TPS, and position monitor and models
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
@@ -146,9 +130,7 @@ public class FlowRenderer implements Renderer {
         this.mainThread = mainThread;
 
         initContext();
-        initPrograms();
-        initVertexArrays();
-        initEffects();
+        initGraph();
         initMaterials();
         addDefaultObjects();
     }
@@ -164,7 +146,7 @@ public class FlowRenderer implements Renderer {
             context.enableCapability(Capability.CULL_FACE);
         }
         context.enableCapability(Capability.DEPTH_TEST);
-        if (glVersion == GLVersion.GL30 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
+        if (getGLFactory().getGLVersion() == GLVersion.GL30 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
         final UniformHolder uniforms = context.getUniforms();
@@ -172,114 +154,87 @@ public class FlowRenderer implements Renderer {
         uniforms.add(previousProjectionMatrixUniform);
     }
 
-    private void initEffects() {
+    private void initGraph() {
+        graph = new RenderGraph(glFactory, context, "/shaders/" + glFactory.getGLVersion().toString().toLowerCase());
+        graph.create();
         final int blurSize = 5;
         // Render models
-        renderModelsStage = new RenderModelsStage(this);
-        renderModelsStage.create();
+        renderModelsNode = new RenderModelsNode(graph, "models");
+        renderModelsNode.create();
+        graph.addNode(renderModelsNode);
         // Shadows
-        shadowMappingStage = new ShadowMappingStage(this);
-        shadowMappingStage.setNormalsInput(renderModelsStage.getVertexNormalsOutput());
-        shadowMappingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        shadowMappingStage.setKernelSize(8);
-        shadowMappingStage.setNoiseSize(blurSize);
-        shadowMappingStage.setBias(0.005f);
-        shadowMappingStage.setRadius(0.0004f);
-        shadowMappingStage.create();
+        shadowMappingNode = new ShadowMappingNode(graph, "shadows");
+        shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
+        shadowMappingNode.connect("depths", "depths", renderModelsNode);
+        shadowMappingNode.setKernelSize(8);
+        shadowMappingNode.setNoiseSize(blurSize);
+        shadowMappingNode.setBias(0.005f);
+        shadowMappingNode.setRadius(0.0004f);
+        shadowMappingNode.create();
+        graph.addNode(shadowMappingNode);
         // SSAO
-        ssaoStage = new SSAOStage(this);
-        ssaoStage.setNormalsInput(renderModelsStage.getNormalsOutput());
-        ssaoStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        ssaoStage.setKernelSize(8);
-        ssaoStage.setNoiseSize(blurSize);
-        ssaoStage.setRadius(0.5f);
-        ssaoStage.setThreshold(0.15f);
-        ssaoStage.setPower(2);
-        ssaoStage.create();
+        ssaoNode = new SSAONode(graph, "ssao");
+        ssaoNode.connect("normals", "normals", renderModelsNode);
+        ssaoNode.connect("depths", "depths", renderModelsNode);
+        ssaoNode.setKernelSize(8);
+        ssaoNode.setNoiseSize(blurSize);
+        ssaoNode.setRadius(0.5f);
+        ssaoNode.setThreshold(0.15f);
+        ssaoNode.setPower(2);
+        ssaoNode.create();
+        graph.addNode(ssaoNode);
         // Lighting
-        lightingStage = new LightingStage(this);
-        lightingStage.setColorsInput(renderModelsStage.getColorsOutput());
-        lightingStage.setNormalsInput(renderModelsStage.getNormalsOutput());
-        lightingStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        lightingStage.setMaterialInput(renderModelsStage.getMaterialsOutput());
-        lightingStage.setOcclusionsInput(ssaoStage.getOcclusionsOutput());
-        lightingStage.setShadowsInput(shadowMappingStage.getShadowsOutput());
-        lightingStage.create();
+        lightingNode = new LightingNode(graph, "lighting");
+        lightingNode.connect("colors", "colors", renderModelsNode);
+        lightingNode.connect("normals", "normals", renderModelsNode);
+        lightingNode.connect("depths", "depths", renderModelsNode);
+        lightingNode.connect("materials", "materials", renderModelsNode);
+        lightingNode.connect("occlusions", "occlusions", ssaoNode);
+        lightingNode.connect("shadows", "shadows", shadowMappingNode);
+        lightingNode.create();
+        graph.addNode(lightingNode);
         // Gaussian blur
-        gaussianBlurStage = new GaussianBlurStage(this);
-        gaussianBlurStage.setColorsInput(lightingStage.getColorsOutput());
-        gaussianBlurStage.setKernelSize(blurSize);
-        gaussianBlurStage.create();
+        blurNode = new BlurNode(graph, "blur");
+        blurNode.connect("colors", "colors", lightingNode);
+        blurNode.setKernelSize(blurSize);
+        blurNode.setKernelGenerator(BlurNode.GAUSSIAN_KERNEL);
+        blurNode.create();
+        graph.addNode(blurNode);
         // Transparent models
-        renderTransparentModelsStage = new RenderTransparentModelsStage(this);
-        renderTransparentModelsStage.setDepthsInput(renderModelsStage.getDepthsOutput());
-        renderTransparentModelsStage.setColorsInput(renderModelsStage.getColorsOutput());
-        renderTransparentModelsStage.create();
+        renderTransparentModelsNode = new RenderTransparentModelsNode(graph, "transparency");
+        renderTransparentModelsNode.connect("depths", "depths", renderModelsNode);
+        renderTransparentModelsNode.connect("colors", "colors", blurNode);
+        renderTransparentModelsNode.create();
+        graph.addNode(renderTransparentModelsNode);
         // Render GUI
-        renderGUIStage = new RenderGUIStage(this);
-        renderGUIStage.create();
-    }
-
-    private void initPrograms() {
-        loadProgram("solid");
-        loadProgram("textured");
-        loadProgram("font");
-        loadProgram("ssao");
-        loadProgram("shadow");
-        loadProgram("gaussianBlur");
-        loadProgram("lighting");
-        loadProgram("motionBlur");
-        loadProgram("edaa");
-        loadProgram("weightedSum");
-        loadProgram("transparencyBlending");
-        loadProgram("screen");
-    }
-
-    private void loadProgram(String name) {
-        final String shaderPath = "/shaders/" + glVersion.toString().toLowerCase() + "/" + name;
-        final Shader vertex = glFactory.createShader();
-        vertex.setSource(FlowRenderer.class.getResourceAsStream(shaderPath + ".vert"));
-        vertex.create();
-        final Shader fragment = glFactory.createShader();
-        fragment.setSource(FlowRenderer.class.getResourceAsStream(shaderPath + ".frag"));
-        fragment.create();
-        final Program program = glFactory.createProgram();
-        program.addShader(vertex);
-        program.addShader(fragment);
-        program.create();
-        programs.put(name, program);
+        renderGUINode = new RenderGUINode(graph, "gui");
+        renderGUINode.connect("colors", "colors", renderTransparentModelsNode);
+        renderGUINode.create();
+        graph.addNode(renderGUINode);
+        // Build graph
+        graph.rebuild();
     }
 
     private void initMaterials() {
         UniformHolder uniforms;
         // Solid material
-        solidMaterial = new Material(programs.get("solid"));
+        solidMaterial = new Material(graph.getProgram("solid"));
         uniforms = solidMaterial.getUniforms();
         uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
         uniforms.add(new FloatUniform("specularIntensity", 0.5f));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
         uniforms.add(new FloatUniform("shininess", 0.15f));
         // Transparency
-        transparencyMaterial = new Material(programs.get("weightedSum"));
+        transparencyMaterial = new Material(graph.getProgram("weightedSum"));
         uniforms = transparencyMaterial.getUniforms();
         uniforms.add(lightDirectionUniform);
         uniforms.add(new FloatUniform("diffuseIntensity", 0.8f));
         uniforms.add(new FloatUniform("specularIntensity", 1));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
         uniforms.add(new FloatUniform("shininess", 0.8f));
-        // Screen material
-        screenMaterial = new Material(programs.get("screen"));
-        screenMaterial.addTexture(0, renderTransparentModelsStage.getColorsInput());
-    }
-
-    private void initVertexArrays() {
-        screenVertexArray = glFactory.createVertexArray();
-        screenVertexArray.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
-        screenVertexArray.create();
     }
 
     private void addDefaultObjects() {
-        addScreen();
         addHUD();
 
         final VertexArray sphere = glFactory.createVertexArray();
@@ -295,10 +250,6 @@ public class FlowRenderer implements Renderer {
         addTransparentModel(model2);
     }
 
-    private void addScreen() {
-        renderGUIStage.addModel(new Model(screenVertexArray, screenMaterial));
-    }
-
     private void addHUD() {
         final Font ubuntu;
         try {
@@ -307,26 +258,26 @@ public class FlowRenderer implements Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, programs.get("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
+        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), WINDOW_SIZE.getFloorX());
         final float aspect = 1 / ASPECT_RATIO;
         sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
         sandboxModel.setString("Client - WIP");
-        renderGUIStage.addModel(sandboxModel);
+        renderGUINode.addModel(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
         final StringModel tpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
         tpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.255, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
         tpsModel.setString("TPS: " + mainThread.getTPS());
-        renderGUIStage.addModel(fpsModel);
-        renderGUIStage.addModel(tpsModel);
+        renderGUINode.addModel(fpsModel);
+        renderGUINode.addModel(tpsModel);
         fpsMonitorModel = fpsModel;
         tpsMonitorModel = tpsModel;
 
         final StringModel posModel = sandboxModel.getInstance();
         posModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.225, -0.1));
-        posModel.setString("Position: " + renderModelsStage.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsStage.getCamera().getRotation().toString());
-        renderGUIStage.addModel(posModel);
+        posModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
+        renderGUINode.addModel(posModel);
         positionModel = posModel;
     }
 
@@ -334,9 +285,7 @@ public class FlowRenderer implements Renderer {
      * Destroys the renderer internal resources and the OpenGL context.
      */
     public void dispose() {
-        disposeEffects();
-        disposePrograms();
-        disposeVertexArrays();
+        disposeGraph();
         disposeContext();
         fpsMonitorStarted = false;
     }
@@ -345,27 +294,14 @@ public class FlowRenderer implements Renderer {
         context.destroy();
     }
 
-    private void disposeEffects() {
-        renderModelsStage.destroy();
-        shadowMappingStage.destroy();
-        ssaoStage.destroy();
-        lightingStage.destroy();
-        gaussianBlurStage.destroy();
-        renderTransparentModelsStage.destroy();
-        renderGUIStage.destroy();
-    }
-
-    private void disposePrograms() {
-        for (Program program : programs.values()) {
-            for (Shader shader : program.getShaders()) {
-                shader.destroy();
-            }
-            program.destroy();
-        }
-    }
-
-    private void disposeVertexArrays() {
-        screenVertexArray.destroy();
+    private void disposeGraph() {
+        renderModelsNode.destroy();
+        shadowMappingNode.destroy();
+        ssaoNode.destroy();
+        lightingNode.destroy();
+        blurNode.destroy();
+        renderTransparentModelsNode.destroy();
+        renderGUINode.destroy();
     }
 
     /**
@@ -377,16 +313,10 @@ public class FlowRenderer implements Renderer {
             fpsMonitorStarted = true;
         }
         // Update the current frame uniforms
-        final Camera camera = renderModelsStage.getCamera();
+        final Camera camera = renderModelsNode.getCamera();
         blurStrengthUniform.set((float) fpsMonitor.getTPS() / RenderThread.FPS);
         // Render
-        renderModelsStage.render();
-        shadowMappingStage.render();
-        ssaoStage.render();
-        lightingStage.render();
-        gaussianBlurStage.render();
-        renderTransparentModelsStage.render();
-        renderGUIStage.render();
+        graph.render();
         // Update the previous frame uniforms
         setPreviousModelMatrices();
         previousViewMatrixUniform.set(camera.getViewMatrix());
@@ -396,10 +326,10 @@ public class FlowRenderer implements Renderer {
     }
 
     private void setPreviousModelMatrices() {
-        for (Model model : renderModelsStage.getModels()) {
+        for (Model model : renderModelsNode.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
-        for (Model model : renderTransparentModelsStage.getModels()) {
+        for (Model model : renderTransparentModelsNode.getModels()) {
             model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
         }
     }
@@ -409,7 +339,7 @@ public class FlowRenderer implements Renderer {
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
         tpsMonitorModel.setString("TPS: " + mainThread.getTPS());
 
-        positionModel.setString("Position: " + renderModelsStage.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsStage.getCamera().getRotation().toString());
+        positionModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
     }
 
     /**
@@ -426,9 +356,7 @@ public class FlowRenderer implements Renderer {
      *
      * @return The OpenGL version
      */
-    public GLVersion getGLVersion() {
-        return glVersion;
-    }
+    public GLVersion getGLVersion() { return glFactory.getGLVersion(); }
 
     /**
      * Sets the OpenGL version. Must be done before initializing the renderer.
@@ -440,34 +368,18 @@ public class FlowRenderer implements Renderer {
             case GL20:
             case GL21:
                 glFactory = GLImplementation.get(LWJGLUtil.GL21_IMPL);
-                glVersion = GLVersion.GL21;
                 break;
             case GL30:
             case GL31:
             case GL32:
                 glFactory = GLImplementation.get(LWJGLUtil.GL32_IMPL);
-                glVersion = GLVersion.GL32;
         }
     }
 
-    public Context getContext() {
-        return context;
-    }
+    public RenderModelsNode getRenderModelsNode() { return renderModelsNode; }
 
-    public Program getProgram(String name) {
-        return programs.get(name);
-    }
-
-    public VertexArray getScreen() {
-        return screenVertexArray;
-    }
-
-    public RenderModelsStage getRenderModelsStage() {
-        return renderModelsStage;
-    }
-
-    public RenderGUIStage getRenderGUIStage() {
-        return renderGUIStage;
+    public RenderGUINode getRenderGUINode() {
+        return renderGUINode;
     }
 
     public Vector3Uniform getLightDirectionUniform() {
@@ -503,8 +415,10 @@ public class FlowRenderer implements Renderer {
         // Set the direction uniform
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
+        ((ShadowMappingNode) graph.getNode("shadows")).setLightDirection(direction);
+        ((LightingNode) graph.getNode("lighting")).setLightDirection(direction);
         // Set the camera position
-        final Camera camera = shadowMappingStage.getCamera();
+        final Camera camera = shadowMappingNode.getCamera();
         camera.setPosition(position);
         // Calculate the camera rotation from the direction and set
         final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
@@ -549,7 +463,7 @@ public class FlowRenderer implements Renderer {
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
         model.getUniforms().add(new ColorUniform("modelColor", new Color(Math.random(), Math.random(), Math.random(), 1)));
-        renderModelsStage.addModel(model);
+        renderModelsNode.addModel(model);
     }
 
     /**
@@ -559,7 +473,7 @@ public class FlowRenderer implements Renderer {
      */
     public void addTransparentModel(Model model) {
         model.setMaterial(transparencyMaterial);
-        renderTransparentModelsStage.addModel(model);
+        renderTransparentModelsNode.addModel(model);
     }
 
     /**

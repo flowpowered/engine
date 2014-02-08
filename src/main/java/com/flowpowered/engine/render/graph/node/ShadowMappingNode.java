@@ -21,18 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.render.stage;
+package com.flowpowered.engine.render.graph.node;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
 
+import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.engine.render.graph.RenderGraph;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector3f;
 
-import com.flowpowered.engine.render.FlowRenderer;
 import org.spout.renderer.api.Camera;
-import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -41,6 +42,7 @@ import org.spout.renderer.api.data.Uniform.IntUniform;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector2ArrayUniform;
 import org.spout.renderer.api.data.Uniform.Vector2Uniform;
+import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
@@ -56,8 +58,7 @@ import org.spout.renderer.api.util.CausticUtil;
 import org.spout.renderer.api.util.Rectangle;
 
 // TODO: cascaded shadow maps, render models for light depths using the basic shader
-public class ShadowMappingStage extends Creatable {
-    private final FlowRenderer renderer;
+public class ShadowMappingNode extends GraphNode {
     private final Material material;
     private final Texture lightDepthsTexture;
     private final Texture noiseTexture;
@@ -71,15 +72,16 @@ public class ShadowMappingStage extends Creatable {
     private final Matrix4Uniform lightProjectionMatrixUniform = new Matrix4Uniform("lightProjectionMatrix", new Matrix4f());
     private final Camera camera = Camera.createOrthographic(50, -50, 50, -50, -50, 50);
     private Pipeline pipeline;
+    private Vector3f lightDirection = Vector3f.UP.negate();
     private int kernelSize = 8;
     private int noiseSize = 4;
     private float bias = 0.005f;
     private float radius = 0.0004f;
 
-    public ShadowMappingStage(FlowRenderer renderer) {
-        this.renderer = renderer;
-        material = new Material(renderer.getProgram("shadow"));
-        final GLFactory glFactory = renderer.getGLFactory();
+    public ShadowMappingNode(RenderGraph graph, String name) {
+        super(graph, name);
+        material = new Material(graph.getProgram("shadow"));
+        final GLFactory glFactory = graph.getGLFactory();
         lightDepthsTexture = glFactory.createTexture();
         noiseTexture = glFactory.createTexture();
         depthFrameBuffer = glFactory.createFrameBuffer();
@@ -90,7 +92,7 @@ public class ShadowMappingStage extends Creatable {
     @Override
     public void create() {
         if (isCreated()) {
-            throw new IllegalStateException("Shadow mapping has already been created");
+            throw new IllegalStateException("Shadow mapping stage has already been created");
         }
         // Generate the kernel
         final Vector2f[] kernel = new Vector2f[kernelSize];
@@ -141,7 +143,7 @@ public class ShadowMappingStage extends Creatable {
         uniforms.add(new Vector2Uniform("projection", FlowRenderer.PROJECTION));
         uniforms.add(new FloatUniform("tanHalfFOV", FlowRenderer.TAN_HALF_FOV));
         uniforms.add(new FloatUniform("aspectRatio", FlowRenderer.ASPECT_RATIO));
-        uniforms.add(renderer.getLightDirectionUniform());
+        uniforms.add(new Vector3Uniform("lightDirection", lightDirection));
         uniforms.add(inverseViewMatrixUniform);
         uniforms.add(lightViewMatrixUniform);
         uniforms.add(lightProjectionMatrixUniform);
@@ -151,7 +153,7 @@ public class ShadowMappingStage extends Creatable {
         uniforms.add(new FloatUniform("bias", bias));
         uniforms.add(new FloatUniform("radius", radius));
         // Create the screen model
-        final Model model = new Model(renderer.getScreen(), material);
+        final Model model = new Model(graph.getScreen(), material);
         // Create the depth frame buffer
         depthFrameBuffer.attach(AttachmentPoint.DEPTH, lightDepthsTexture);
         depthFrameBuffer.create();
@@ -159,9 +161,9 @@ public class ShadowMappingStage extends Creatable {
         frameBuffer.attach(AttachmentPoint.COLOR0, shadowsOutput);
         frameBuffer.create();
         // Create the pipeline
-        final RenderModelsStage renderModelsStage = renderer.getRenderModelsStage();
+        final RenderModelsNode renderModelsNode = (RenderModelsNode) graph.getNode("models");
         pipeline = new PipelineBuilder().useViewPort(new Rectangle(Vector2f.ZERO, FlowRenderer.SHADOW_SIZE)).useCamera(camera).bindFrameBuffer(depthFrameBuffer).clearBuffer()
-                .renderModels(renderModelsStage.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, FlowRenderer.WINDOW_SIZE)).useCamera(renderModelsStage.getCamera())
+                .renderModels(renderModelsNode.getModels()).useViewPort(new Rectangle(Vector2f.ZERO, FlowRenderer.WINDOW_SIZE)).useCamera(renderModelsNode.getCamera())
                 .bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created
         super.create();
@@ -178,39 +180,52 @@ public class ShadowMappingStage extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
-        inverseViewMatrixUniform.set(renderer.getRenderModelsStage().getCamera().getViewMatrix().invert());
+        inverseViewMatrixUniform.set(((RenderModelsNode) graph.getNode("models")).getCamera().getViewMatrix().invert());
         lightViewMatrixUniform.set(camera.getViewMatrix());
         lightProjectionMatrixUniform.set(camera.getProjectionMatrix());
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getContext());
     }
 
+    @Setting
+    public void setLightDirection(Vector3f lightDirection) {
+        this.lightDirection = lightDirection;
+    }
+
+    @Setting
     public void setKernelSize(int kernelSize) {
         this.kernelSize = kernelSize;
     }
 
+    @Setting
     public void setRadius(float radius) {
         this.radius = radius;
     }
 
+    @Setting
     public void setBias(float bias) {
         this.bias = bias;
     }
 
+    @Setting
     public void setNoiseSize(int noiseSize) {
         this.noiseSize = noiseSize;
     }
 
+    @Input("normals")
     public void setNormalsInput(Texture texture) {
         texture.checkCreated();
         normalsInput = texture;
     }
 
+    @Input("depths")
     public void setDepthsInput(Texture texture) {
         texture.checkCreated();
         depthsInput = texture;
     }
 
+    @Output("shadows")
     public Texture getShadowsOutput() {
         return shadowsOutput;
     }

@@ -21,11 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.render.stage;
+package com.flowpowered.engine.render.graph.node;
 
 import java.util.Arrays;
 
-import org.spout.renderer.api.Creatable;
+import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.engine.render.graph.RenderGraph;
+import com.flowpowered.math.vector.Vector2f;
+
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -45,11 +48,23 @@ import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
 
-import com.flowpowered.math.vector.Vector2f;
-import com.flowpowered.engine.render.FlowRenderer;
-
-public class GaussianBlurStage extends Creatable {
-    private final FlowRenderer renderer;
+/**
+ *
+ */
+public class BlurNode extends GraphNode {
+    public static final KernelGenerator GAUSSIAN_KERNEL = new KernelGenerator() {
+        @Override
+        public float getWeight(float x, float radius) {
+            x /= radius;
+            return (float) Math.exp(-(x * x));
+        }
+    };
+    public static final KernelGenerator BOX_KERNEL = new KernelGenerator() {
+        @Override
+        public float getWeight(float x, float radius) {
+            return 1;
+        }
+    };
     private final Material horizontalMaterial;
     private final Material verticalMaterial;
     private final FrameBuffer horizontalFrameBuffer;
@@ -59,13 +74,14 @@ public class GaussianBlurStage extends Creatable {
     private Texture colorsInput;
     private Pipeline pipeline;
     private int kernelSize = 5;
+    private KernelGenerator kernelGenerator = GAUSSIAN_KERNEL;
 
-    public GaussianBlurStage(FlowRenderer renderer) {
-        this.renderer = renderer;
-        final Program blurProgram = renderer.getProgram("gaussianBlur");
+    public BlurNode(RenderGraph graph, String name) {
+        super(graph, name);
+        final Program blurProgram = graph.getProgram("blur");
         horizontalMaterial = new Material(blurProgram);
         verticalMaterial = new Material(blurProgram);
-        final GLFactory glFactory = renderer.getGLFactory();
+        final GLFactory glFactory = graph.getGLFactory();
         horizontalFrameBuffer = glFactory.createFrameBuffer();
         verticalFrameBuffer = glFactory.createFrameBuffer();
         intermediateTexture = glFactory.createTexture();
@@ -81,13 +97,13 @@ public class GaussianBlurStage extends Creatable {
         int halfKernelSize = (kernelSize - 1) / 2 + 1;
         float[] kernel = new float[halfKernelSize];
         float[] offsets = new float[halfKernelSize];
-        float weight0 = getGaussianWeight(0, kernelSize);
+        float weight0 = kernelGenerator.getWeight(0, kernelSize);
         kernel[0] = weight0;
         offsets[0] = 0;
         float sum = weight0;
         for (int i = 1; i < kernelSize; i += 2) {
-            final float firstWeight = getGaussianWeight(i, kernelSize);
-            final float secondWeight = getGaussianWeight(i + 1, kernelSize);
+            final float firstWeight = kernelGenerator.getWeight(i, kernelSize);
+            final float secondWeight = kernelGenerator.getWeight(i + 1, kernelSize);
             final float weightSum = firstWeight + secondWeight;
             sum += weightSum * 2;
             final int index = (i + 1) / 2;
@@ -137,9 +153,9 @@ public class GaussianBlurStage extends Creatable {
         uniforms.add(resolutionUniform);
         uniforms.add(new BooleanUniform("direction", true));
         // Create the horizontal screen model
-        final Model horizontalModel = new Model(renderer.getScreen(), horizontalMaterial);
+        final Model horizontalModel = new Model(graph.getScreen(), horizontalMaterial);
         // Create the vertical screen model
-        final Model verticalModel = new Model(renderer.getScreen(), verticalMaterial);
+        final Model verticalModel = new Model(graph.getScreen(), verticalMaterial);
         // Create the frame buffer
         horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         horizontalFrameBuffer.create();
@@ -163,11 +179,13 @@ public class GaussianBlurStage extends Creatable {
         super.destroy();
     }
 
+    @Override
     public void render() {
         checkCreated();
-        pipeline.run(renderer.getContext());
+        pipeline.run(graph.getContext());
     }
 
+    @Setting
     public void setKernelSize(int kernelSize) {
         if ((kernelSize & 1) == 0) {
             kernelSize--;
@@ -178,17 +196,23 @@ public class GaussianBlurStage extends Creatable {
         this.kernelSize = kernelSize;
     }
 
+    @Setting
+    public void setKernelGenerator(KernelGenerator kernelGenerator) {
+        this.kernelGenerator = kernelGenerator;
+    }
+
+    @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
         colorsInput = texture;
     }
 
+    @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
     }
 
-    private static float getGaussianWeight(float x, float radius) {
-        x /= radius;
-        return (float) Math.exp(-(x * x));
+    public static interface KernelGenerator {
+        public float getWeight(float x, float radius);
     }
 }
