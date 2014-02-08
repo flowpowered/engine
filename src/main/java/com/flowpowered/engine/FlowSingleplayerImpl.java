@@ -35,6 +35,7 @@ import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.network.FlowSingeplayerSession;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
@@ -66,6 +67,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         FlowPlayer player = new FlowPlayer("Flowy");
         this.player.set(player);
         players.put(player.getName(), player);
+        player.getNetwork().setSession(new FlowSingeplayerSession());
         Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
         Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
         this.testEntity = entity;

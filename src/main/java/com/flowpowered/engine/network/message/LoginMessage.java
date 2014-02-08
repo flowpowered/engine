@@ -21,32 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.player.reposition;
+package com.flowpowered.engine.network.message;
 
-public class NullRepositionManager extends RepositionManagerImpl {
-	private static RepositionManager instance = new NullRepositionManager();
+import com.flowpowered.networking.Message;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-	public static RepositionManager getInstance() {
-		return instance;
+public class LoginMessage implements Message {
+	private final String playerName;
+
+	public LoginMessage(String playerName) {
+		this.playerName = playerName;
+	}
+
+	public String getPlayerName() {
+		return playerName;
+	}
+
+    @Override
+    public String toString() {
+        return "LoginMessage{" + "playerName=" + playerName + '}';
+    }
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(95, 45)
+				.append(playerName)
+				.toHashCode();
 	}
 
 	@Override
-	public double convertX(double x) {
-		return x;
-	}
-
-	@Override
-	public double convertY(double y) {
-		return y;
-	}
-
-	@Override
-	public double convertZ(double z) {
-		return z;
-	}
-
-	@Override
-	public RepositionManager getInverse() {
-		return getInstance();
+	public boolean equals(Object obj) {
+		if (obj instanceof LoginMessage) {
+			final LoginMessage other = (LoginMessage) obj;
+			return new EqualsBuilder()
+					.append(playerName, other.playerName)
+					.isEquals();
+		} else {
+			return false;
+		}
 	}
 }
