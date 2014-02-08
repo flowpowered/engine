@@ -23,112 +23,23 @@
  */
 package com.flowpowered.engine;
 
-import java.io.PrintStream;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.flowpowered.commons.LoggerOutputStream;
-import com.flowpowered.events.EventManager;
-import com.flowpowered.events.SimpleEventManager;
 import com.flowpowered.api.Engine;
-import com.flowpowered.api.Flow;
-import com.flowpowered.api.material.MaterialRegistry;
-import com.flowpowered.api.util.SyncedStringMap;
 import com.flowpowered.engine.filesystem.FlowFileSystem;
+import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 
-import uk.org.lidalia.slf4jext.Level;
-
-public abstract class FlowEngine implements Engine {
-    private final FlowApplication args;
-    private final EventManager eventManager;
-    private final FlowFileSystem fileSystem;
-
-    private FlowScheduler scheduler;
-    protected final SnapshotManager snapshotManager = new SnapshotManager();
-    private SyncedStringMap itemMap;
-    private PrintStream realSystemOut;
-    private PrintStream realSystemErr;
-    private final Logger logger = LogManager.getLogger("Flow");
-
-
-    public FlowEngine(FlowApplication args) {
-        this.args = args;
-        this.eventManager = new SimpleEventManager();
-        this.fileSystem = new FlowFileSystem();
-    }
+public interface FlowEngine extends Engine {
 
     @Override
-    public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
-    }
-    
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public void init() {
-        // Make sure we log something and let log4j2 initialize before we redirect System.out and System.err
-        // Otherwise it could try to log to the redirected stdout causing infinite loop.
-        logger.info("Initializing Engine.");
-        // Just in case.
-        realSystemOut = System.out;
-        realSystemErr = System.err;
-        //And now redirect the streams to a logger.
-        String loggerName = logger.getName();
-        System.setOut(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDOUT"), Level.INFO), true));
-        System.setErr(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDERR"), Level.WARN), true));
-        itemMap = MaterialRegistry.setupRegistry();
-        scheduler = new FlowScheduler(this);
-    }
-
-    public void start() {
-        scheduler.startMainThread();
-        System.out.println("Engine started.");
-    }
+    FlowScheduler getScheduler();
 
     @Override
-    public boolean stop() {
-        scheduler.stop();
-        System.out.println("Engine stopped");
-        return true;
-    }
+	FlowFileSystem getFileSystem();
 
     @Override
-    public boolean stop(String reason) {
-        return stop();
-    }
+    FlowWorldManager<? extends FlowWorld> getWorldManager();
 
-    @Override
-    public boolean debugMode() {
-        return args.debug;
-    }
-
-    @Override
-    public FlowScheduler getScheduler() {
-        return scheduler;
-    }
-
-    @Override
-    public FlowFileSystem getFileSystem() {
-        return fileSystem;
-    }
-
-    @Override
-    public EventManager getEventManager() {
-        return eventManager;
-    }
-
-    @Override
-    public String getName() {
-        return "Flow Engine";
-    }
-
-    public SnapshotManager getSnapshotManager() {
-        return snapshotManager;
-    }
+    SnapshotManager getSnapshotManager();
 }

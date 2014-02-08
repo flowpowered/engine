@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableHashMap;
 
@@ -103,8 +104,8 @@ public class EntityManager {
         }
     }
 
-    public static FlowEntity createEntity(Transform transform) {
-        return new FlowEntity(getNextId(), transform);
+    public static FlowEntity createEntity(FlowEngine engine, Transform transform) {
+        return new FlowEntity(engine, getNextId(), transform);
     }
 
     private static int getNextId() {

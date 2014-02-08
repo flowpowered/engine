@@ -32,13 +32,11 @@ import java.util.List;
 import com.flowpowered.commons.StringUtil;
 
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import com.flowpowered.api.Server;
+
 import com.flowpowered.api.generator.EmptyWorldGenerator;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.ServerWorldManager;
-import com.flowpowered.api.geo.World;
-import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.filesystem.WorldFiles;
@@ -47,7 +45,7 @@ import com.flowpowered.engine.filesystem.WorldFiles;
 public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> implements ServerWorldManager {
     private final WorldGenerator defaultGenerator = new EmptyWorldGenerator();
 
-    public <E extends FlowEngine & Server> FlowServerWorldManager(E engine) {
+    public FlowServerWorldManager(FlowServer engine) {
         super(engine);
     }
 

@@ -36,7 +36,7 @@ public interface Client extends Engine {
      *
      * @return player
      */
-    public Player getPlayer();
+    Player getPlayer();
 
     /**
      * Gets the current world in-which the player on the local machine is within.
@@ -45,12 +45,12 @@ public interface Client extends Engine {
      *
      * @return world
      */
-    public World getWorld();
+    World getWorld();
 
     /**
      * Gets the renderer that the client is using.
      *
      * @return the renderer in use
      */
-    public Renderer getRenderer();
+    Renderer getRenderer();
 }

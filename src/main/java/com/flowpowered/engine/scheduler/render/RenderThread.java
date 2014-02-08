@@ -32,11 +32,11 @@ import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.engine.FlowSingleplayer;
+import com.flowpowered.engine.FlowClient;
+import com.flowpowered.engine.FlowSingleplayerImpl;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
-import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
@@ -58,7 +58,7 @@ import org.spout.renderer.api.GLVersioned.GLVersion;
 public class RenderThread extends TickingElement {
     public static final int FPS = 60;
     public static final GLVersion DEFAULT_VERSION = GLVersion.GL32;
-    private final Client client;
+    private final FlowClient client;
     private final FlowScheduler scheduler;
     private final FlowRenderer renderer;
     private final ViewFrustum frustum;
@@ -69,7 +69,7 @@ public class RenderThread extends TickingElement {
     private long worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
-    public RenderThread(Client client, FlowScheduler scheduler) {
+    public RenderThread(FlowClient client, FlowScheduler scheduler) {
         super("RenderThread", FPS);
         this.client = client;
         this.scheduler = scheduler;
@@ -82,10 +82,11 @@ public class RenderThread extends TickingElement {
     @Override
     public void onStart() {
         renderer.setGLVersion(DEFAULT_VERSION);
-        renderer.init(((FlowScheduler) client.getScheduler()).getMainThread());
+        renderer.init(client.getScheduler());
 
         input.subscribeToKeyboard();
         input.getKeyboardQueue().add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
+        input.subscribeToMouse();
     }
 
     @Override
@@ -99,12 +100,12 @@ public class RenderThread extends TickingElement {
     @Override
     public void onTick(long dt) {
         handleInput(dt / 1e9f);
-        updateChunkModels(((FlowWorld) client.getWorld()).getSnapshot());
+        updateChunkModels(client.getWorld().getSnapshot());
         updateLight(client.getWorld().getAge());
         renderer.render();
     }
     
-    public Client getEngine() {
+    public FlowClient getEngine() {
         return client;
     }
 
@@ -257,7 +258,7 @@ public class RenderThread extends TickingElement {
                 translation = translation.add(up.mul(-speed));
             }
             if (!translation.equals(Vector3f.ZERO)) {
-                ((FlowSingleplayer) client).getTestEntity().getPhysics().translate(translation);
+                ((FlowSingleplayerImpl) client).getTestEntity().getPhysics().translate(translation);
             }
             // Update the frustrum to match the camera
             camera.setPosition(client.getPlayer().getTransformProvider().getTransform().getPosition().getVector());

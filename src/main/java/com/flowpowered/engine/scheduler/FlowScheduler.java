@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.flowpowered.api.Client;
 import com.flowpowered.api.Engine;
 import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.api.scheduler.Task;
 import com.flowpowered.api.scheduler.TaskPriority;
 import com.flowpowered.api.scheduler.Worker;
+import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.AsyncManager;
@@ -75,7 +75,7 @@ public final class FlowScheduler implements Scheduler {
 
         if (engine.getPlatform().isClient()) {
             inputThread = new InputThread(this);
-            renderThread = new RenderThread((Client) engine, this);
+            renderThread = new RenderThread((FlowClient) engine, this);
         } else {
             inputThread = null;
             renderThread = null;

@@ -32,19 +32,20 @@ import com.flowpowered.api.geo.ServerWorldManager;
  * Represents the server-specific implementation.
  */
 public interface Server extends Engine {
+
     /**
      * Gets all players currently online
      *
      * @return array of all active players
      */
-    public Collection<Player> getOnlinePlayers();
+    Collection<Player> getOnlinePlayers();
 
     /**
      * Gets the maximum number of players this game can host, or -1 if infinite
      *
      * @return max players
      */
-    public int getMaxPlayers();
+    int getMaxPlayers();
 
     /**
      * Broadcasts the given message to all players
@@ -53,7 +54,7 @@ public interface Server extends Engine {
      *
      * @param message to send
      */
-    public void broadcastMessage(String message);
+    void broadcastMessage(String message);
 
     /**
      * Broadcasts the given message to all players
@@ -64,7 +65,7 @@ public interface Server extends Engine {
      * @param permission the permission needed to receive the broadcast
      * @param message to send
      */
-    public void broadcastMessage(String permission, String message);
+    void broadcastMessage(String permission, String message);
 
     /**
      * Gets the {@link Player} by the given username. <br/> <br/> If searching for the exact name, this method will iterate and check for exact matches. <br/> <br/> Otherwise, this method will iterate
@@ -74,8 +75,8 @@ public interface Server extends Engine {
      * @param exact Whether to use exact lookup
      * @return Player if found, else null
      */
-    public Player getPlayer(String name, boolean exact);
+    Player getPlayer(String name, boolean exact);
 
     @Override
-    public ServerWorldManager getWorldManager();
+    ServerWorldManager getWorldManager();
 }

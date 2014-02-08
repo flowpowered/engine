@@ -29,6 +29,7 @@ import com.flowpowered.api.Flow;
 import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowSingleplayer;
+import com.flowpowered.engine.FlowSingleplayerImpl;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -76,7 +77,7 @@ public class InputThread extends TickingElement {
                         Keyboard.getEventCharacter(), Keyboard.getEventKey(),
                         Keyboard.getEventKeyState(), Keyboard.getEventNanoseconds());
                 // TEST CODE
-                FlowSingleplayer e = (FlowSingleplayer) Flow.getEngine();
+                FlowSingleplayerImpl e = (FlowSingleplayerImpl) Flow.getEngine();
                 if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
                     e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
                 } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {

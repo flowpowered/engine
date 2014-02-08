@@ -48,7 +48,7 @@ import com.flowpowered.engine.render.graph.node.RenderModelsNode;
 import com.flowpowered.engine.render.graph.node.RenderTransparentModelsNode;
 import com.flowpowered.engine.render.graph.node.SSAONode;
 import com.flowpowered.engine.render.graph.node.ShadowMappingNode;
-import com.flowpowered.engine.scheduler.MainThread;
+import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2f;
@@ -110,7 +110,7 @@ public class FlowRenderer implements Renderer {
     private StringModel positionModel;
     private boolean fpsMonitorStarted = false;
 
-    private MainThread mainThread;
+    private FlowScheduler scheduler;
 
     public FlowRenderer() {
         setGLVersion(RenderThread.DEFAULT_VERSION);
@@ -119,8 +119,8 @@ public class FlowRenderer implements Renderer {
     /**
      * Creates the OpenGL context and initializes the internal resources for the renderer
      */
-    public void init(MainThread mainThread) {
-        this.mainThread = mainThread;
+    public void init(FlowScheduler scheduler) {
+        this.scheduler = scheduler;
 
         initContext();
         initGraph();
@@ -269,7 +269,7 @@ public class FlowRenderer implements Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, .97 * aspect, -0.1));
         sandboxModel.setString("Flow Engine - WIP");
@@ -279,7 +279,7 @@ public class FlowRenderer implements Renderer {
         fpsModel.setPosition(new Vector3f(0.005, .94 * aspect, -0.1));
         tpsModel.setPosition(new Vector3f(0.005, .91 * aspect, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
-        tpsModel.setString("TPS: " + mainThread.getTPS());
+        tpsModel.setString("TPS: " + scheduler.getMainThread().getTPS());
         renderGUINode.addModel(fpsModel);
         renderGUINode.addModel(tpsModel);
         fpsMonitorModel = fpsModel;
@@ -339,7 +339,7 @@ public class FlowRenderer implements Renderer {
     private void updateHUD() {
         fpsMonitor.update();
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
-        tpsMonitorModel.setString("TPS: " + mainThread.getTPS());
+        tpsMonitorModel.setString("TPS: " + scheduler.getMainThread().getTPS());
 
         positionModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
     }
