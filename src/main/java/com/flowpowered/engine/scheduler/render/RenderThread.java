@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
@@ -65,7 +66,7 @@ public class RenderThread extends TickingElement {
     private final ParallelChunkMesher mesher;
     // TEST CODE
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
-    private long worldLastUpdateNumber;
+    private AtomicLong worldLastUpdateNumber;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
     public RenderThread(FlowClient client) {
@@ -127,11 +128,13 @@ public class RenderThread extends TickingElement {
             }
             chunkModels.clear();
             chunkLastUpdateNumbers.clear();
-            worldLastUpdateNumber = 0;
+            worldLastUpdateNumber.set(0);
             return;
         }
+        // Any updates after this to the world update number will cause a update next tick
+        long update = world.getUpdateNumber();
         // If the snapshot hasn't updated there's nothing to do
-        if (world.getUpdateNumber() <= worldLastUpdateNumber) {
+        if (worldLastUpdateNumber.getAndSet(update) == update) {
             return;
         }
         // Else, we need to update the chunk models
@@ -151,16 +154,21 @@ public class RenderThread extends TickingElement {
         }
         final Map<Vector3i, RegionSnapshot> regions = world.getRegions();
         for (RegionSnapshot region : regions.values()) {
-
             // Next go through all the chunks, and update the chunks that are out of date
             for (ChunkSnapshot chunk : region.getChunks()) {
                 if (chunk == null) {
                     continue;
                 }
                 // If the chunk model is out of date and visible
-                // TODO: only add models for visible chunks
-                if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())
-                        ) {//&& isChunkVisible(chunk.getPosition())) {
+                if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
+                    // TODO: only add models for visible chunks
+                    // The problem is that if turn and new chunks are now visible, they won't be updated because they're part of a previous world update number
+                    // One possible way to reconcile this is update every partial update
+                    // The problem is that almost every update will probably be a partial update, meaning there is no point for the world update number
+                    // The downside with always add the model is more models in renderer
+                    //if (!isChunkVisible(chunk.getPosition())) {
+                    //    continue;
+                    //}
                     final Vector3i position = chunk.getPosition();
                     // If we have a previous model remove it to be replaced
                     final ChunkModel previous = chunkModels.get(position);
@@ -174,8 +182,6 @@ public class RenderThread extends TickingElement {
                 }
             }
         }
-        // Update the world update number
-        worldLastUpdateNumber = world.getUpdateNumber();
         // Safety precautions
         if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
             System.out.println("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
