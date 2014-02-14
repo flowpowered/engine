@@ -25,14 +25,16 @@ package com.flowpowered.engine.network.handler;
 
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.LoginMessage;
-import com.flowpowered.networking.MessageHandler;
-import com.flowpowered.networking.session.BasicSession;
 
-public class LoginHandler implements MessageHandler<FlowSession, LoginMessage> {
+public class LoginHandler extends FlowMessageHandler<LoginMessage> {
 
     @Override
-    public void handle(FlowSession session, LoginMessage message) {
-        System.out.println("Login from " + session.getAddress());
+    public void handleServer(FlowSession session, LoginMessage message) {
+        System.out.println("Login on Server from " + session.getAddress());
     }
 
+    @Override
+    public void handleClient(FlowSession session, LoginMessage message) {
+        System.out.println("Login on Client from " + session.getAddress());
+    }
 }

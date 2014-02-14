@@ -49,6 +49,7 @@ import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
+import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
 import com.flowpowered.engine.entity.FlowEntity;
@@ -564,5 +565,17 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     public FlowRegionSnapshot getSnapshot() {
         return snapshot;
+    }
+
+    public void setChunk(int x, int y, int z, int[] blocks) {
+        final int chunkIndex = getChunkIndex(x, y, z);
+        while (true) {
+            FlowChunk[] live = this.live.get();
+            FlowChunk[] newArray = Arrays.copyOf(live, live.length);
+            newArray[chunkIndex] = blocks == null ? null : new FlowChunk(this, getWorld(), x, y, z, 0, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, blocks));
+            if (this.live.compareAndSet(live, newArray)) {
+                break;
+            }
+        }
     }
 }
