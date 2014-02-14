@@ -23,9 +23,9 @@
  */
 package com.flowpowered.engine.geo.world;
 
-import com.flowpowered.engine.geo.region.FlowRegion;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.flowpowered.commons.bit.ShortBitMask;
@@ -52,6 +52,7 @@ import com.flowpowered.engine.entity.FlowEntity;
 import com.flowpowered.engine.geo.region.RegionSource;
 import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
 import com.flowpowered.engine.util.thread.StartTickManager;
@@ -460,5 +461,10 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     @Override
     public ShortBitMask getTickStages() {
         return STAGES;
+    }
+
+    public void setChunk(int x, int y, int z, int[] blocks) {
+        FlowRegion region = getRegionFromChunk(x, y, z, LoadOption.LOAD_GEN);
+        region.setChunk(x, y, z, blocks);
     }
 }

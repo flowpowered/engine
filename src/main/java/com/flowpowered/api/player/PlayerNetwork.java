@@ -40,9 +40,7 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.reposition.NullRepositionManager;
 import com.flowpowered.api.player.reposition.RepositionManager;
-import com.flowpowered.api.util.SyncedStringMap;
 import com.flowpowered.commons.concurrent.set.TSyncIntHashSet;
-import com.flowpowered.commons.store.MemoryStore;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.util.OutwardIterator;
 import com.flowpowered.events.Listener;
@@ -54,10 +52,9 @@ import com.flowpowered.networking.session.Session;
  * The networking behind {@link org.spout.api.entity.Player}s. This component holds the {@link Session} which is the connection the Player has to the server.
  */
 public class PlayerNetwork implements Listener {
-	private static final SyncedStringMap protocolMap = SyncedStringMap.create(null, new MemoryStore<Integer>(), 0, 256, "componentProtocols");
 	protected static final int CHUNKS_PER_TICK = 20;
 	private final AtomicReference<BasicSession> session = new AtomicReference<>(null);
-	protected final TSyncIntHashSet synchronizedEntities = new TSyncIntHashSet();
+	private final TSyncIntHashSet synchronizedEntities = new TSyncIntHashSet();
 	private Point lastChunkCheck = Point.INVALID;
 
 	private final Set<ChunkReference> chunkSendQueuePriority = new LinkedHashSet<>();
@@ -112,16 +109,6 @@ public class PlayerNetwork implements Listener {
 	 */
 	public final InetAddress getAddress() {
 		return getSession().getAddress().getAddress();
-	}
-
-	/**
-	 * Registers the protocol name and gets the id assigned.
-	 *
-	 * @param protocolName The name of the protocol class to get an id for
-	 * @return The id for the specified protocol class
-	 */
-	public static int getProtocolId(String protocolName) {
-		return protocolMap.register(protocolName);
 	}
 
 //	/**
@@ -200,7 +187,6 @@ public class PlayerNetwork implements Listener {
 			}
 		}
 
-		// TODO: could we use getSyncIterator?
 		Iterator<Vector3i> itr = getViewableVolume(cx, cy, cz, getSyncDistance());
 		while (itr.hasNext()) {
 			Vector3i v = itr.next();
@@ -209,17 +195,13 @@ public class PlayerNetwork implements Listener {
 			if (activeChunks.contains(ref)) {
 				continue;
 			}
-			boolean inTargetArea = getMaxDistance(playerChunkBase, base) <= (getSyncDistance() / 2); // TODO: do we need to move blockMinViewDistance?
-			boolean needGen = !inTargetArea;
+			boolean inTargetArea = inPriorityArea(playerChunkBase, base);
 			// If it's in the target area, we first check if we can just load it. If so, do that
 			// If not, queue it for LOAD_GEN, but don't wait
 			// If it's not in the target area, don't even wait for load
-			if (inTargetArea && ref.refresh(LoadOption.LOAD_ONLY) == null) {
-					needGen = true;
-			}
-			if (needGen) {
+            if (!inTargetArea || ref.refresh(LoadOption.LOAD_ONLY) == null) {
 				ref.refresh(LoadOption.LOAD_GEN_NOWAIT);
-			}
+            }
 
 			futureChunksToSend.add(ref);
 		}
@@ -232,14 +214,18 @@ public class PlayerNetwork implements Listener {
 			ChunkReference ref = it.next();
 			if (ref.refresh(LoadOption.NO_LOAD) == null) continue;
 			it.remove();
-			boolean inTargetArea = getMaxDistance(playerChunkBase, ref.getBase()) <= (getSyncDistance() / 2);
-			if (inTargetArea) {
+			boolean priorityArea = inPriorityArea(playerChunkBase, ref.getBase());
+			if (priorityArea) {
 				chunkSendQueuePriority.add(ref);
 			} else {
 				chunkSendQueueRegular.add(ref);
 			}
 		}
 	}
+
+    private boolean inPriorityArea(Point playerChunkBase, Point refBase) {
+        return getMaxDistance(playerChunkBase, refBase) <= (getSyncDistance() / 2);
+    }
 
 	/**
 	 * Called when the owner is set to be synchronized to other NetworkComponents.
@@ -252,7 +238,6 @@ public class PlayerNetwork implements Listener {
 			return;
 		}
 		tickCounter++;
-		//TODO: update chunk lists?
 		final int prevSyncDistance = getSyncDistance();
 		final int currentSyncDistance = getSyncDistance();
 		final Point currentPosition = player.getTransformProvider().getTransform().getPosition();
@@ -402,11 +387,15 @@ public class PlayerNetwork implements Listener {
 		session.set(null);
 	}
 
+    public int getSyncDistance() {
+        //return player.getObserver().getSyncDistance()
+        return 10;
+    }
 
 	/**
 	 * Gets the viewable volume centered on the given chunk coordinates and the given view distance
 	 */
-	public Iterator<Vector3i> getViewableVolume(int cx, int cy, int cz, int viewDistance) {
+	public static Iterator<Vector3i> getViewableVolume(int cx, int cy, int cz, int viewDistance) {
 		return new OutwardIterator(cx, cy, cz, viewDistance);
 	}
 
@@ -415,14 +404,9 @@ public class PlayerNetwork implements Listener {
 	 *
 	 * @return true if in the view volume
 	 */
-	public boolean isInViewVolume(Point playerChunkBase, Point testChunkBase, int viewDistance) {
+	public static boolean isInViewVolume(Point playerChunkBase, Point testChunkBase, int viewDistance) {
 		return getManhattanDistance(testChunkBase, playerChunkBase) <= (viewDistance << Chunk.BLOCKS.BITS);
 	}
-
-    public int getSyncDistance() {
-        //return player.getObserver().getSyncDistance()
-        return 10;
-    }
 
 	/**
 	 * Gets the Manhattan distance between two points.
