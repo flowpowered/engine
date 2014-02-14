@@ -66,7 +66,7 @@ public class RenderThread extends TickingElement {
     private final ParallelChunkMesher mesher;
     // TEST CODE
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
-    private AtomicLong worldLastUpdateNumber;
+    private long worldLastUpdateNumber = -1;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
 
     public RenderThread(FlowClient client) {
@@ -128,13 +128,13 @@ public class RenderThread extends TickingElement {
             }
             chunkModels.clear();
             chunkLastUpdateNumbers.clear();
-            worldLastUpdateNumber.set(0);
+            worldLastUpdateNumber = -1;
             return;
         }
         // Any updates after this to the world update number will cause a update next tick
         long update = world.getUpdateNumber();
         // If the snapshot hasn't updated there's nothing to do
-        if (worldLastUpdateNumber.getAndSet(update) == update) {
+        if (worldLastUpdateNumber == update) {
             return;
         }
         // Else, we need to update the chunk models
@@ -182,6 +182,8 @@ public class RenderThread extends TickingElement {
                 }
             }
         }
+        // Update the world update number
+        worldLastUpdateNumber = update;
         // Safety precautions
         if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
             System.out.println("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
