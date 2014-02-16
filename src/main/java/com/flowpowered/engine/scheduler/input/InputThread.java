@@ -88,11 +88,13 @@ public class InputThread extends TickingElement {
                         Keyboard.getEventCharacter(), Keyboard.getEventKey(),
                         Keyboard.getEventKeyState(), Keyboard.getEventNanoseconds());
                 // TEST CODE
-                FlowSingleplayerImpl e = (FlowSingleplayerImpl) client;
-                if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
-                    e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
-                } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {
-                    e.getPlayer().setTransformProvider(e.getTestEntity2().getPhysics());
+                if (client instanceof FlowSingleplayerImpl) {
+                    FlowSingleplayerImpl e = (FlowSingleplayerImpl) client;
+                    if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
+                        e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
+                    } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {
+                        e.getPlayer().setTransformProvider(e.getTestEntity2().getPhysics());
+                    }
                 }
                 currentKeys.add(event);
                 // Add to the queues, if we don't have an empty queue, return, there's nothing more to add

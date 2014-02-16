@@ -24,14 +24,10 @@
 package com.flowpowered.engine;
 
 import com.flowpowered.api.Client;
-import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.FlowRenderer;
 
 public interface FlowClient extends Client, FlowEngine {
-
-    @Override
-	FlowPlayer getPlayer();
 
     @Override
 	FlowWorld getWorld();

@@ -21,23 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.network.handler;
+package com.flowpowered.api.player;
 
-import com.flowpowered.api.Flow;
-import com.flowpowered.engine.FlowServer;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.network.message.LoginMessage;
+import java.util.List;
+import com.flowpowered.api.geo.discrete.TransformProvider;
+import com.flowpowered.api.input.InputSnapshot;
+import com.flowpowered.commands.CommandSender;
 
-public class LoginHandler extends FlowMessageHandler<LoginMessage> {
+public interface AbstractPlayer extends CommandSender {
 
+    /**
+     * Gets the player's name.
+     *
+     * @return the player's name
+     */
     @Override
-    public void handleServer(FlowSession session, LoginMessage message) {
-        System.out.println("Login on Server from " + session.getAddress());
-        ((FlowServer) Flow.getEngine()).addPlayer(message.getPlayerName(), session);
-    }
+    String getName();
 
-    @Override
-    public void handleClient(FlowSession session, LoginMessage message) {
-        System.out.println("Login on Client from " + session.getAddress());
-    }
+    /**
+     * Sends a command to be processed on the opposite Platform. This is basically a shortcut method to prevent the need to register a command locally with a {@link Command.NetworkSendType} of {@code
+     * SEND}.
+     *
+     * @param command to send
+     * @param args to send
+     */
+    void sendCommand(String command, String... args);
+
+    PlayerNetwork getNetwork();
+
+    TransformProvider getTransformProvider();
+
+    void setTransformProvider(TransformProvider provider);
+
+    public List<InputSnapshot> getInput();
+
+    public void setInput(List<InputSnapshot> inputSnapshots);
 }

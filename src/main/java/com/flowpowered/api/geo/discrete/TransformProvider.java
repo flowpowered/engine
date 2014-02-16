@@ -24,5 +24,18 @@
 package com.flowpowered.api.geo.discrete;
 
 public interface TransformProvider {
+    /**
+     * Returns the current Transform. Not null
+     *
+     * @return the non-null Transform
+     */
     Transform getTransform();
+
+    public static class NullTransformProvider implements TransformProvider {
+        public static final NullTransformProvider INSTANCE = new NullTransformProvider();
+        @Override
+        public Transform getTransform() {
+            return Transform.INVALID;
+        }
+    }
 }

@@ -24,8 +24,9 @@
 package com.flowpowered.engine;
 
 import com.flowpowered.api.Server;
-import com.flowpowered.engine.entity.FlowPlayer;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowServerWorldManager;
+import com.flowpowered.engine.network.FlowSession;
 
 public interface FlowServer extends Server, FlowEngine {
 
@@ -34,5 +35,7 @@ public interface FlowServer extends Server, FlowEngine {
 
     @Override
     FlowServerWorldManager getWorldManager();
+
+    void addPlayer(String name, FlowSession session);
 }
  

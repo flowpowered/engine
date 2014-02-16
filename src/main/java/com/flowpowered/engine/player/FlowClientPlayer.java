@@ -21,23 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.network.handler;
+package com.flowpowered.engine.player;
 
-import com.flowpowered.api.Flow;
-import com.flowpowered.engine.FlowServer;
+import com.flowpowered.api.player.ClientPlayer;
 import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.network.message.LoginMessage;
 
-public class LoginHandler extends FlowMessageHandler<LoginMessage> {
+public class FlowClientPlayer extends FlowAbstractPlayer implements ClientPlayer {
 
-    @Override
-    public void handleServer(FlowSession session, LoginMessage message) {
-        System.out.println("Login on Server from " + session.getAddress());
-        ((FlowServer) Flow.getEngine()).addPlayer(message.getPlayerName(), session);
+    public FlowClientPlayer(FlowSession session, String name) {
+        super(session, name);
     }
 
-    @Override
-    public void handleClient(FlowSession session, LoginMessage message) {
-        System.out.println("Login on Client from " + session.getAddress());
-    }
 }

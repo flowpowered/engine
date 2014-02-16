@@ -26,18 +26,7 @@ package com.flowpowered.api.player;
 import com.flowpowered.api.entity.Entity;
 import java.util.List;
 
-import com.flowpowered.api.geo.discrete.TransformProvider;
-import com.flowpowered.api.input.InputSnapshot;
-import com.flowpowered.commands.CommandSender;
-
-public interface Player extends CommandSender {
-    /**
-     * Gets the player's name.
-     *
-     * @return the player's name
-     */
-    @Override
-    String getName();
+public interface Player extends AbstractPlayer {
 
     /**
      * Gets the player's display name.
@@ -125,21 +114,6 @@ public interface Player extends CommandSender {
      * @return true if the {@link Entity} is invisible
      */
     boolean isInvisible(Entity entity);
-
-    /**
-     * Sends a command to be processed on the opposite Platform. This is basically a shortcut method to prevent the need to register a command locally with a {@link Command.NetworkSendType} of {@code
-     * SEND}.
-     *
-     * @param command to send
-     * @param args to send
-     */
-    void sendCommand(String command, String... args);
-
-    TransformProvider getTransformProvider();
-
-    void setTransformProvider(TransformProvider provider);
-
-    public List<InputSnapshot> getInput();
 
     PlayerSnapshot snapshot();
 }

@@ -58,6 +58,7 @@ import com.flowpowered.engine.filesystem.ChunkDataForRegion;
 import com.flowpowered.engine.filesystem.ChunkFiles;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.FlowRegionSnapshot;
+import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.CompleteAsyncManager;
@@ -90,7 +91,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     public FlowRegion(FlowEngine engine, FlowWorld world, int x, int y, int z, BAAWrapper chunkStore, RenderThread render) {
         super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.engine = engine;
-        this.generator = new RegionGenerator(this, 4);
+        this.generator = world instanceof FlowServerWorld ? new RegionGenerator(this, 4) : null;
         this.chunkStore = chunkStore;
         this.render = render;
         this.snapshot = new FlowRegionSnapshot(world.getSnapshot(), getPosition().toInt());
@@ -124,7 +125,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     @Override
     public boolean isLoaded() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     protected void checkChunkLoaded(FlowChunk chunk, LoadOption loadopt) {
@@ -231,7 +232,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
      * @return the DataInputStream
      */
     public InputStream getChunkInputStream(int x, int y, int z) {
-        return chunkStore.getBlockInputStream(getChunkKey(x, y, z));
+        return chunkStore == null ? null : chunkStore.getBlockInputStream(getChunkKey(x, y, z));
     }
 
     public static int getChunkKey(int chunkX, int chunkY, int chunkZ) {
@@ -294,12 +295,12 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     @Override
     public Chunk getChunkFromBlock(int x, int y, int z, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getChunk(x >> Chunk.BLOCKS.BITS, y >> Chunk.BLOCKS.BITS, z >> Chunk.BLOCKS.BITS, loadopt);
     }
 
     @Override
     public Chunk getChunkFromBlock(Vector3f position, LoadOption loadopt) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getChunkFromBlock(position.getFloorX(), position.getFloorY(), position.getFloorZ(), loadopt);
     }
 
     @Override
@@ -567,12 +568,12 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return snapshot;
     }
 
-    public void setChunk(int x, int y, int z, int[] blocks) {
-        final int chunkIndex = getChunkIndex(x, y, z);
+    public void setChunk(int worldChunkX, int worldChunkY, int worldChunkZ, int[] blocks) {
+        final int chunkIndex = getChunkIndex(worldChunkX & Region.CHUNKS.MASK, worldChunkY & Region.CHUNKS.MASK, worldChunkZ & Region.CHUNKS.MASK);
         while (true) {
             FlowChunk[] live = this.live.get();
             FlowChunk[] newArray = Arrays.copyOf(live, live.length);
-            newArray[chunkIndex] = blocks == null ? null : new FlowChunk(this, getWorld(), x, y, z, 0, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, blocks));
+            newArray[chunkIndex] = blocks == null ? null : new FlowChunk(this, getWorld(), worldChunkX, worldChunkY, worldChunkZ, 0, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, blocks));
             if (this.live.compareAndSet(live, newArray)) {
                 break;
             }

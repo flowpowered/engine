@@ -24,6 +24,8 @@
 package com.flowpowered.engine.network;
 
 import com.flowpowered.engine.network.message.LoginMessage;
+import com.flowpowered.networking.Message;
+import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.BasicSession;
 import io.netty.channel.Channel;
 
@@ -35,7 +37,31 @@ public class FlowSession extends BasicSession {
 
     @Override
     public void onReady() {
+        System.out.println("Session ready");
         send(new LoginMessage("Flowy"));
+    }
+
+    @Override
+    public void onDisconnect() {
+        super.onDisconnect();
+    }
+
+    @Override
+    public void onInboundThrowable(Throwable throwable) {
+        System.out.println("Error on inbound: ");
+        throwable.printStackTrace();
+    }
+
+    @Override
+    public void onOutboundThrowable(Throwable throwable) {
+        System.out.println("Error on outbound: ");
+        throwable.printStackTrace();
+    }
+
+    @Override
+    public void onHandlerThrowable(Message message, MessageHandler<?, ?> handle, Throwable throwable) {
+        System.out.println("Error on handle: ");
+        throwable.printStackTrace();
     }
 
 }

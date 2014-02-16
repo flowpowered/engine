@@ -21,36 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.entity;
+package com.flowpowered.api.player;
 
-import java.lang.ref.WeakReference;
+public interface ClientPlayer extends AbstractPlayer {
 
-import com.flowpowered.api.player.Player;
-import com.flowpowered.api.player.PlayerSnapshot;
-
-public class FlowPlayerSnapshot implements PlayerSnapshot {
-    private final String name;
-    private final WeakReference<Player> player;
-    private final long time;
-
-    public FlowPlayerSnapshot(Player player) {
-        this.name = player.getName();
-        this.player = new WeakReference<>(player);
-        this.time = System.currentTimeMillis();
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public Player getReference() {
-        return player.get();
-    }
-
-    @Override
-    public long getSnapshotTime() {
-        return time;
-    }
 }
