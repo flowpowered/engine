@@ -42,10 +42,11 @@ import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.Server;
+import com.flowpowered.api.player.ClientPlayer;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.engine.FlowClient;
-import com.flowpowered.engine.entity.FlowPlayer;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
@@ -202,8 +203,11 @@ public class MainThread extends TickingElement {
                 ((FlowPlayer) p).getNetwork().preSnapshotRun();
             }
         } else {
-            ((FlowClient) scheduler.getEngine()).getPlayer().getNetwork().finalizeRun();
-            ((FlowClient) scheduler.getEngine()).getPlayer().getNetwork().preSnapshotRun();
+            ClientPlayer player = ((FlowClient) scheduler.getEngine()).getPlayer();
+            if (player != null) {
+                player.getNetwork().finalizeRun();
+                player.getNetwork().preSnapshotRun();
+            }
         }
 
         doCopySnapshot();
@@ -289,6 +293,8 @@ public class MainThread extends TickingElement {
                 final List<Future<Void>> futures = executorService.invokeAll(managers);
                 // invokeAll means that it returns when all futures are done or cancelled
                 // We only want to report the exceptions, we don't want to wait
+                // TODO: modify LoggingThreadPoolExecutor to allow custom logging
+                /*
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -303,6 +309,7 @@ public class MainThread extends TickingElement {
                         }
                     }
                 });
+                */
             } catch (InterruptedException e) {
                 logger.warn("Main thread interrupted while waiting on tick stage " + stage);
             }

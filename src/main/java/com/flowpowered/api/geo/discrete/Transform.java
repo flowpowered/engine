@@ -32,10 +32,12 @@ import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector3f;
+import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.Validate;
 
 public final class Transform implements Serializable {
     private static final long serialVersionUID = 2L;
-    public static final Transform EMPTY = new Transform(Point.INVALID, Quaternionf.IDENTITY, new Vector3f(1, 1, 1));
+    public static final Transform INVALID = new Transform(Point.INVALID, Quaternionf.IDENTITY, Vector3f.ONE);
     private final Point position;
     private final Quaternionf rotation;
     private final Vector3f scale;
@@ -45,6 +47,9 @@ public final class Transform implements Serializable {
     }
 
     public Transform(Point position, Quaternionf rotation, Vector3f scale) {
+        Validate.notNull(position, "Position cannot be null!");
+        Validate.notNull(rotation, "Rotation cannot be null!");
+        Validate.notNull(scale, "Scale cannot be null!");
         this.position = position;
         this.rotation = rotation;
         this.scale = scale;
@@ -154,12 +159,12 @@ public final class Transform implements Serializable {
     }
 
     /**
-     * Returns if this Transform is "empty" <p> Empty is defined by Position, {@link Point}, of the transform equaling {@link Point#invalid}, Rotation, {@link com.flowpowered.math.imaginary.Quaternionf}, of the transform equaling
+     * Returns if this Transform is "valid" <p> Invalid is defined by Position, {@link Point}, of the transform equaling {@link Point#invalid}, Rotation, {@link com.flowpowered.math.imaginary.Quaternionf}, of the transform equaling
      * {@link com.flowpowered.math.imaginary.Quaternionf#IDENTITY}, and Scale, {@link com.flowpowered.math.vector.Vector3f}, equaling {@link com.flowpowered.math.vector.Vector3f#ONE}.
      *
-     * @return True if empty, false if not
+     * @return True if valid, false if not
      */
-    public boolean isEmpty() {
-        return EMPTY.equals(this);
+    public boolean isValid() {
+        return !INVALID.equals(this);
     }
 }

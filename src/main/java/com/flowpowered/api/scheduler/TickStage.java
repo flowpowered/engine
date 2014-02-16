@@ -129,7 +129,7 @@ public enum TickStage implements ShortBitMask {
             case 1 << 10:
                 return "SNAPSHOT";
             default:
-                return "UNKNOWN";
+                return null;
         }
     }
 
@@ -146,7 +146,10 @@ public enum TickStage implements ShortBitMask {
                 } else {
                     sb.append(", ");
                 }
-                sb.append(getStage(checkNum));
+                String stage = getStage(checkNum);
+                if (stage != null) {
+                    sb.append(stage);
+                }
             }
             scan <<= 1;
         }

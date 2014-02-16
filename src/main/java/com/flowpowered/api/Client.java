@@ -23,8 +23,8 @@
  */
 package com.flowpowered.api;
 
-import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.World;
+import com.flowpowered.api.player.ClientPlayer;
 import com.flowpowered.api.render.Renderer;
 
 /**
@@ -36,7 +36,7 @@ public interface Client extends Engine {
      *
      * @return player
      */
-    Player getPlayer();
+    ClientPlayer getPlayer();
 
     /**
      * Gets the current world in-which the player on the local machine is within.

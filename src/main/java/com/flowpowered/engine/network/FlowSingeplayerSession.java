@@ -24,19 +24,32 @@
 package com.flowpowered.engine.network;
 
 import java.net.InetSocketAddress;
+
+import com.flowpowered.engine.network.handler.FlowMessageHandler;
 import com.flowpowered.networking.Message;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 
 public class FlowSingeplayerSession extends FlowSession {
+    private final boolean isServer;
 
-    public FlowSingeplayerSession() {
+    public FlowSingeplayerSession(boolean isServer) {
         super(null);
+        this.isServer = isServer;
     }
 
     @Override
     public void send(Message message) {
-        messageReceived(message);
+        FlowMessageHandler<Message> handler = (FlowMessageHandler<Message>) getProtocol().getMessageHandle(message.getClass());
+        if (handler == null) {
+            return;
+        }
+        if (isServer) {
+            handler.handleClient(this, message);
+        } else {
+            handler.handleServer(this, message);
+        }
     }
 
     @Override

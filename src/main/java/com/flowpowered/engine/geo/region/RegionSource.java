@@ -109,7 +109,8 @@ public class RegionSource implements Iterable<Region> {
     @LiveRead
     public FlowRegion getRegion(int x, int y, int z, LoadOption loadopt) {
         if (loadopt != LoadOption.NO_LOAD) {
-            TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
+            // TEST CODE how do we handle async chunk additions on the client?
+            //TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
         }
 
         FlowRegion region = loadedRegions.get(x, y, z);
@@ -122,8 +123,8 @@ public class RegionSource implements Iterable<Region> {
             return null;
         }
 
-        FlowServerWorld serverWorld = (FlowServerWorld) world;
-        region = new FlowRegion(engine, world, x, y, z, serverWorld.getRegionFile(x, y, z), engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
+        // TEST CODE separate server/client logic
+        region = new FlowRegion(engine, world, x, y, z, world instanceof FlowServerWorld ? ((FlowServerWorld) world).getRegionFile(x, y, z) : null, engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
         FlowRegion current = loadedRegions.putIfAbsent(x, y, z, region);
 
         if (current != null) {

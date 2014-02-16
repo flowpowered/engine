@@ -24,11 +24,14 @@
 package com.flowpowered.engine.util.thread;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +47,7 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
         return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
                 new MarkedNamedThreadFactory(name, true), logger);
     }
-    
+
     private Logger logger;
 
     public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, Logger logger) {
@@ -74,7 +77,6 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
             try {
                 ((Future<?>) r).get();
             } catch (CancellationException ce) {
-                t = ce;
             } catch (ExecutionException ee) {
                 t = ee.getCause();
             } catch (InterruptedException ie) {
@@ -82,7 +84,7 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
         if (t != null) {
-            logger.warn("Exception in core task", t);
+            logger.warn("Exception in thread pool task: ", t);
         }
     }
 }

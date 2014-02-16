@@ -25,7 +25,6 @@ package com.flowpowered.engine.geo.world;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.flowpowered.commons.bit.ShortBitMask;
@@ -87,7 +86,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         this.uid = uid;
         this.snapshotManager = new SnapshotManager();
         this.age = new SnapshotableLong(snapshotManager, age);
-        this.regionSource = new RegionSource(engine, (FlowServerWorld) this);
+        this.regionSource = new RegionSource(engine, this);
         this.snapshot = new FlowWorldSnapshot(this);
     }
 

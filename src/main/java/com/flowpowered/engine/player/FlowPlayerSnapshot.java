@@ -21,23 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.network.handler;
+package com.flowpowered.engine.player;
 
-import com.flowpowered.api.Flow;
-import com.flowpowered.engine.FlowServer;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.network.message.LoginMessage;
+import java.lang.ref.WeakReference;
 
-public class LoginHandler extends FlowMessageHandler<LoginMessage> {
+import com.flowpowered.api.player.Player;
+import com.flowpowered.api.player.PlayerSnapshot;
 
-    @Override
-    public void handleServer(FlowSession session, LoginMessage message) {
-        System.out.println("Login on Server from " + session.getAddress());
-        ((FlowServer) Flow.getEngine()).addPlayer(message.getPlayerName(), session);
+public class FlowPlayerSnapshot implements PlayerSnapshot {
+    private final String name;
+    private final WeakReference<Player> player;
+    private final long time;
+
+    public FlowPlayerSnapshot(Player player) {
+        this.name = player.getName();
+        this.player = new WeakReference<>(player);
+        this.time = System.currentTimeMillis();
     }
 
     @Override
-    public void handleClient(FlowSession session, LoginMessage message) {
-        System.out.println("Login on Client from " + session.getAddress());
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Player getReference() {
+        return player.get();
+    }
+
+    @Override
+    public long getSnapshotTime() {
+        return time;
     }
 }

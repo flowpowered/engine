@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,19 +42,20 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.reposition.NullRepositionManager;
 import com.flowpowered.api.player.reposition.RepositionManager;
 import com.flowpowered.commons.concurrent.set.TSyncIntHashSet;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.network.FlowSession;
+import com.flowpowered.engine.network.message.ChunkDataMessage;
 import com.flowpowered.engine.util.OutwardIterator;
 import com.flowpowered.events.Listener;
 import com.flowpowered.math.vector.Vector3i;
-import com.flowpowered.networking.session.BasicSession;
 import com.flowpowered.networking.session.Session;
 
 /**
  * The networking behind {@link org.spout.api.entity.Player}s. This component holds the {@link Session} which is the connection the Player has to the server.
  */
 public class PlayerNetwork implements Listener {
-	protected static final int CHUNKS_PER_TICK = 20;
-	private final AtomicReference<BasicSession> session = new AtomicReference<>(null);
+	protected static final int CHUNKS_PER_TICK = 50;
+	private final FlowSession session;
 	private final TSyncIntHashSet synchronizedEntities = new TSyncIntHashSet();
 	private Point lastChunkCheck = Point.INVALID;
 
@@ -70,15 +72,16 @@ public class PlayerNetwork implements Listener {
 	private final Set<ChunkReference> futureChunksToSend = new LinkedHashSet<>();
 
 	protected volatile boolean worldChanged = false;
-    protected volatile Transform previousTransform = null;
+    protected volatile Transform previousTransform = Transform.INVALID;
 	private boolean sync = false;
 	protected int tickCounter = 0;
-	private int chunksSent = 0;
+	private int chunksSentThisTick = 0;
 	private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.getInstance());
 
-    private final Player player;
+    private final AbstractPlayer player;
 
-    public PlayerNetwork(Player player) {
+    public PlayerNetwork(FlowSession session, AbstractPlayer player) {
+        this.session = session;
         this.player = player;
     }
 
@@ -87,19 +90,8 @@ public class PlayerNetwork implements Listener {
 	 *
 	 * @return The session
 	 */
-	public final BasicSession getSession() {
-		return session.get();
-	}
-
-	/**
-	 * Sets the session this Player has to the server.
-	 *
-	 * @param session The session to the server
-	 */
-	public final void setSession(FlowSession session) {
-		if (!this.session.compareAndSet(null, session)) {
-			throw new IllegalStateException("Once set, the session may not be re-set until a new connection is made");
-		}
+	public final FlowSession getSession() {
+		return session;
 	}
 
 	/**
@@ -230,21 +222,24 @@ public class PlayerNetwork implements Listener {
 	/**
 	 * Called when the owner is set to be synchronized to other NetworkComponents.
 	 *
-	 * TODO: Common logic between Spout and a plugin needing to implement this component? TODO: Add sequence checks to the PhysicsComponent to prevent updates to live?
+	 * TODO: Common logic between Flow and a plugin needing to implement this?
 	 *
 	 */
 	public void finalizeRun() {
-		if (Flow.getPlatform().isServer()) {
+		if (Flow.getEngine().getPlatform().isClient()) {
 			return;
 		}
 		tickCounter++;
+
 		final int prevSyncDistance = getSyncDistance();
 		final int currentSyncDistance = getSyncDistance();
+        final boolean syncDistanceChanged = prevSyncDistance != currentSyncDistance;
+
 		final Point currentPosition = player.getTransformProvider().getTransform().getPosition();
-        if (!currentPosition.getWorld().equals(previousTransform == null ? null : previousTransform.getPosition())) {
-            worldChanged = true;
-        }
-		if (prevSyncDistance != currentSyncDistance || worldChanged || (!currentPosition.equals(lastChunkCheck) && getManhattanDistance(currentPosition, lastChunkCheck) > (Chunk.BLOCKS.SIZE / 2))) {
+        worldChanged = !Objects.equals(currentPosition.getWorld(), previousTransform.getPosition().getWorld());
+        sync |= worldChanged;
+
+		if (syncDistanceChanged || worldChanged || (!currentPosition.equals(lastChunkCheck) && getManhattanDistance(currentPosition, lastChunkCheck) > (Chunk.BLOCKS.SIZE / 2))) {
 			checkChunkUpdates(currentPosition);
 			lastChunkCheck = currentPosition;
 		}
@@ -259,71 +254,73 @@ public class PlayerNetwork implements Listener {
 	 *
 	 */
 	public void preSnapshotRun() {
-		if (Flow.getPlatform().isClient()) {
+		if (Flow.getEngine().getPlatform().isClient()) {
 			return;
 		}
-
-        Point ep = player.getTransformProvider().getTransform().getPosition();
+        Transform transform = player.getTransformProvider().getTransform();
+        Point ep = transform.getPosition();
 		if (worldChanged) {
 			resetChunks();
+            // We assume that world change will cause the client to free the current world's chunks
 			//callProtocolEvent(new WorldChangeProtocolEvent(ep.getWorld()), player);
-			worldChanged = false;
-			sync = true;
 		} else {
-			// We will update old chunks, but not new ones
+            // We want to free all chunks first
+            freeChunks();
+
+			// We will sync old chunks, but not new ones
 			Set<ChunkReference> toSync = new LinkedHashSet<>(activeChunks);
 
 			// Now send new chunks
-			chunksSent = 0;
+			chunksSentThisTick = 0;
 
-			// Send priority chunks first
+			// Send priority chunks separately, because they follow different rules
 			sendChunks(chunkSendQueuePriority.iterator(), true);
 
-			// If we didn't send all the priority chunks, don't send position or regular chunks yet
+            // Send regular chunks regardless if we've sent the priority chunks because we want to spread out the send load
+            sendChunks(chunkSendQueueRegular.iterator(), false);
+
+			// If we didn't send all the priority chunks, don't send position yet, because we might fall through
 			if (chunkSendQueuePriority.isEmpty()) {
-				// Send position
 				sendPositionUpdates();
+            }
 
-				// Then regular chunks
-				sendChunks(chunkSendQueueRegular.iterator(), false);
-			}
-
-			Set<ChunkReference> freeChunks = freeChunks();
-			if (!freeChunks.isEmpty() && !toSync.removeAll(freeChunks)) {
-				throw new IllegalStateException("There were freed chunks, but they were not removed.");
-			}
-
+            // Update the active chunks
 			for (Iterator<ChunkReference> it = toSync.iterator(); it.hasNext();) {
 				ChunkReference ref = it.next();
 				Chunk chunk = ref.get();
+                // If it was unloaded, we have to free it
 				if (chunk == null) {
 					System.out.println("Active chunk (" + ref.getBase().getChunkX() + " " + ref.getBase().getChunkY() + " " + ref.getBase().getChunkZ() + ") has been unloaded! Adding toChunkFreeQueue");
-					chunkFreeQueue.add(ref);
+                    freeChunk(ref);
+                    it.remove();
 					continue;
 				}
 				//chunk.sync(this);
 			}
-
-			// We run another free to be sure all chunks that became free are now freed, this tick
-			freeChunks();
-
-            previousTransform = player.getTransformProvider().getTransform();
 		}
+
+        previousTransform = player.getTransformProvider().getTransform();
 	}
 
 	private Set<ChunkReference> freeChunks() {
 		HashSet<ChunkReference> freed = new HashSet<>();
 		for (ChunkReference ref : chunkFreeQueue) {
-			//callProtocolEvent(new ChunkFreeEvent(ref.getBase()), player);
 			freed.add(ref);
-			activeChunks.remove(ref);
+            freeChunk(ref);
 		}
 		chunkFreeQueue.clear();
 		return freed;
 	}
 
+    private void freeChunk(ChunkReference ref) {
+        //callProtocolEvent(new ChunkFreeEvent(ref.getBase()), player);
+        activeChunks.remove(ref);
+    }
+
 	private void sendChunks(Iterator<ChunkReference> i, boolean priority) {
-		while (i.hasNext() && (priority || (chunksSent < CHUNKS_PER_TICK && !Flow.getEngine().getScheduler().isServerOverloaded()))) {
+        // We always send all priority chunks
+        // Send regular chunks while we aren't overloaded and we haven't exceeded our send amount
+		while (i.hasNext() && (priority || (chunksSentThisTick < CHUNKS_PER_TICK && !Flow.getEngine().getScheduler().isServerOverloaded()))) {
 			Chunk c = i.next().get();
 			if (c == null || attemptSendChunk(c)) {
 				i.remove();
@@ -332,7 +329,8 @@ public class PlayerNetwork implements Listener {
 	}
 
 	private void sendPositionUpdates() {
-		if (player.getTransformProvider().getTransform().equals(previousTransform) && sync) {
+        Transform transform = player.getTransformProvider().getTransform();
+		if (transform.equals(previousTransform) && sync) {
 			//callProtocolEvent(new EntityUpdateEvent(player, live, EntityUpdateEvent.UpdateAction.TRANSFORM, getRepositionManager()), player);
 			sync = false;
 		}
@@ -361,9 +359,11 @@ public class PlayerNetwork implements Listener {
 		}
 
 		//callProtocolEvent(new ChunkSendEvent(c), player);
+        // TODO: use snapshot
+        session.send(new ChunkDataMessage(c.getChunkX(), c.getChunkY(), c.getChunkZ(), ((FlowChunk) c).getBlockStore().getFullArray()));
 		ChunkReference ref = new ChunkReference(c);
 		activeChunks.add(ref);
-		chunksSent++;
+		chunksSentThisTick++;
 		return true;
 	}
 
@@ -381,10 +381,6 @@ public class PlayerNetwork implements Listener {
 			}
 		}
 		return chunks;
-	}
-
-	public void reset() {
-		session.set(null);
 	}
 
     public int getSyncDistance() {

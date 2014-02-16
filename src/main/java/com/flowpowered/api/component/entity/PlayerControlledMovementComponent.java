@@ -27,9 +27,9 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
-import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.input.MouseEvent;
+import com.flowpowered.api.player.AbstractPlayer;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector3f;
@@ -37,11 +37,11 @@ import com.flowpowered.math.vector.Vector3f;
 public class PlayerControlledMovementComponent extends EntityComponent {
     private static final float SPEED = 20f;
 
-    private Player controller;
+    private AbstractPlayer controller;
 
     @Override
     public void onTick(float dt) {
-        Player controller = this.controller;
+        AbstractPlayer controller = this.controller;
         if (controller == null) {
             return;
         }
@@ -109,7 +109,7 @@ public class PlayerControlledMovementComponent extends EntityComponent {
         return controller != null;
     }
 
-    public void setController(Player player) {
+    public void setController(AbstractPlayer player) {
         this.controller = player;
     }
 

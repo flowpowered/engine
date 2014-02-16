@@ -27,14 +27,17 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.network.FlowNetworkClient;
+import com.flowpowered.engine.player.FlowClientPlayer;
+import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
+import org.apache.logging.log4j.LogManager;
+
 public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
-    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
+    private final AtomicReference<FlowClientPlayer> player = new AtomicReference<>();
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
     private final FlowWorldManager<FlowWorld> worldManager;
     private final FlowNetworkClient client = new FlowNetworkClient();
@@ -45,8 +48,25 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     }
 
     @Override
+    public void init() {
+        try {
+            DeployNatives.deploy();
+        } catch (Exception ex) {
+            LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
+            return;
+        }
+        super.init();
+        // TEST CODE
+        FlowWorld world = new FlowWorld(this, "TestWorld");
+        worldManager.addWorld(world);
+        getScheduler().addAsyncManager(world);
+        activeWorld.set(world);
+    }
+
+    @Override
     public void start() {
         client.connect(new InetSocketAddress(25565));
+        getScheduler().startClientThreads(this);
         super.start();
     }
 
@@ -61,7 +81,7 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     }
 
     @Override
-    public FlowPlayer getPlayer() {
+    public FlowClientPlayer getPlayer() {
         return player.get();
     }
 

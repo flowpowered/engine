@@ -4,7 +4,7 @@
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{HH:mm:ss} [%highlight{%-5level}] [%logger{36}] %msg%n"/>
     </Console>
-    <RollingFile name="RollingFile" fileName="spout2.log" filePattern="spout2.%i.log">
+    <RollingFile name="RollingFile" fileName="flow.log" filePattern="flow.%i.log">
       <PatternLayout pattern="%d{HH:mm:ss} [%-5level] [%logger{36}] %msg%n"/>
       <SizeBasedTriggeringPolicy size="50000" />
     </RollingFile>

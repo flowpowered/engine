@@ -35,10 +35,12 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
+import com.flowpowered.api.player.ClientPlayer;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
@@ -101,8 +103,11 @@ public class RenderThread extends TickingElement {
     public void onTick(long dt) {
         handleInput();
         updateCameraAndFrustrum();
-        updateChunkModels(client.getWorld().getSnapshot());
-        updateLight(client.getWorld().getAge());
+        FlowWorld world = client.getWorld();
+        updateChunkModels(world == null ? null : world.getSnapshot());
+        if (world != null) {
+            updateLight(world.getAge());
+        }
         renderer.render();
     }
     

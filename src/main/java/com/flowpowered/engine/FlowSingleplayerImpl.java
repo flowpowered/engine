@@ -33,21 +33,16 @@ import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.material.BlockMaterial;
-import com.flowpowered.engine.entity.FlowPlayer;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSingeplayerSession;
+import com.flowpowered.engine.player.FlowSingleplayerPlayer;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
-import com.flowpowered.math.vector.Vector3f;
-
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
-    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
+    private final AtomicReference<FlowSingleplayerPlayer> player = new AtomicReference<>();
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
-
-    // TEST CODE
-    private Entity testEntity;
-    private Entity testEntity2;
 
     public FlowSingleplayerImpl(FlowApplication args) {
         super(args);
@@ -64,24 +59,11 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         super.init();
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
         activeWorld.set(loadedWorld);
-        FlowPlayer player = new FlowPlayer("Flowy");
-        this.player.set(player);
-        players.put(player.getName(), player);
-        player.getNetwork().setSession(new FlowSingeplayerSession());
-        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
-        Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
-        this.testEntity = entity;
-        this.testEntity2 = entity2;
-        this.testEntity.add(PlayerControlledMovementComponent.class).setController(player);
-        player.setTransformProvider(entity.getPhysics());
-    }
-
-    public Entity getTestEntity() {
-        return testEntity;
-    }
-
-    public Entity getTestEntity2() {
-        return testEntity2;
+        FlowPlayer serverPlayer = new FlowPlayer(new FlowSingeplayerSession(true), "Flowy");
+        FlowSingleplayerPlayer clientPlayer = new FlowSingleplayerPlayer(new FlowSingeplayerSession(false), serverPlayer);
+        this.player.set(clientPlayer);
+        players.put(serverPlayer.getName(), serverPlayer);
+        serverPlayer.setTransformProvider(testEntity.getPhysics());
     }
 
     @Override
@@ -102,7 +84,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     }
 
     @Override
-    public FlowPlayer getPlayer() {
+    public FlowSingleplayerPlayer getPlayer() {
         return player.get();
     }
 

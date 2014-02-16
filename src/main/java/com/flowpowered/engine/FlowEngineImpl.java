@@ -33,14 +33,17 @@ import com.flowpowered.commons.LoggerOutputStream;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.events.SimpleEventManager;
 import com.flowpowered.api.material.MaterialRegistry;
+import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.SyncedStringMap;
+import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.scheduler.FlowScheduler;
+import com.flowpowered.engine.util.thread.CopySnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 
 import uk.org.lidalia.slf4jext.Level;
 
-public abstract class FlowEngineImpl implements FlowEngine {
+public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager {
     private final FlowApplication args;
     private final EventManager eventManager;
     private final FlowFileSystem fileSystem;
@@ -84,6 +87,7 @@ public abstract class FlowEngineImpl implements FlowEngine {
 
     public void start() {
         scheduler.startMainThread();
+        scheduler.addAsyncManager(this);
         System.out.println("Engine started.");
     }
 
@@ -128,4 +132,30 @@ public abstract class FlowEngineImpl implements FlowEngine {
     public SnapshotManager getSnapshotManager() {
         return snapshotManager;
     }
+
+    @Override
+    public void copySnapshotRun(int sequence) {
+        snapshotManager.copyAllSnapshots();
+    }
+
+    @Override
+    public boolean checkSequence(TickStage stage, int sequence) {
+        return true;
+    }
+
+    @Override
+    public Thread getExecutionThread() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setExecutionThread(Thread t) {
+    }
+
+    private final ShortBitMask STAGES = TickStage.SNAPSHOT;
+    @Override
+    public ShortBitMask getTickStages() {
+        return STAGES;
+    }
+
 }

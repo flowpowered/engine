@@ -31,21 +31,52 @@ import java.util.Map;
 import com.flowpowered.commons.StringUtil;
 
 import com.flowpowered.api.Platform;
+import com.flowpowered.api.entity.Entity;
+import com.flowpowered.api.generator.FlatWorldGenerator;
+import com.flowpowered.api.geo.LoadOption;
+import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.player.Player;
-import com.flowpowered.engine.entity.FlowPlayer;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowServerWorldManager;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowNetworkServer;
+import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
+import com.flowpowered.math.vector.Vector3f;
 
 public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
     private final FlowServerWorldManager worldManager;
     private final FlowNetworkServer server = new FlowNetworkServer();
 
+    // TEST CODE
+    protected Entity testEntity;
+    protected Entity testEntity2;
+
     public FlowServerImpl(FlowApplication args) {
         super(args);
         players = new SnapshotableLinkedHashMap<>(snapshotManager);
         worldManager = new FlowServerWorldManager(this);
+    }
+
+    @Override
+    public void init() {
+        super.init();
+
+        // TEST CODE
+        FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
+        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        this.testEntity = entity;
+        this.testEntity2 = entity2;
+    }
+
+    public Entity getTestEntity() {
+        return testEntity;
+    }
+
+    public Entity getTestEntity2() {
+        return testEntity2;
     }
 
     @Override
@@ -100,6 +131,13 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
         } else {
             return StringUtil.getShortest(StringUtil.matchName(players.getValues(), name));
         }
+    }
+
+    @Override
+    public void addPlayer(String name, FlowSession session) {
+        FlowPlayer player = new FlowPlayer(session, name);
+        players.put(name, player);
+        player.setTransformProvider(testEntity.getPhysics());
     }
 
     @Override

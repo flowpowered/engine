@@ -24,6 +24,7 @@
 package com.flowpowered.engine.entity;
 
 import java.util.concurrent.atomic.AtomicReference;
+
 import com.flowpowered.api.entity.Physics;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
@@ -44,8 +45,8 @@ import org.spout.physics.collision.shape.CollisionShape;
  */
 public class FlowPhysics extends Physics {
     //Flow
-    private AtomicReference<Transform> snapshot = new AtomicReference<>(Transform.EMPTY);
-    private AtomicReference<Transform> live = new AtomicReference<>(Transform.EMPTY);
+    private AtomicReference<Transform> snapshot = new AtomicReference<>(Transform.INVALID);
+    private AtomicReference<Transform> live = new AtomicReference<>(Transform.INVALID);
     //React
     private RigidBody body;
     private final RigidBodyMaterial material = new RigidBodyMaterial();

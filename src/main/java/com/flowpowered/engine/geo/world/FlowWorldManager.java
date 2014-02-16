@@ -43,6 +43,10 @@ public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
         this.engine = engine;
     }
 
+    public void addWorld(T world) {
+        loadedWorlds.put(world.getName(), world);
+    }
+
     @Override
     public World getWorld(String name) {
         return getWorld(name, true);
