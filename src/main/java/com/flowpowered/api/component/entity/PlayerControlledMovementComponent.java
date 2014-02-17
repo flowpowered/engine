@@ -25,14 +25,14 @@ package com.flowpowered.api.component.entity;
 
 import java.util.List;
 
+import org.lwjgl.input.Keyboard;
+
 import com.flowpowered.api.entity.Player;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.input.MouseEvent;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector3f;
-
-import org.lwjgl.input.Keyboard;
 
 public class PlayerControlledMovementComponent extends EntityComponent {
     private static final float SPEED = 20f;
@@ -54,11 +54,7 @@ public class PlayerControlledMovementComponent extends EntityComponent {
             if (!snapshot.isMouseGrabbed()) {
                 continue;
             }
-            final float inputNormalize = 1/(InputSnapshot.INPUT_TPS*snapshot.getDt());
-            final float ratio = 20f/InputSnapshot.INPUT_TPS;
-            // TODO: add back in normalization
-            //final float speed = SPEED * dt * ratio * inputNormalize;
-            final float speed = SPEED * dt * ratio;
+            final float speed = SPEED * snapshot.getDt();
             if (snapshot.isKeyDown(Keyboard.KEY_W)) {
                 translation = translation.add(forward.mul(speed));
             }
