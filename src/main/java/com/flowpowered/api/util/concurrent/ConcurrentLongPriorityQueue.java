@@ -32,6 +32,7 @@ import com.flowpowered.math.GenericMath;
 public class ConcurrentLongPriorityQueue<T extends LongPrioritized> {
     private final long keyMask;
     private final long keyStep;
+    // We need to use RedirectableConcurrentLinkedQueues because if the queue is taken in addRaw, but then removed in complete, we don't want the added element in addRaw to get missed
     protected final ConcurrentSkipListMap<Long, RedirectableConcurrentLinkedQueue<T>> queueMap = new ConcurrentSkipListMap<>();
 
     public ConcurrentLongPriorityQueue(long resolution) {

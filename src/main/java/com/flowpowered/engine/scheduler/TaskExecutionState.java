@@ -21,37 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.scheduler;
+package com.flowpowered.engine.scheduler;
 
 /**
- * Represents a worker thread for the scheduler. This gives information about the Thread object for the task, owner of the task and the taskId.
- *
- * Workers are used to execute async tasks.
+ * Execution states for tasks
  */
-public interface Worker {
+enum TaskExecutionState {
     /**
-     * Returns the taskId for the task being executed by this worker
-     *
-     * @return Task id number
+     * This task should be run this tick
      */
-    public int getTaskId();
-
+    RUN,
     /**
-     * Returns the Object that owns this task
-     *
-     * @return The Object that owns the task
+     * This task will run later, keep checking
      */
-    public Object getOwner();
-
+    WAIT,
     /**
-     * Attempts to cancel the task.  This will trigger an interrupt for async tasks that are in progress.
+     * This task will never run again, stop trying
      */
-    public void cancel();
-
-    /**
-     * Gets the task associated with this worker
-     *
-     * @return the task
-     */
-    public Task getTask();
+    STOP,
 }

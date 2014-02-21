@@ -31,7 +31,6 @@ import com.flowpowered.api.Engine;
 import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.api.scheduler.Task;
 import com.flowpowered.api.scheduler.TaskPriority;
-import com.flowpowered.api.scheduler.Worker;
 import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.render.RenderThread;
@@ -107,43 +106,38 @@ public final class FlowScheduler implements Scheduler {
     }
 
     @Override
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task) {
-        return taskManager.scheduleSyncDelayedTask(plugin, task);
+    public FlowTask runTask(Object owner, Runnable task) throws IllegalArgumentException {
+        return taskManager.runTask(owner, task);
     }
 
     @Override
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
-        return taskManager.scheduleSyncDelayedTask(plugin, task, delay, priority);
+    public FlowTask runTask(Object owner, Runnable task, TaskPriority priority) {
+        return taskManager.runTask(owner, task, priority);
     }
 
     @Override
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, TaskPriority priority) {
-        return taskManager.scheduleSyncDelayedTask(plugin, task, priority);
+    public FlowTask runTaskAsynchronously(Object owner, Runnable task) throws IllegalArgumentException {
+        return taskManager.runTaskAsynchronously(owner, task);
     }
 
     @Override
-    public Task scheduleSyncRepeatingTask(Object plugin, Runnable task, long delay, long period, TaskPriority priority) {
-        return taskManager.scheduleSyncRepeatingTask(plugin, task, delay, period, priority);
+    public FlowTask runTaskLater(Object owner, Runnable task, long delay, TaskPriority priority) throws IllegalArgumentException {
+        return taskManager.runTaskLater(owner, task, delay, priority);
     }
 
     @Override
-    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
-        return taskManager.scheduleAsyncDelayedTask(plugin, task, delay, priority);
+    public FlowTask runTaskLaterAsynchronously(Object owner, Runnable task, long delay) throws IllegalArgumentException {
+        return taskManager.runTaskLaterAsynchronously(owner, task, delay);
     }
 
     @Override
-    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority, boolean longLife) {
-        return taskManager.scheduleAsyncDelayedTask(plugin, task, delay, priority, longLife);
+    public FlowTask runTaskTimer(Object owner, Runnable task, long delay, long period, TaskPriority priority) throws IllegalArgumentException {
+        return taskManager.runTaskTimer(owner, task, delay, period, priority);
     }
 
     @Override
-    public Task scheduleAsyncTask(Object plugin, Runnable task) {
-        return taskManager.scheduleAsyncTask(plugin, task);
-    }
-
-    @Override
-    public Task scheduleAsyncTask(Object plugin, Runnable task, boolean longLife) {
-        return taskManager.scheduleAsyncTask(plugin, task, longLife);
+    public FlowTask runTaskTimerAsynchronously(Object owner, Runnable task, long delay, long period) throws IllegalArgumentException {
+        return taskManager.runTaskTimerAsynchronously(owner, task, delay, period);
     }
 
     @Override
@@ -174,11 +168,6 @@ public final class FlowScheduler implements Scheduler {
     @Override
     public void cancelAllTasks() {
         taskManager.cancelAllTasks();
-    }
-
-    @Override
-    public List<Worker> getActiveWorkers() {
-        return taskManager.getActiveWorkers();
     }
 
     @Override

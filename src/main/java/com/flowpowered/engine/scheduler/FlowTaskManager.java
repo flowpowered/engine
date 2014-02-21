@@ -32,92 +32,83 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.flowpowered.api.Flow;
-import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.api.scheduler.Task;
 import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TaskPriority;
-import com.flowpowered.api.scheduler.Worker;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
 public class FlowTaskManager implements TaskManager {
-    private final ConcurrentHashMap<FlowTask, FlowWorker> activeWorkers = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, FlowTask> activeTasks = new ConcurrentHashMap<>();
-    private final TaskPriorityQueue taskQueue;
-    private final AtomicBoolean alive;
-    private final AtomicLong upTime;
-    private final Object scheduleLock = new Object();
     private final FlowScheduler scheduler;
-    private final ExecutorService pool = Executors.newFixedThreadPool(20, new MarkedNamedThreadFactory("Scheduler Thread Pool Thread", false));
 
+    /**
+     * Executor to handle execution of async tasks
+     */
+    private final ExecutorService asyncTaskExecutor = Executors.newCachedThreadPool(new MarkedNamedThreadFactory("Async task exectuor - ", false));
+
+    /**
+     * A list of active tasks.
+     */
+    private final TaskPriorityQueue taskQueue;
+    private final ConcurrentHashMap<Integer, FlowTask> activeTasks = new ConcurrentHashMap<>();
+
+    /**
+     * The primary worlds thread in which pulse() is called.
+     */
+    private Thread primaryThread;
+    private final AtomicLong upTime;
+ 
     public FlowTaskManager(FlowScheduler scheduler) {
         this(scheduler, null, 0L);
     }
 
-    public FlowTaskManager(FlowScheduler scheduler, AsyncManager manager) {
-        this(scheduler, manager, 0L);
-    }
-
-    public FlowTaskManager(FlowScheduler scheduler, AsyncManager manager, long age) {
-        this.taskQueue = new TaskPriorityQueue(manager, FlowScheduler.PULSE_EVERY / 4);
-        this.alive = new AtomicBoolean(true);
-        this.upTime = new AtomicLong(age);
+    /**
+     * Creates a new task scheduler.
+     */
+    public FlowTaskManager(FlowScheduler scheduler, AsyncManager taskManager, long age) {
         this.scheduler = scheduler;
+        primaryThread = Thread.currentThread();
+        this.taskQueue = new TaskPriorityQueue(taskManager, FlowScheduler.PULSE_EVERY / 4);
+        this.upTime = new AtomicLong(age);
+        
     }
 
-    @Override
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task) {
-        return scheduleSyncDelayedTask(plugin, task, 0, TaskPriority.CRITICAL);
+    /**
+     * Stops the scheduler and all tasks.
+     */
+    public void stop() {
+        cancelAllTasks();
+        asyncTaskExecutor.shutdown();
     }
 
-    @Override
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, TaskPriority priority) {
-        return scheduleSyncDelayedTask(plugin, task, 0, priority);
+    /**
+     * Schedules the specified task.
+     *
+     * @param task The task.
+     */
+    private FlowTask schedule(FlowTask task) {
+        taskQueue.add(task);
+        activeTasks.put(task.getTaskId(), task);
+        return task;
     }
 
-    @Override
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
-        return scheduleSyncRepeatingTask(plugin, task, delay, -1, priority);
+    /**
+     * Returns true if the current {@link Thread} is the server's primary thread.
+     */
+    public boolean isPrimaryThread() {
+        return Thread.currentThread() == primaryThread;
     }
 
-    @Override
-    public Task scheduleSyncRepeatingTask(Object plugin, Runnable task, long delay, long period, TaskPriority priority) {
-        return schedule(new FlowTask(this, scheduler, plugin, task, true, delay, period, priority, false));
-    }
-
-    @Override
-    public Task scheduleAsyncTask(Object plugin, Runnable task) {
-        return scheduleAsyncTask(plugin, task, false);
-    }
-
-    @Override
-    public Task scheduleAsyncTask(Object plugin, Runnable task, boolean longLife) {
-        return scheduleAsyncDelayedTask(plugin, task, 0, TaskPriority.CRITICAL, longLife);
-    }
-
-    @Override
-    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority) {
-        return scheduleAsyncDelayedTask(plugin, task, delay, priority, true);
-    }
-
-    @Override
-    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority, boolean longLife) {
-        if (!alive.get()) {
-            return null;
-        } else {
-            return schedule(new FlowTask(this, scheduler, plugin, task, false, delay, -1, priority, longLife));
-        }
-    }
-
-    @Override
-    public <T> Future<T> callSyncMethod(Object plugin, Callable<T> task, TaskPriority priority) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+    /**
+     * Adds new tasks and updates existing tasks, removing them if necessary.
+     *
+     * TODO: Add watchdog system to make sure ticks advance
+     */
     public void heartbeat(long delta) {
+        primaryThread = Thread.currentThread();
         long upTime = this.upTime.addAndGet(delta);
 
         Queue<FlowTask> q;
@@ -126,21 +117,21 @@ public class FlowTaskManager implements TaskManager {
             boolean checkRequired = !taskQueue.isFullyBelowThreshold(q, upTime);
             Iterator<FlowTask> itr = q.iterator();
             while (itr.hasNext()) {
-                FlowTask currentTask = itr.next();
-                if (checkRequired && currentTask.getPriority() > upTime) {
+                FlowTask task = itr.next();
+                if (checkRequired && task.getPriority() > upTime) {
                     continue;
                 }
-
-                itr.remove();
-                currentTask.setUnqueued();
-
-                if (!currentTask.isAlive()) {
-                    continue;
-                } else if (currentTask.isSync()) {
-                    currentTask.pulse();
-                    repeatSchedule(currentTask);
-                } else {
-                    scheduler.getEngine().getLogger().info("Async repeating task submitted");
+                switch (task.shouldExecute()) {
+                    case RUN:
+                        if (task.isSync()) {
+                            task.run();
+                        } else {
+                            asyncTaskExecutor.submit(task);
+                        }
+                        break;
+                    case STOP:
+                        itr.remove();
+                        activeTasks.remove(task.getTaskId());
                 }
             }
             if (taskQueue.complete(q, upTime)) {
@@ -149,88 +140,68 @@ public class FlowTaskManager implements TaskManager {
         }
     }
 
-    public void cancelTask(FlowTask task) {
-        if (task == null) {
-            throw new IllegalArgumentException("Task cannot be null!");
-        }
-        synchronized (scheduleLock) {
-            task.stop();
-            if (taskQueue.remove(task)) {
-                removeTask(task);
-            }
-        }
-        if (!task.isSync()) {
-            FlowWorker worker = activeWorkers.get(task);
-            if (worker != null) {
-                worker.interrupt();
-            }
-        }
-    }
-
-    public Task schedule(FlowTask task) {
-        synchronized (scheduleLock) {
-            if (!addTask(task)) {
-                return task;
-            }
-            if (!task.isSync()) {
-                FlowWorker worker = new FlowWorker(task, this);
-                addWorker(worker, task);
-                worker.start(pool);
-            } else {
-                taskQueue.add(task);
-            }
-            return task;
-        }
-    }
-
-    protected Task repeatSchedule(FlowTask task) {
-        synchronized (scheduleLock) {
-            if (task.isAlive()) {
-                schedule(task);
-            } else {
-                removeTask(task);
-            }
-        }
-        return task;
-    }
-
-    public void addWorker(FlowWorker worker, FlowTask task) {
-        activeWorkers.put(task, worker);
-    }
-
-    public boolean removeWorker(FlowWorker worker, FlowTask task) {
-        return activeWorkers.remove(task, worker);
-    }
-
-    public boolean addTask(FlowTask task) {
-        activeTasks.put(task.getTaskId(), task);
-        if (!alive.get()) {
-            cancelTask(task);
-            return false;
-        }
-        return true;
-    }
-
-    public boolean removeTask(FlowTask task) {
-        return activeTasks.remove(task.getTaskId(), task);
+    public <T> Future<T> callSyncMethod(Object owner, Callable<T> task) {
+        return callSyncMethod(owner, task, TaskPriority.NORMAL);
     }
 
     @Override
-    public boolean isQueued(int taskId) {
-        return activeTasks.containsKey(taskId);
+    public <T> Future<T> callSyncMethod(Object owner, Callable<T> task, TaskPriority priority) {
+        FutureTask<T> future = new FutureTask<T>(task);
+        runTask(owner, future, priority);
+        return future;
+    }
+
+    public <T> T syncIfNeeded(Callable<T> task) throws Exception {
+        if (isPrimaryThread()) {
+            return task.call();
+        } else {
+            return callSyncMethod(null, task).get();
+        }
     }
 
     @Override
-    public void cancelTask(int taskId) {
-        cancelTask(activeTasks.get(taskId));
+    public FlowTask runTask(Object owner, Runnable task) throws IllegalArgumentException {
+        return runTaskLater(owner, task, 0, TaskPriority.NORMAL);
+    }
+
+    @Override
+    public FlowTask runTask(Object owner, Runnable task, TaskPriority priority) {
+        return runTaskLater(owner, task, 0, priority);
+    }
+
+    @Override
+    public FlowTask runTaskAsynchronously(Object owner, Runnable task) throws IllegalArgumentException {
+        return runTaskLaterAsynchronously(owner, task, 0);
+    }
+
+    @Override
+    public FlowTask runTaskLater(Object owner, Runnable task, long delay, TaskPriority priority) throws IllegalArgumentException {
+        return runTaskTimer(owner, task, delay, -1, priority);
+    }
+
+    @Override
+    public FlowTask runTaskLaterAsynchronously(Object owner, Runnable task, long delay) throws IllegalArgumentException {
+        return runTaskTimerAsynchronously(owner, task, delay, -1);
+    }
+
+    @Override
+    public FlowTask runTaskTimer(Object owner, Runnable task, long delay, long period, TaskPriority priority) throws IllegalArgumentException {
+        return schedule(new FlowTask(this, scheduler, owner, task, true, delay, period, priority));
+    }
+
+    @Override
+    public FlowTask runTaskTimerAsynchronously(Object owner, Runnable task, long delay, long period) throws IllegalArgumentException {
+        return schedule(new FlowTask(this, scheduler, owner, task, false, delay, period, null));
     }
 
     @Override
     public void cancelTask(Task task) {
-        if (task == null) {
-            throw new IllegalArgumentException("Task cannot be null!");
-        }
-        cancelTask(activeTasks.get(task.getTaskId()));
+        cancelTask(task.getTaskId());
+    }
+
+    @Override
+    public void cancelTask(int taskId) {
+        taskQueue.remove(activeTasks.remove(taskId));
     }
 
     @Override
@@ -252,48 +223,30 @@ public class FlowTaskManager implements TaskManager {
     }
 
     @Override
-    public List<Worker> getActiveWorkers() {
-        return new ArrayList<Worker>(activeWorkers.values());
+    public boolean isQueued(int taskId) {
+        return activeTasks.containsKey(taskId);
     }
 
-    public boolean waitForAsyncTasks(long timeout) {
-        long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() < startTime + timeout) {
-            try {
-                if (activeWorkers.isEmpty()) {
-                    return true;
-                }
-                Thread.sleep(10);
-            } catch (InterruptedException ie) {
-                return false;
-            }
-        }
-        return false;
-    }
-
+    /**
+     * Returns tasks that still have at least one run remaining
+     * @return the tasks to be run
+     */
     @Override
     public List<Task> getPendingTasks() {
-        List<FlowTask> tasks = taskQueue.getTasks();
-        List<Task> list = new ArrayList<>(tasks.size());
-        for (FlowTask t : tasks) {
-            list.add(t);
-        }
-        return list;
-    }
-
-    public boolean shutdown() {
-        return shutdown(1);
-    }
-
-    public boolean shutdown(long timeout) {
-        alive.set(false);
-        pool.shutdown();
-        cancelAllTasks();
-        return true;
+        return new ArrayList<Task>(activeTasks.values());
     }
 
     @Override
     public long getUpTime() {
         return upTime.get();
+    }
+ 
+    public boolean waitForAsyncTasks(long timeout) {
+        try {
+            asyncTaskExecutor.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ie) {
+            return false;
+        }
+        return true;
     }
 }

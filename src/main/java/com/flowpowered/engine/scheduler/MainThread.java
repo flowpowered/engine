@@ -23,10 +23,8 @@
  */
 package com.flowpowered.engine.scheduler;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -36,13 +34,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
 
-import com.flowpowered.commons.Named;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.scheduler.TickStage;
-import com.flowpowered.api.scheduler.Worker;
-import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
@@ -117,19 +111,11 @@ public class MainThread extends TickingElement {
         RegionGenerator.awaitExecutorServiceTermination(logger);
 
         scheduler.getTaskManager().heartbeat(FlowScheduler.PULSE_EVERY << 2);
-        scheduler.getTaskManager().shutdown(1L);
+        scheduler.getTaskManager().stop();
 
         long delay = 2000;
         while (!scheduler.getTaskManager().waitForAsyncTasks(delay)) {
-            List<Worker> workers = scheduler.getTaskManager().getActiveWorkers();
-            if (workers.isEmpty()) {
-                break;
-            }
             logger.info("Unable to shutdown due to async tasks still running");
-            for (Worker w : workers) {
-                Object owner = w.getOwner() instanceof Named ? ((Named) w.getOwner()).getName() : w.getOwner();
-                logger.info("Task with id of " + w.getTaskId() + " owned by " + owner + " is still running");
-            }
             if (delay < 8000) {
                 delay <<= 1;
             }
