@@ -31,98 +31,86 @@ public interface TaskManager {
     /**
      * Schedules a once off task to occur as soon as possible This task will be executed by the main server thread.
      *
-     * @param plugin the owner of the task
+     * @param owner the owner of the task
      * @param task the task to execute
      * @return the task
      */
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task);
+    public Task runTask(Object owner, Runnable task);
 
     /**
      * Schedules a once off task to occur as soon as possible This task will be executed by the main server thread.
      *
-     * @param plugin the owner of the task
+     * @param owner the owner of the task
      * @param task the task to execute
      * @param priority the priority of the task
      * @return the task
      */
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, TaskPriority priority);
+    public Task runTask(Object owner, Runnable task, TaskPriority priority);
+
+    /**
+     * Schedules a once off short lived task to occur as soon as possible.  This task will be executed by a thread managed by the scheduler
+     *
+     * @param owner the owner of the task
+     * @param task the task to execute
+     * @return the task id of the task
+     */
+    public Task runTaskAsynchronously(Object owner, Runnable task);
 
     /**
      * Schedules a once off task to occur after a delay.   This task will be executed by the main server thread
      *
-     * @param plugin the owner of the task
+     * @param owner the owner of the task
      * @param task the task to execute
      * @param delay the delay, in ms, before the task starts
      * @param priority the priority of the task
      * @return the task
      */
-    public Task scheduleSyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority);
+    public Task runTaskLater(Object owner, Runnable task, long delay, TaskPriority priority);
+
+    /**
+     * Schedules a once off short lived task to occur after a delay.  This task will be executed by a thread managed by the scheduler.
+     *
+     * @param owner the owner of the task
+     * @param task the task to execute
+     * @param delay the delay, in ms, before the task starts
+     * @return the task
+     */
+    public Task runTaskLaterAsynchronously(Object owner, Runnable task, long delay);
 
     /**
      * Schedules a repeating task This task will be executed by the main server thread.  The repeat will not be started if the task until the previous repeat has completed running.
      *
-     * @param plugin the owner of the task
+     * @param owner the owner of the task
      * @param task the task to execute
      * @param delay the delay, in ms, before the task starts
      * @param period the repeat period, in ms, of the task, or <= 0 to indicate a single shot task
      * @param priority the priority of the task
      * @return the task
      */
-    public Task scheduleSyncRepeatingTask(Object plugin, Runnable task, long delay, long period, TaskPriority priority);
-
+    public Task runTaskTimer(Object owner, Runnable task, long delay, long period, TaskPriority priority);
+    
     /**
-     * Schedules a once off short lived task to occur as soon as possible.  This task will be executed by a thread managed by the scheduler
+     * Schedules a repeating task. This task will be executing asynchronously. The repeat will not be started until the previous repeat has completed running.
      *
-     * @param plugin the owner of the task
-     * @param task the task to execute
-     * @return the task id of the task
-     */
-    public Task scheduleAsyncTask(Object plugin, Runnable task);
-
-    /**
-     * Schedules a once off task to occur as soon as possible.  This task will be executed by a thread managed by the scheduler
-     *
-     * @param plugin the owner of the task
-     * @param task the task to execute
-     * @param longLife indicates that the thread is long lived
-     * @return the tas
-     */
-    public Task scheduleAsyncTask(Object plugin, Runnable task, boolean longLife);
-
-    /**
-     * Schedules a once off short lived task to occur after a delay.  This task will be executed by a thread managed by the scheduler.
-     *
-     * @param plugin the owner of the task
+     * @param owner the owner of the task
      * @param task the task to execute
      * @param delay the delay, in ms, before the task starts
-     * @param priority the priority of the task
-     * @return the task
+     * @param period the repeat period, in ms, of the task, or <= 0 to indicate a single shot task
+     * @return
      */
-    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority);
-
-    /**
-     * Schedules a once off task to occur after a delay.  This task will be executed by a thread managed by the scheduler.
-     *
-     * @param plugin the owner of the task
-     * @param task the task to execute
-     * @param delay the delay, in ms, before the task starts
-     * @param priority the priority of the task
-     * @param longLife indicates that the thread is long lived
-     * @return the task
-     */
-    public Task scheduleAsyncDelayedTask(Object plugin, Runnable task, long delay, TaskPriority priority, boolean longLife);
+    public Task runTaskTimerAsynchronously(Object owner, Runnable task, long delay, long period);
 
     /**
      * Calls a method on the main thread and returns a Future object This task will be executed by the main server thread <br/>
      *
      * <b>Note:</b> The Future.get() methods must NOT be called from the main thread<br/> <b>Note 2:</b> There is at least an average of 10ms latency until the isDone() method returns true<br/>
      *
-     * @param plugin the owner of the task
+     * @param owner the owner of the task
      * @param task the Callable to execute
      * @param priority the priority of the task
      * @return Future Future object related to the task
      */
-    public <T> Future<T> callSyncMethod(Object plugin, Callable<T> task, TaskPriority priority);
+    public <T> Future<T> callSyncMethod(Object owner, Callable<T> task, TaskPriority priority);
 
     /**
      * True if the task is an actively scheduled task
@@ -150,15 +138,6 @@ public interface TaskManager {
      * Removes all tasks from the scheduler
      */
     public void cancelAllTasks();
-
-    /**
-     * Returns a list of all active workers.
-     *
-     * This list contains asynch tasks that are being executed by separate threads.
-     *
-     * @return Active workers
-     */
-    public List<Worker> getActiveWorkers();
 
     /**
      * Returns a list of all pending tasks. The ordering of the tasks is not related to their order of execution.

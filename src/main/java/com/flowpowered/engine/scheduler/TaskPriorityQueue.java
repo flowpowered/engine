@@ -48,7 +48,7 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<FlowTask> {
      * @return the first pending task, or null if no task is pending
      */
     public Queue<FlowTask> getPendingTask(long currentTime) {
-        if (Thread.currentThread() != taskManager.getExecutionThread()) {
+        if (taskManager != null && Thread.currentThread() != taskManager.getExecutionThread()) {
             throw new IllegalStateException("getPendingTask() may only be called from the thread that created the TaskPriorityQueue");
         }
 
@@ -58,7 +58,7 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<FlowTask> {
     @Override
     public boolean add(FlowTask task) {
         if (task != null) {
-            if (!task.setQueued()) {
+            if (task.isDone()) {
                 throw new UnsupportedOperationException("Task was dead when adding to the queue");
             }
         }
@@ -68,18 +68,6 @@ public class TaskPriorityQueue extends ConcurrentLongPriorityQueue<FlowTask> {
     @Override
     public boolean redirect(FlowTask task) {
         return super.add(task);
-    }
-
-    @Override
-    public boolean remove(FlowTask task) {
-        task.remove();
-        if (!super.remove(task)) {
-            return false;
-        }
-
-        task.setUnqueued();
-
-        return true;
     }
 
     @Override

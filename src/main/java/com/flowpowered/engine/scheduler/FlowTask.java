@@ -1,4 +1,4 @@
-/*
+    /*
  * This file is part of Flow Engine, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2013 Spout LLC <http://www.spout.org/>
@@ -23,10 +23,10 @@
  */
 package com.flowpowered.engine.scheduler;
 
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.commons.Named;
 import com.flowpowered.api.scheduler.Scheduler;
@@ -35,10 +35,12 @@ import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TaskPriority;
 import com.flowpowered.api.util.concurrent.LongPrioritized;
 
+import org.apache.commons.lang3.Validate;
+
 /**
  * Represents a task which is executed periodically.
  */
-public class FlowTask implements Task, LongPrioritized {
+public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized {
     /**
      * The next task ID pending.
      */
@@ -52,11 +54,7 @@ public class FlowTask implements Task, LongPrioritized {
      */
     private final TaskPriority priority;
     /**
-     * The Runnable this task is representing.
-     */
-    private final Runnable task;
-    /**
-     * The Plugin that owns this task
+     * The owner of this task
      */
     private final Object owner;
     /**
@@ -75,7 +73,6 @@ public class FlowTask implements Task, LongPrioritized {
      * Indicates the next scheduled time for the task to be called
      */
     private final AtomicLong nextCallTime;
-    private final AtomicReference<QueueState> queueState = new AtomicReference<>(QueueState.UNQUEUED);
     /**
      * A flag indicating if the task is actually executing
      */
@@ -93,26 +90,26 @@ public class FlowTask implements Task, LongPrioritized {
      */
     private final Scheduler scheduler;
     /**
-     * Indicates that the task is long lived
+     * Return the last state returned by {@link #shouldExecute()}
      */
-    private final boolean longLife;
+    private volatile TaskExecutionState lastExecutionState = TaskExecutionState.WAIT;
 
     /**
      * Creates a new task with the specified period between consecutive calls to {@link #pulse()}.
      */
-    public FlowTask(TaskManager manager, Scheduler scheduler, Object owner, Runnable task, boolean sync, long delay, long period, TaskPriority priority, boolean longLife) {
+    public FlowTask(TaskManager manager, Scheduler scheduler, Object owner, Runnable task, boolean sync, long delay, long period, TaskPriority priority) {
+        super(task, null);
+        Validate.isTrue(!sync || priority != null, "Priority cannot be null if sync!");
         this.taskId = nextTaskId.getAndIncrement();
         this.nextCallTime = new AtomicLong(manager.getUpTime() + delay);
         this.executing = new AtomicBoolean(false);
         this.owner = owner;
-        this.task = task;
         this.delay = delay;
         this.period = period;
         this.sync = sync;
         this.priority = priority;
         this.manager = manager;
         this.scheduler = scheduler;
-        this.longLife = longLife;
     }
 
     /**
@@ -140,17 +137,17 @@ public class FlowTask implements Task, LongPrioritized {
 
     @Override
     public boolean isAlive() {
-        return !queueState.get().isDead();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isLongLived() {
-        return longLife;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void cancel() {
-        manager.cancelTask(taskId);
+        this.cancel(false);
     }
 
     public long getNextCallTime() {
@@ -166,97 +163,59 @@ public class FlowTask implements Task, LongPrioritized {
     }
 
     /**
-     * Stops this task.
+     * Called every 'pulse'. This method
+     * updates the counters and returns whether execute() should be called
+     * @return Execution state for this task
      */
-    public void stop() {
-        remove();
+    TaskExecutionState shouldExecute() {
+        final TaskExecutionState execState = shouldExecuteUpdate();
+        lastExecutionState = execState;
+        return execState;
+    }
+
+    private TaskExecutionState shouldExecuteUpdate() {
+        // Stop running if cancelled, exception, or not repeating
+        if (isDone()) {
+            return TaskExecutionState.STOP;
+        }
+        if (manager.getUpTime() >= nextCallTime.get()) {
+            return TaskExecutionState.RUN;
+        }
+        return TaskExecutionState.WAIT;
     }
 
     /**
-     * Executes the task.  The task will fail to execute if it is no longer running, if it is called early, or if it is already executing.
-     *
-     * @return The task successfully executed.
+     * Return the last execution state returned by {@link #shouldExecute()}
+     * @return the last state (most likely the state the task is currently in)
      */
-    boolean pulse() {
-        if (queueState.get().isDead()) {
-            return false;
-        }
+    TaskExecutionState getLastExecutionState() {
+        return lastExecutionState;
+    }
 
+    @Override
+    public void run() {
         if (scheduler.isServerOverloaded()) {
             if (attemptDefer()) {
                 updateCallTime(FlowScheduler.PULSE_EVERY);
-                return false;
+                return;
             }
-        }
-
-        if (!executing.compareAndSet(false, true)) {
-            return false;
         }
 
         try {
-            task.run();
+            if (period == -1) {
+                super.run();
+            } else {
+                super.runAndReset();
+            }
 
             updateCallTime();
-
-            if (period <= 0) {
-                queueState.set(QueueState.DEAD);
-            }
         } finally {
             executing.set(false);
         }
-
-        return true;
-    }
-
-    public void remove() {
-        queueState.set(QueueState.DEAD);
-    }
-
-    public boolean setQueued() {
-        if (!queueState.compareAndSet(QueueState.UNQUEUED, QueueState.QUEUED)) {
-            boolean success = false;
-            while (!success) {
-                QueueState oldState = queueState.get();
-                switch (oldState) {
-                    case DEAD:
-                        return false;
-                    case QUEUED:
-                        throw new IllegalStateException("Task added in the queue twice without being removed");
-                    case UNQUEUED:
-                        success = queueState.compareAndSet(QueueState.UNQUEUED, QueueState.QUEUED);
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown queue state " + oldState);
-                }
-            }
-        }
-        return true;
-    }
-
-    public boolean setUnqueued() {
-        if (!queueState.compareAndSet(QueueState.QUEUED, QueueState.UNQUEUED)) {
-            boolean success = false;
-            while (!success) {
-                QueueState oldState = queueState.get();
-                switch (oldState) {
-                    case DEAD:
-                        return false;
-                    case UNQUEUED:
-                        throw new IllegalStateException("Task set as unqueued before being set as queued");
-                    case QUEUED:
-                        success = queueState.compareAndSet(QueueState.QUEUED, QueueState.UNQUEUED);
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown queue state " + oldState);
-                }
-            }
-        }
-        return true;
     }
 
     @Override
     public String toString() {
-        Object owner = getOwner();
         String ownerName = owner == null || !(owner instanceof Named) ? "null" : ((Named) owner).getName();
         return this.getClass().getSimpleName() + "{" + getTaskId() + ", " + ownerName + "}";
     }
@@ -279,6 +238,9 @@ public class FlowTask implements Task, LongPrioritized {
     }
 
     private boolean attemptDefer() {
+        if (!sync || priority == null) {
+            return false;
+        }
         if (priority.getMaxDeferred() <= 0) {
             return false;
         }
@@ -300,17 +262,13 @@ public class FlowTask implements Task, LongPrioritized {
     }
 
     private boolean updateCallTime(long offset) {
-        boolean success = setQueued();
+        boolean success = !isDone();
         if (!success) {
             return false;
         }
-        try {
-            long now = manager.getUpTime();
-            if (nextCallTime.addAndGet(offset) <= now) {
-                nextCallTime.set(now + 1);
-            }
-        } finally {
-            setUnqueued();
+        long now = manager.getUpTime();
+        if (nextCallTime.addAndGet(offset) <= now) {
+            nextCallTime.set(now + 1);
         }
         return true;
     }
@@ -318,24 +276,5 @@ public class FlowTask implements Task, LongPrioritized {
     @Override
     public long getPriority() {
         return nextCallTime.get();
-    }
-
-    @SuppressWarnings ("unused")
-    private static enum QueueState {
-        QUEUED,
-        UNQUEUED,
-        DEAD;
-
-        public boolean isDead() {
-            return this == DEAD;
-        }
-
-        public boolean isQueued() {
-            return this == QUEUED;
-        }
-
-        public boolean isUnQueued() {
-            return this == UNQUEUED;
-        }
     }
 }
