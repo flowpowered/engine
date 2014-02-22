@@ -23,5 +23,9 @@
  */
 package com.flowpowered.api;
 
+import com.flowpowered.api.player.Player;
+
 public interface Singleplayer extends Server, Client {
+
+    Player getPlayer();
 }

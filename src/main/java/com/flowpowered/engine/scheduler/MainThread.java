@@ -42,7 +42,7 @@ import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.api.Flow;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.Server;
-import com.flowpowered.api.player.ClientPlayer;
+import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.engine.FlowClient;
@@ -199,14 +199,9 @@ public class MainThread extends TickingElement {
 
         if (Flow.getEngine().getPlatform().isServer()) {
             for (Player p : ((Server) Flow.getEngine()).getOnlinePlayers()) {
-                ((FlowPlayer) p).getNetwork().finalizeRun();
-                ((FlowPlayer) p).getNetwork().preSnapshotRun();
-            }
-        } else {
-            ClientPlayer player = ((FlowClient) scheduler.getEngine()).getPlayer();
-            if (player != null) {
-                player.getNetwork().finalizeRun();
-                player.getNetwork().preSnapshotRun();
+                Transform transform = p.getTransformProvider().getTransform();
+                ((FlowPlayer) p).getNetwork().finalizeRun(transform);
+                ((FlowPlayer) p).getNetwork().preSnapshotRun(transform);
             }
         }
 
@@ -222,7 +217,7 @@ public class MainThread extends TickingElement {
                 inputList.add(current);
             }
             if (Flow.getEngine().getPlatform().isClient()) {
-                ((FlowClient) Flow.getEngine()).getPlayer().setInput(inputList);
+                ((FlowClient) Flow.getEngine()).setInput(inputList);
             }
         }
         tpsMonitor.update();

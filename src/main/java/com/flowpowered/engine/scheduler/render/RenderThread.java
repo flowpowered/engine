@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
@@ -35,7 +34,6 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
-import com.flowpowered.api.player.ClientPlayer;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
@@ -233,7 +231,7 @@ public class RenderThread extends TickingElement {
     private void updateCameraAndFrustrum() {
         final Camera camera = renderer.getRenderModelsNode().getCamera();
         // Update camera to match client player's position
-        Transform transform = client.getPlayer().getTransformProvider().getTransform();
+        Transform transform = client.getTransform();
         camera.setPosition(transform.getPosition().getVector());
         camera.setRotation(transform.getRotation());
         // Update the frustrum to match the camera

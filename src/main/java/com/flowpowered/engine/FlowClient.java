@@ -23,7 +23,9 @@
  */
 package com.flowpowered.engine;
 
+import java.util.List;
 import com.flowpowered.api.Client;
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.FlowRenderer;
 
@@ -34,4 +36,6 @@ public interface FlowClient extends Client, FlowEngine {
 
     @Override
     FlowRenderer getRenderer();
+
+    void setInput(List<InputSnapshot> inputSnapshots);
 }

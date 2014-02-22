@@ -23,23 +23,24 @@
  */
 package com.flowpowered.engine;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.api.component.entity.PlayerControlledMovementComponent;
 import com.flowpowered.api.generator.FlatWorldGenerator;
+import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSingeplayerSession;
-import com.flowpowered.engine.player.FlowSingleplayerPlayer;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
-    private final AtomicReference<FlowSingleplayerPlayer> player = new AtomicReference<>();
+    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
 
     public FlowSingleplayerImpl(FlowApplication args) {
@@ -62,8 +63,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         FlowPlayer serverPlayer = new FlowPlayer(new FlowSingeplayerSession(true), "Flowy");
         addPlayer(serverPlayer);
 
-        FlowSingleplayerPlayer clientPlayer = new FlowSingleplayerPlayer(new FlowSingeplayerSession(false), serverPlayer);
-        this.player.set(clientPlayer);
+        this.player.set(serverPlayer);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     }
 
     @Override
-    public FlowSingleplayerPlayer getPlayer() {
+    public FlowPlayer getPlayer() {
         return player.get();
     }
 
@@ -98,4 +98,13 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         return getScheduler().getRenderThread().getRenderer();
     }
 
+    @Override
+    public Transform getTransform() {
+        return player.get().getTransformProvider().getTransform();
+    }
+
+    @Override
+    public void setInput(List<InputSnapshot> inputSnapshots) {
+        player.get().setInput(inputSnapshots);
+    }
 }
