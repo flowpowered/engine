@@ -24,20 +24,21 @@
 package com.flowpowered.engine;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.Platform;
+import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.network.FlowNetworkClient;
-import com.flowpowered.engine.player.FlowClientPlayer;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
 import org.apache.logging.log4j.LogManager;
 
 public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
-    private final AtomicReference<FlowClientPlayer> player = new AtomicReference<>();
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
     private final FlowWorldManager<FlowWorld> worldManager;
     private final FlowNetworkClient client = new FlowNetworkClient();
@@ -81,11 +82,6 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     }
 
     @Override
-    public FlowClientPlayer getPlayer() {
-        return player.get();
-    }
-
-    @Override
     public FlowWorld getWorld() {
         return activeWorld.get();
     }
@@ -93,6 +89,16 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     @Override
     public FlowRenderer getRenderer() {
         return getScheduler().getRenderThread().getRenderer();
+    }
+
+    @Override
+    public Transform getTransform() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setInput(List<InputSnapshot> inputSnapshots) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

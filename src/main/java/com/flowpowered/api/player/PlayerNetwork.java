@@ -78,11 +78,8 @@ public class PlayerNetwork implements Listener {
     private int chunksSentThisTick = 0;
     private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.getInstance());
 
-    private final AbstractPlayer player;
-
-    public PlayerNetwork(FlowSession session, AbstractPlayer player) {
+    public PlayerNetwork(FlowSession session) {
         this.session = session;
-        this.player = player;
     }
 
     /**
@@ -225,7 +222,7 @@ public class PlayerNetwork implements Listener {
      * TODO: Common logic between Flow and a plugin needing to implement this?
      *
      */
-    public void finalizeRun() {
+    public void finalizeRun(Transform transform) {
         if (Flow.getEngine().getPlatform().isClient()) {
             return;
         }
@@ -235,7 +232,7 @@ public class PlayerNetwork implements Listener {
         final int currentSyncDistance = getSyncDistance();
         final boolean syncDistanceChanged = prevSyncDistance != currentSyncDistance;
 
-        final Point currentPosition = player.getTransformProvider().getTransform().getPosition();
+        final Point currentPosition = transform.getPosition();
         worldChanged = !Objects.equals(currentPosition.getWorld(), previousTransform.getPosition().getWorld());
         sync |= worldChanged;
 
@@ -253,11 +250,10 @@ public class PlayerNetwork implements Listener {
      * TODO: Add sequence checks to the PhysicsComponent to prevent updates to live?
      *
      */
-    public void preSnapshotRun() {
+    public void preSnapshotRun(Transform transform) {
         if (Flow.getEngine().getPlatform().isClient()) {
             return;
         }
-        Transform transform = player.getTransformProvider().getTransform();
         Point ep = transform.getPosition();
         if (worldChanged) {
             resetChunks();
@@ -281,7 +277,7 @@ public class PlayerNetwork implements Listener {
 
             // If we didn't send all the priority chunks, don't send position yet, because we might fall through
             if (chunkSendQueuePriority.isEmpty()) {
-                sendPositionUpdates();
+                sendPositionUpdates(transform);
             }
 
             // Update the active chunks
@@ -299,7 +295,7 @@ public class PlayerNetwork implements Listener {
             }
         }
 
-        previousTransform = player.getTransformProvider().getTransform();
+        previousTransform = transform;
     }
 
     private Set<ChunkReference> freeChunks() {
@@ -328,8 +324,7 @@ public class PlayerNetwork implements Listener {
         }
     }
 
-    private void sendPositionUpdates() {
-        Transform transform = player.getTransformProvider().getTransform();
+    private void sendPositionUpdates(Transform transform) {
         if (transform.equals(previousTransform) && sync) {
             //callProtocolEvent(new EntityUpdateEvent(player, live, EntityUpdateEvent.UpdateAction.TRANSFORM, getRepositionManager()), player);
             sync = false;

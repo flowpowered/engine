@@ -24,19 +24,13 @@
 package com.flowpowered.api;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.player.ClientPlayer;
+import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.render.Renderer;
 
 /**
  * Represents the client-specific component of the Flow platform.
  */
 public interface Client extends Engine {
-    /**
-     * Gets the player on the local machine (the one who is using the client).
-     *
-     * @return player
-     */
-    ClientPlayer getPlayer();
 
     /**
      * Gets the current world in-which the player on the local machine is within.
@@ -53,4 +47,6 @@ public interface Client extends Engine {
      * @return the renderer in use
      */
     Renderer getRenderer();
+
+    Transform getTransform();
 }
