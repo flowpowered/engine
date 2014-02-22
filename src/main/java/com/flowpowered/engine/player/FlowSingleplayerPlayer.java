@@ -42,9 +42,6 @@ public class FlowSingleplayerPlayer implements ClientPlayer {
     private final Player player;
     private final PlayerNetwork network;
 
-    private volatile List<InputSnapshot> input = new LinkedList<>();
-
-
     public FlowSingleplayerPlayer(FlowSession session, Player player) {
         this.player = player;
         this.network = new PlayerNetwork(session, this);
@@ -127,10 +124,11 @@ public class FlowSingleplayerPlayer implements ClientPlayer {
 
     @Override
     public List<InputSnapshot> getInput() {
-        return Collections.unmodifiableList(input);
+        return player.getInput();
     }
 
+    @Override
     public void setInput(List<InputSnapshot> inputList) {
-        input = inputList;
+        player.setInput(inputList);
     }
 }

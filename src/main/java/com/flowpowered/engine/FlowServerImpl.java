@@ -31,6 +31,7 @@ import java.util.Map;
 import com.flowpowered.commons.StringUtil;
 
 import com.flowpowered.api.Platform;
+import com.flowpowered.api.component.entity.PlayerControlledMovementComponent;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.geo.LoadOption;
@@ -136,8 +137,12 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     @Override
     public void addPlayer(String name, FlowSession session) {
         FlowPlayer player = new FlowPlayer(session, name);
-        players.put(name, player);
+    }
+
+    protected void addPlayer(FlowPlayer player) {
+        players.put(player.getName(), player);
         player.setTransformProvider(testEntity.getPhysics());
+        testEntity.add(PlayerControlledMovementComponent.class).setController(player);
     }
 
     @Override

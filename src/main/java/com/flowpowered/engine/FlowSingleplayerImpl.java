@@ -29,8 +29,6 @@ import org.apache.logging.log4j.LogManager;
 
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.component.entity.PlayerControlledMovementComponent;
-import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.engine.player.FlowPlayer;
@@ -57,13 +55,15 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
             return;
         }
         super.init();
+
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
         activeWorld.set(loadedWorld);
+
         FlowPlayer serverPlayer = new FlowPlayer(new FlowSingeplayerSession(true), "Flowy");
+        addPlayer(serverPlayer);
+
         FlowSingleplayerPlayer clientPlayer = new FlowSingleplayerPlayer(new FlowSingeplayerSession(false), serverPlayer);
         this.player.set(clientPlayer);
-        players.put(serverPlayer.getName(), serverPlayer);
-        serverPlayer.setTransformProvider(testEntity.getPhysics());
     }
 
     @Override
