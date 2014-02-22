@@ -31,15 +31,15 @@ import com.flowpowered.engine.network.message.ChunkDataMessage;
 
 public class ChunkDataHandler extends FlowMessageHandler<ChunkDataMessage> {
 
-	@Override
-	public void handleClient(FlowSession session, ChunkDataMessage message) {
+    @Override
+    public void handleClient(FlowSession session, ChunkDataMessage message) {
         FlowClient client = (FlowClient) Flow.getEngine();
         // TODO: allow adding chunks to other worlds
         FlowWorld world = client.getWorld();
-		if (message.isUnload()) {
+        if (message.isUnload()) {
             world.setChunk(message.getX(), message.getY(), message.getZ(), null);
-		} else {
+        } else {
             world.setChunk(message.getX(), message.getY(), message.getZ(), message.getBlocks());
         }
-	}
+    }
 }

@@ -32,15 +32,15 @@ import com.flowpowered.networking.util.ByteBufUtils;
 
 public class LoginCodec implements Codec<LoginMessage> {
 
-	@Override
-	public ByteBuf encode(ByteBuf buffer, LoginMessage message) throws IOException {
+    @Override
+    public ByteBuf encode(ByteBuf buffer, LoginMessage message) throws IOException {
         ByteBufUtils.writeUTF8(buffer, message.getPlayerName());
-		return buffer;
-	}
+        return buffer;
+    }
 
-	@Override
-	public LoginMessage decode(ByteBuf buffer) throws IOException {
-		final String playerName = ByteBufUtils.readUTF8(buffer);
-		return new LoginMessage(playerName);
-	}
+    @Override
+    public LoginMessage decode(ByteBuf buffer) throws IOException {
+        final String playerName = ByteBufUtils.readUTF8(buffer);
+        return new LoginMessage(playerName);
+    }
 }

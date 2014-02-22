@@ -54,29 +54,29 @@ import com.flowpowered.networking.session.Session;
  * The networking behind {@link org.spout.api.entity.Player}s. This component holds the {@link Session} which is the connection the Player has to the server.
  */
 public class PlayerNetwork implements Listener {
-	protected static final int CHUNKS_PER_TICK = 50;
-	private final FlowSession session;
-	private final TSyncIntHashSet synchronizedEntities = new TSyncIntHashSet();
-	private Point lastChunkCheck = Point.INVALID;
+    protected static final int CHUNKS_PER_TICK = 50;
+    private final FlowSession session;
+    private final TSyncIntHashSet synchronizedEntities = new TSyncIntHashSet();
+    private Point lastChunkCheck = Point.INVALID;
 
-	private final Set<ChunkReference> chunkSendQueuePriority = new LinkedHashSet<>();
-	private final Set<ChunkReference> chunkSendQueueRegular = new LinkedHashSet<>();
-	private final Set<ChunkReference> chunkFreeQueue = new LinkedHashSet<>();
-	/**
-	 * Chunks that have been sent to the client
-	 */
-	private final Set<ChunkReference> activeChunks = new LinkedHashSet<>();
-	/**
-	 * Includes chunks that need to be sent.
-	 */
-	private final Set<ChunkReference> futureChunksToSend = new LinkedHashSet<>();
+    private final Set<ChunkReference> chunkSendQueuePriority = new LinkedHashSet<>();
+    private final Set<ChunkReference> chunkSendQueueRegular = new LinkedHashSet<>();
+    private final Set<ChunkReference> chunkFreeQueue = new LinkedHashSet<>();
+    /**
+     * Chunks that have been sent to the client
+     */
+    private final Set<ChunkReference> activeChunks = new LinkedHashSet<>();
+    /**
+     * Includes chunks that need to be sent.
+     */
+    private final Set<ChunkReference> futureChunksToSend = new LinkedHashSet<>();
 
-	protected volatile boolean worldChanged = false;
+    protected volatile boolean worldChanged = false;
     protected volatile Transform previousTransform = Transform.INVALID;
-	private boolean sync = false;
-	protected int tickCounter = 0;
-	private int chunksSentThisTick = 0;
-	private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.getInstance());
+    private boolean sync = false;
+    protected int tickCounter = 0;
+    private int chunksSentThisTick = 0;
+    private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.getInstance());
 
     private final AbstractPlayer player;
 
@@ -85,23 +85,23 @@ public class PlayerNetwork implements Listener {
         this.player = player;
     }
 
-	/**
-	 * Returns the {@link Session} representing the connection to the server.
-	 *
-	 * @return The session
-	 */
-	public final FlowSession getSession() {
-		return session;
-	}
+    /**
+     * Returns the {@link Session} representing the connection to the server.
+     *
+     * @return The session
+     */
+    public final FlowSession getSession() {
+        return session;
+    }
 
-	/**
-	 * Gets the {@link InetAddress} of the session
-	 *
-	 * @return The address of the session
-	 */
-	public final InetAddress getAddress() {
-		return getSession().getAddress().getAddress();
-	}
+    /**
+     * Gets the {@link InetAddress} of the session
+     *
+     * @return The address of the session
+     */
+    public final InetAddress getAddress() {
+        return getSession().getAddress().getAddress();
+    }
 
 //	/**
 //	 * Instructs the client to update the entities state and position<br><br>
@@ -123,314 +123,314 @@ public class PlayerNetwork implements Listener {
 //		}
 //	}
 
-	public boolean hasSpawned(Entity e) {
-		return synchronizedEntities.contains(e.getId());
-	}
+    public boolean hasSpawned(Entity e) {
+        return synchronizedEntities.contains(e.getId());
+    }
 
-	public void forceRespawn() {
-		worldChanged = true;
-	}
+    public void forceRespawn() {
+        worldChanged = true;
+    }
 
-	public void forceSync() {
-		sync = true;
-	}
+    public void forceSync() {
+        sync = true;
+    }
 
-	/**
-	 * Gets the reposition manager that converts local coordinates into remote coordinates
-	 */
-	public RepositionManager getRepositionManager() {
-		return rm.get();
-	}
+    /**
+     * Gets the reposition manager that converts local coordinates into remote coordinates
+     */
+    public RepositionManager getRepositionManager() {
+        return rm.get();
+    }
 
-	public void setRepositionManager(RepositionManager rm) {
-		if (rm == null) {
-			this.rm.set(NullRepositionManager.getInstance());
-		} else {
-			this.rm.set(rm);
-		}
-	}
+    public void setRepositionManager(RepositionManager rm) {
+        if (rm == null) {
+            this.rm.set(NullRepositionManager.getInstance());
+        } else {
+            this.rm.set(rm);
+        }
+    }
 
+    /**
+     * Checks for chunk updates that might have from movement.
+     */
+    private void checkChunkUpdates(Point currentPosition) {
+        // Recalculating these
+        if (!chunkFreeQueue.isEmpty()) {
+            throw new IllegalStateException("chunkFreeQueue is not empty!");
+        }
+        chunkSendQueuePriority.clear();
+        chunkSendQueueRegular.clear();
+        futureChunksToSend.clear();
 
+        final World world = currentPosition.getWorld();
+        final int bx = currentPosition.getBlockX();
+        final int by = currentPosition.getBlockX();
+        final int bz = currentPosition.getBlockX();
+        final int cx = bx >> Chunk.BLOCKS.BITS;
+        final int cy = by >> Chunk.BLOCKS.BITS;
+        final int cz = bz >> Chunk.BLOCKS.BITS;
+        Point playerChunkBase = Chunk.pointToBase(currentPosition);
+        for (ChunkReference ref : activeChunks) {
+            Point p = ref.getBase();
+            if (!isInViewVolume(p, playerChunkBase, getSyncDistance())) {
+                chunkFreeQueue.add(ref);
+            }
+        }
 
-	/**
-	 * Checks for chunk updates that might have from movement.
-	 */
-	private void checkChunkUpdates(Point currentPosition) {
-		// Recalculating these
-		if (!chunkFreeQueue.isEmpty()) {
-			throw new IllegalStateException("chunkFreeQueue is not empty!");
-		}
-		chunkSendQueuePriority.clear();
-		chunkSendQueueRegular.clear();
-		futureChunksToSend.clear();
-
-		final World world = currentPosition.getWorld();
-		final int bx = currentPosition.getBlockX();
-		final int by = currentPosition.getBlockX();
-		final int bz = currentPosition.getBlockX();
-		final int cx = bx >> Chunk.BLOCKS.BITS;
-		final int cy = by >> Chunk.BLOCKS.BITS;
-		final int cz = bz >> Chunk.BLOCKS.BITS;
-		Point playerChunkBase = Chunk.pointToBase(currentPosition);
-		for (ChunkReference ref : activeChunks) {
-			Point p = ref.getBase();
-			if (!isInViewVolume(p, playerChunkBase, getSyncDistance())) {
-				chunkFreeQueue.add(ref);
-			}
-		}
-
-		Iterator<Vector3i> itr = getViewableVolume(cx, cy, cz, getSyncDistance());
-		while (itr.hasNext()) {
-			Vector3i v = itr.next();
-			Point base = new Point(world, v.getX() << Chunk.BLOCKS.BITS, v.getY() << Chunk.BLOCKS.BITS, v.getZ() << Chunk.BLOCKS.BITS);
-			ChunkReference ref = new ChunkReference(base);
-			if (activeChunks.contains(ref)) {
-				continue;
-			}
-			boolean inTargetArea = inPriorityArea(playerChunkBase, base);
-			// If it's in the target area, we first check if we can just load it. If so, do that
-			// If not, queue it for LOAD_GEN, but don't wait
-			// If it's not in the target area, don't even wait for load
+        Iterator<Vector3i> itr = getViewableVolume(cx, cy, cz, getSyncDistance());
+        while (itr.hasNext()) {
+            Vector3i v = itr.next();
+            Point base = new Point(world, v.getX() << Chunk.BLOCKS.BITS, v.getY() << Chunk.BLOCKS.BITS, v.getZ() << Chunk.BLOCKS.BITS);
+            ChunkReference ref = new ChunkReference(base);
+            if (activeChunks.contains(ref)) {
+                continue;
+            }
+            boolean inTargetArea = inPriorityArea(playerChunkBase, base);
+            // If it's in the target area, we first check if we can just load it. If so, do that
+            // If not, queue it for LOAD_GEN, but don't wait
+            // If it's not in the target area, don't even wait for load
             if (!inTargetArea || ref.refresh(LoadOption.LOAD_ONLY) == null) {
-				ref.refresh(LoadOption.LOAD_GEN_NOWAIT);
+                ref.refresh(LoadOption.LOAD_GEN_NOWAIT);
             }
 
-			futureChunksToSend.add(ref);
-		}
-	
-	}
+            futureChunksToSend.add(ref);
+        }
 
-	private void updateSendLists(Point currentPosition) {
-		Point playerChunkBase = Chunk.pointToBase(currentPosition);
-		for (Iterator<ChunkReference> it = futureChunksToSend.iterator(); it.hasNext();) {
-			ChunkReference ref = it.next();
-			if (ref.refresh(LoadOption.NO_LOAD) == null) continue;
-			it.remove();
-			boolean priorityArea = inPriorityArea(playerChunkBase, ref.getBase());
-			if (priorityArea) {
-				chunkSendQueuePriority.add(ref);
-			} else {
-				chunkSendQueueRegular.add(ref);
-			}
-		}
-	}
+    }
+
+    private void updateSendLists(Point currentPosition) {
+        Point playerChunkBase = Chunk.pointToBase(currentPosition);
+        for (Iterator<ChunkReference> it = futureChunksToSend.iterator(); it.hasNext();) {
+            ChunkReference ref = it.next();
+            if (ref.refresh(LoadOption.NO_LOAD) == null) {
+                continue;
+            }
+            it.remove();
+            boolean priorityArea = inPriorityArea(playerChunkBase, ref.getBase());
+            if (priorityArea) {
+                chunkSendQueuePriority.add(ref);
+            } else {
+                chunkSendQueueRegular.add(ref);
+            }
+        }
+    }
 
     private boolean inPriorityArea(Point playerChunkBase, Point refBase) {
         return getMaxDistance(playerChunkBase, refBase) <= (getSyncDistance() / 2);
     }
 
-	/**
-	 * Called when the owner is set to be synchronized to other NetworkComponents.
-	 *
-	 * TODO: Common logic between Flow and a plugin needing to implement this?
-	 *
-	 */
-	public void finalizeRun() {
-		if (Flow.getEngine().getPlatform().isClient()) {
-			return;
-		}
-		tickCounter++;
+    /**
+     * Called when the owner is set to be synchronized to other NetworkComponents.
+     *
+     * TODO: Common logic between Flow and a plugin needing to implement this?
+     *
+     */
+    public void finalizeRun() {
+        if (Flow.getEngine().getPlatform().isClient()) {
+            return;
+        }
+        tickCounter++;
 
-		final int prevSyncDistance = getSyncDistance();
-		final int currentSyncDistance = getSyncDistance();
+        final int prevSyncDistance = getSyncDistance();
+        final int currentSyncDistance = getSyncDistance();
         final boolean syncDistanceChanged = prevSyncDistance != currentSyncDistance;
 
-		final Point currentPosition = player.getTransformProvider().getTransform().getPosition();
+        final Point currentPosition = player.getTransformProvider().getTransform().getPosition();
         worldChanged = !Objects.equals(currentPosition.getWorld(), previousTransform.getPosition().getWorld());
         sync |= worldChanged;
 
-		if (syncDistanceChanged || worldChanged || (!currentPosition.equals(lastChunkCheck) && getManhattanDistance(currentPosition, lastChunkCheck) > (Chunk.BLOCKS.SIZE / 2))) {
-			checkChunkUpdates(currentPosition);
-			lastChunkCheck = currentPosition;
-		}
+        if (syncDistanceChanged || worldChanged || (!currentPosition.equals(lastChunkCheck) && getManhattanDistance(currentPosition, lastChunkCheck) > (Chunk.BLOCKS.SIZE / 2))) {
+            checkChunkUpdates(currentPosition);
+            lastChunkCheck = currentPosition;
+        }
 
-		updateSendLists(currentPosition);
-	}
+        updateSendLists(currentPosition);
+    }
 
-	/**
-	 * Called just before a snapshot is taken of the owner.
-	 *
-	 * TODO: Add sequence checks to the PhysicsComponent to prevent updates to live?
-	 *
-	 */
-	public void preSnapshotRun() {
-		if (Flow.getEngine().getPlatform().isClient()) {
-			return;
-		}
+    /**
+     * Called just before a snapshot is taken of the owner.
+     *
+     * TODO: Add sequence checks to the PhysicsComponent to prevent updates to live?
+     *
+     */
+    public void preSnapshotRun() {
+        if (Flow.getEngine().getPlatform().isClient()) {
+            return;
+        }
         Transform transform = player.getTransformProvider().getTransform();
         Point ep = transform.getPosition();
-		if (worldChanged) {
-			resetChunks();
+        if (worldChanged) {
+            resetChunks();
             // We assume that world change will cause the client to free the current world's chunks
-			//callProtocolEvent(new WorldChangeProtocolEvent(ep.getWorld()), player);
-		} else {
+            //callProtocolEvent(new WorldChangeProtocolEvent(ep.getWorld()), player);
+        } else {
             // We want to free all chunks first
             freeChunks();
 
-			// We will sync old chunks, but not new ones
-			Set<ChunkReference> toSync = new LinkedHashSet<>(activeChunks);
+            // We will sync old chunks, but not new ones
+            Set<ChunkReference> toSync = new LinkedHashSet<>(activeChunks);
 
-			// Now send new chunks
-			chunksSentThisTick = 0;
+            // Now send new chunks
+            chunksSentThisTick = 0;
 
-			// Send priority chunks separately, because they follow different rules
-			sendChunks(chunkSendQueuePriority.iterator(), true);
+            // Send priority chunks separately, because they follow different rules
+            sendChunks(chunkSendQueuePriority.iterator(), true);
 
             // Send regular chunks regardless if we've sent the priority chunks because we want to spread out the send load
             sendChunks(chunkSendQueueRegular.iterator(), false);
 
-			// If we didn't send all the priority chunks, don't send position yet, because we might fall through
-			if (chunkSendQueuePriority.isEmpty()) {
-				sendPositionUpdates();
+            // If we didn't send all the priority chunks, don't send position yet, because we might fall through
+            if (chunkSendQueuePriority.isEmpty()) {
+                sendPositionUpdates();
             }
 
             // Update the active chunks
-			for (Iterator<ChunkReference> it = toSync.iterator(); it.hasNext();) {
-				ChunkReference ref = it.next();
-				Chunk chunk = ref.get();
+            for (Iterator<ChunkReference> it = toSync.iterator(); it.hasNext();) {
+                ChunkReference ref = it.next();
+                Chunk chunk = ref.get();
                 // If it was unloaded, we have to free it
-				if (chunk == null) {
-					System.out.println("Active chunk (" + ref.getBase().getChunkX() + " " + ref.getBase().getChunkY() + " " + ref.getBase().getChunkZ() + ") has been unloaded! Adding toChunkFreeQueue");
+                if (chunk == null) {
+                    System.out.println("Active chunk (" + ref.getBase().getChunkX() + " " + ref.getBase().getChunkY() + " " + ref.getBase().getChunkZ() + ") has been unloaded! Adding toChunkFreeQueue");
                     freeChunk(ref);
                     it.remove();
-					continue;
-				}
-				//chunk.sync(this);
-			}
-		}
+                    continue;
+                }
+                //chunk.sync(this);
+            }
+        }
 
         previousTransform = player.getTransformProvider().getTransform();
-	}
+    }
 
-	private Set<ChunkReference> freeChunks() {
-		HashSet<ChunkReference> freed = new HashSet<>();
-		for (ChunkReference ref : chunkFreeQueue) {
-			freed.add(ref);
+    private Set<ChunkReference> freeChunks() {
+        HashSet<ChunkReference> freed = new HashSet<>();
+        for (ChunkReference ref : chunkFreeQueue) {
+            freed.add(ref);
             freeChunk(ref);
-		}
-		chunkFreeQueue.clear();
-		return freed;
-	}
+        }
+        chunkFreeQueue.clear();
+        return freed;
+    }
 
     private void freeChunk(ChunkReference ref) {
         //callProtocolEvent(new ChunkFreeEvent(ref.getBase()), player);
         activeChunks.remove(ref);
     }
 
-	private void sendChunks(Iterator<ChunkReference> i, boolean priority) {
+    private void sendChunks(Iterator<ChunkReference> i, boolean priority) {
         // We always send all priority chunks
         // Send regular chunks while we aren't overloaded and we haven't exceeded our send amount
-		while (i.hasNext() && (priority || (chunksSentThisTick < CHUNKS_PER_TICK && !Flow.getEngine().getScheduler().isServerOverloaded()))) {
-			Chunk c = i.next().get();
-			if (c == null || attemptSendChunk(c)) {
-				i.remove();
-			}
-		}
-	}
+        while (i.hasNext() && (priority || (chunksSentThisTick < CHUNKS_PER_TICK && !Flow.getEngine().getScheduler().isServerOverloaded()))) {
+            Chunk c = i.next().get();
+            if (c == null || attemptSendChunk(c)) {
+                i.remove();
+            }
+        }
+    }
 
-	private void sendPositionUpdates() {
+    private void sendPositionUpdates() {
         Transform transform = player.getTransformProvider().getTransform();
-		if (transform.equals(previousTransform) && sync) {
-			//callProtocolEvent(new EntityUpdateEvent(player, live, EntityUpdateEvent.UpdateAction.TRANSFORM, getRepositionManager()), player);
-			sync = false;
-		}
-	}
+        if (transform.equals(previousTransform) && sync) {
+            //callProtocolEvent(new EntityUpdateEvent(player, live, EntityUpdateEvent.UpdateAction.TRANSFORM, getRepositionManager()), player);
+            sync = false;
+        }
+    }
 
-	/**
-	 * Resets all chunk stores for the client.  This method is only called during the pre-snapshot part of the tick.
-	 */
-	protected void resetChunks() {
-		futureChunksToSend.clear();
-		chunkSendQueuePriority.clear();
-		chunkSendQueueRegular.clear();
-		chunkFreeQueue.clear();
-		activeChunks.clear();
-		lastChunkCheck = Point.INVALID;
-		synchronizedEntities.clear();
-	}
+    /**
+     * Resets all chunk stores for the client. This method is only called during the pre-snapshot part of the tick.
+     */
+    protected void resetChunks() {
+        futureChunksToSend.clear();
+        chunkSendQueuePriority.clear();
+        chunkSendQueueRegular.clear();
+        chunkFreeQueue.clear();
+        activeChunks.clear();
+        lastChunkCheck = Point.INVALID;
+        synchronizedEntities.clear();
+    }
 
-	protected boolean canSendChunk(Chunk c) {
-		return true;
-	}
+    protected boolean canSendChunk(Chunk c) {
+        return true;
+    }
 
-	private boolean attemptSendChunk(Chunk c) {
-		if (!canSendChunk(c)) {
-			return false;
-		}
+    private boolean attemptSendChunk(Chunk c) {
+        if (!canSendChunk(c)) {
+            return false;
+        }
 
-		//callProtocolEvent(new ChunkSendEvent(c), player);
+        //callProtocolEvent(new ChunkSendEvent(c), player);
         // TODO: use snapshot
         session.send(new ChunkDataMessage(c.getChunkX(), c.getChunkY(), c.getChunkZ(), ((FlowChunk) c).getBlockStore().getFullArray()));
-		ChunkReference ref = new ChunkReference(c);
-		activeChunks.add(ref);
-		chunksSentThisTick++;
-		return true;
-	}
+        ChunkReference ref = new ChunkReference(c);
+        activeChunks.add(ref);
+        chunksSentThisTick++;
+        return true;
+    }
 
-	/**
-	 * Returns a copy of all currently active sent chunks to this player
-	 *
-	 * @return active chunks
-	 */
-	public Set<Chunk> getActiveChunks() {
-		HashSet<Chunk> chunks = new HashSet<>();
-		for (ChunkReference p : activeChunks) {
-			Chunk get = p.get();
-			if (get != null) {
-				chunks.add(get);
-			}
-		}
-		return chunks;
-	}
+    /**
+     * Returns a copy of all currently active sent chunks to this player
+     *
+     * @return active chunks
+     */
+    public Set<Chunk> getActiveChunks() {
+        HashSet<Chunk> chunks = new HashSet<>();
+        for (ChunkReference p : activeChunks) {
+            Chunk get = p.get();
+            if (get != null) {
+                chunks.add(get);
+            }
+        }
+        return chunks;
+    }
 
     public int getSyncDistance() {
         //return player.getObserver().getSyncDistance()
         return 10;
     }
 
-	/**
-	 * Gets the viewable volume centered on the given chunk coordinates and the given view distance
-	 */
-	public static Iterator<Vector3i> getViewableVolume(int cx, int cy, int cz, int viewDistance) {
-		return new OutwardIterator(cx, cy, cz, viewDistance);
-	}
+    /**
+     * Gets the viewable volume centered on the given chunk coordinates and the given view distance
+     */
+    public static Iterator<Vector3i> getViewableVolume(int cx, int cy, int cz, int viewDistance) {
+        return new OutwardIterator(cx, cy, cz, viewDistance);
+    }
 
-	/**
-	 * Test if a given chunk base is in the view volume for a given player chunk base point
-	 *
-	 * @return true if in the view volume
-	 */
-	public static boolean isInViewVolume(Point playerChunkBase, Point testChunkBase, int viewDistance) {
-		return getManhattanDistance(testChunkBase, playerChunkBase) <= (viewDistance << Chunk.BLOCKS.BITS);
-	}
+    /**
+     * Test if a given chunk base is in the view volume for a given player chunk base point
+     *
+     * @return true if in the view volume
+     */
+    public static boolean isInViewVolume(Point playerChunkBase, Point testChunkBase, int viewDistance) {
+        return getManhattanDistance(testChunkBase, playerChunkBase) <= (viewDistance << Chunk.BLOCKS.BITS);
+    }
 
-	/**
-	 * Gets the Manhattan distance between two points.
-	 *
-	 * This will return Double.MAX_VALUE if the other Point is null, either world is null, or the two points are in different worlds.
-	 *
-	 * Otherwise, it returns the Manhattan distance.
-	 */
-	public static double getManhattanDistance(Point one, Point other) {
-		if (other == null || one.getWorld() == null || other.getWorld() == null || !one.getWorld().equals(other.getWorld())) {
-			return Double.MAX_VALUE;
-		}
-		return Math.abs(one.getVector().getX() - other.getVector().getX()) + Math.abs(one.getVector().getY() - other.getVector().getY()) + Math.abs(one.getVector().getZ() - other.getVector().getZ());
-	}
+    /**
+     * Gets the Manhattan distance between two points.
+     *
+     * This will return Double.MAX_VALUE if the other Point is null, either world is null, or the two points are in different worlds.
+     *
+     * Otherwise, it returns the Manhattan distance.
+     */
+    public static double getManhattanDistance(Point one, Point other) {
+        if (other == null || one.getWorld() == null || other.getWorld() == null || !one.getWorld().equals(other.getWorld())) {
+            return Double.MAX_VALUE;
+        }
+        return Math.abs(one.getVector().getX() - other.getVector().getX()) + Math.abs(one.getVector().getY() - other.getVector().getY()) + Math.abs(one.getVector().getZ() - other.getVector().getZ());
+    }
 
-	/**
-	 * Gets the largest distance between two points, when projected onto one of the axes.
-	 *
-	 * This will return Double.MAX_VALUE if the other Point is null, either world is null, or the two points are in different worlds.
-	 *
-	 * Otherwise, it returns the max distance.
-	 */
-	public static double getMaxDistance(Point one, Point other) {
-		if (other == null || one.getWorld() == null || other.getWorld() == null || !one.getWorld().equals(other.getWorld())) {
-			return Double.MAX_VALUE;
-		}
-		return Math.max(Math.abs(one.getVector().getX() - other.getVector().getX()),
-						Math.max(Math.abs(one.getVector().getY() - other.getVector().getY()),
-						Math.abs(one.getVector().getZ() - other.getVector().getZ())));
-	}
+    /**
+     * Gets the largest distance between two points, when projected onto one of the axes.
+     *
+     * This will return Double.MAX_VALUE if the other Point is null, either world is null, or the two points are in different worlds.
+     *
+     * Otherwise, it returns the max distance.
+     */
+    public static double getMaxDistance(Point one, Point other) {
+        if (other == null || one.getWorld() == null || other.getWorld() == null || !one.getWorld().equals(other.getWorld())) {
+            return Double.MAX_VALUE;
+        }
+        return Math.max(Math.abs(one.getVector().getX() - other.getVector().getX()),
+                Math.max(Math.abs(one.getVector().getY() - other.getVector().getY()),
+                Math.abs(one.getVector().getZ() - other.getVector().getZ())));
+    }
 }

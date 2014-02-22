@@ -105,9 +105,7 @@ public class RenderThread extends TickingElement {
         updateCameraAndFrustrum();
         FlowWorld world = client.getWorld();
         updateChunkModels(world == null ? null : world.getSnapshot());
-        if (world != null) {
-            updateLight(world.getAge());
-        }
+        updateLight(world == null ? 0 : world.getAge());
         renderer.render();
     }
     
@@ -139,7 +137,7 @@ public class RenderThread extends TickingElement {
         // Any updates after this to the world update number will cause a update next tick
         long update = world.getUpdateNumber();
         // If the snapshot hasn't updated there's nothing to do
-        if (worldLastUpdateNumber == update) {
+        if (update <= worldLastUpdateNumber) {
             return;
         }
         // Else, we need to update the chunk models

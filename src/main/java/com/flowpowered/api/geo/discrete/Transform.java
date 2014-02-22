@@ -32,7 +32,7 @@ import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.matrix.Matrix3f;
 import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector3f;
-import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang3.Validate;
 
 public final class Transform implements Serializable {
