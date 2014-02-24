@@ -24,15 +24,14 @@
 package com.flowpowered.engine;
 
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.network.FlowNetworkClient;
+import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
@@ -97,8 +96,8 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     }
 
     @Override
-    public void setInput(List<InputSnapshot> inputSnapshots) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public FlowSession getSession() {
+        return client.getSession();
     }
 
 }

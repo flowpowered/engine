@@ -36,6 +36,6 @@ public interface FlowServer extends Server, FlowEngine {
     @Override
     FlowServerWorldManager getWorldManager();
 
-    void addPlayer(String name, FlowSession session);
+    FlowPlayer addPlayer(String name, FlowSession session);
 }
  

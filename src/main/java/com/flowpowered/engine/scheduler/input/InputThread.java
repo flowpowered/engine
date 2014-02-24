@@ -39,6 +39,8 @@ import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.FlowSingleplayerImpl;
+import com.flowpowered.engine.network.FlowSession;
+import com.flowpowered.engine.network.message.InputSnapshotMessage;
 
 public class InputThread extends TickingElement {
     private static final int TPS = 60;
@@ -47,6 +49,7 @@ public class InputThread extends TickingElement {
     private final SubscribableQueue<KeyboardEvent> keyboardQueue = new SubscribableQueue<>(false);
     private final SubscribableQueue<MouseEvent> mouseQueue = new SubscribableQueue<>(false);
     private final SubscribableQueue<InputSnapshot> inputQueue = new SubscribableQueue<>(false);
+
     private volatile InputSnapshot lastSnapshot = new InputSnapshot();
 
     private final TPSMonitor tpsMonitor = new TPSMonitor();
@@ -84,15 +87,13 @@ public class InputThread extends TickingElement {
             // For every keyboard event
             while (Keyboard.next()) {
                 // Create a new event
-                final KeyboardEvent event = new KeyboardEvent(
-                        Keyboard.getEventCharacter(), Keyboard.getEventKey(),
-                        Keyboard.getEventKeyState(), Keyboard.getEventNanoseconds());
+                final KeyboardEvent event = new KeyboardEvent(Keyboard.getEventKey(), Keyboard.getEventKeyState());
                 // TEST CODE
                 if (client instanceof FlowSingleplayerImpl) {
                     FlowSingleplayerImpl e = (FlowSingleplayerImpl) client;
-                    if (event.getKey() == Keyboard.KEY_C && event.wasPressedDown()) {
+                    if (event.getKeyId() == Keyboard.KEY_C && event.wasPressedDown()) {
                         e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
-                    } else if (event.getKey() == Keyboard.KEY_V && event.wasPressedDown()) {
+                    } else if (event.getKeyId() == Keyboard.KEY_V && event.wasPressedDown()) {
                         e.getPlayer().setTransformProvider(e.getTestEntity2().getPhysics());
                     }
                 }
@@ -121,6 +122,11 @@ public class InputThread extends TickingElement {
         }
         InputSnapshot newSnapshot = lastSnapshot.withChanges(dt / 1e9f, Mouse.isGrabbed(), currentKeys, currentMouse);
         inputQueue.add(newSnapshot);
+
+        FlowSession session = client.getSession();
+        if (session != null) {
+            session.send(new InputSnapshotMessage(dt / 1e9f, Mouse.isGrabbed(), currentKeys, currentMouse));
+        }
         lastSnapshot = newSnapshot;
         tpsMonitor.update();
     }

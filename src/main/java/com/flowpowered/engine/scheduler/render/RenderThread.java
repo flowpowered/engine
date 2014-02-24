@@ -85,7 +85,7 @@ public class RenderThread extends TickingElement {
         renderer.init(client.getScheduler());
 
         input.subscribeToKeyboard();
-        input.getKeyboardQueue().add(new KeyboardEvent(' ', Keyboard.KEY_ESCAPE, true, 1));
+        input.getKeyboardQueue().add(new KeyboardEvent(Keyboard.KEY_ESCAPE, true));
         input.subscribeToMouse();
     }
 
@@ -217,7 +217,7 @@ public class RenderThread extends TickingElement {
         while (!keyboardEvents.isEmpty()) {
             final KeyboardEvent event = keyboardEvents.poll();
             if (event.wasPressedDown()) {
-                switch (event.getKey()) {
+                switch (event.getKeyId()) {
                     case Keyboard.KEY_ESCAPE:
                         input.setMouseGrabbed(!input.isMouseGrabbed());
                         break;

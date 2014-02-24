@@ -116,11 +116,13 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab) {
         return spawnEntity(point, option, prefab.getComponents().toArray(new Class[0]));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes) {
         FlowRegion region = getRegionFromBlock(point, option);
         if (region == null) {
@@ -133,6 +135,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes) {
         Entity[] entities = new Entity[points.length];
         for (int i = 0; i < points.length; i++) {
@@ -256,6 +259,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         return regionSource.getRegions();
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<FlowRegion> getFlowRegions() {
         return (Collection) getRegions();
     }

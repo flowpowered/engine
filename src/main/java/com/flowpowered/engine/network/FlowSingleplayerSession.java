@@ -31,10 +31,10 @@ import com.flowpowered.networking.Message;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 
-public class FlowSingeplayerSession extends FlowSession {
+public class FlowSingleplayerSession extends FlowSession {
     private final boolean isServer;
 
-    public FlowSingeplayerSession(boolean isServer) {
+    public FlowSingleplayerSession(boolean isServer) {
         super(null);
         this.isServer = isServer;
     }
@@ -43,13 +43,10 @@ public class FlowSingeplayerSession extends FlowSession {
     public void send(Message message) {
         FlowMessageHandler<Message> handler = (FlowMessageHandler<Message>) getProtocol().getMessageHandle(message.getClass());
         if (handler == null) {
-            return;
+            throw new UnsupportedOperationException("Tried to send a Message (" + message.getClass() + ") with no handler!");
         }
-        if (isServer) {
-            handler.handleClient(this, message);
-        } else {
-            handler.handleServer(this, message);
-        }
+        // If we're on the "server", we want to handleClient. And vice-versa
+        handler.handle0(this, message, !isServer);
     }
 
     @Override

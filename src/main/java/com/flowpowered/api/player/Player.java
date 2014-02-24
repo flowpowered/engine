@@ -145,6 +145,4 @@ public interface Player extends CommandSender {
     void setTransformProvider(TransformProvider provider);
 
     public List<InputSnapshot> getInput();
-
-    public void setInput(List<InputSnapshot> inputSnapshots);
 }
