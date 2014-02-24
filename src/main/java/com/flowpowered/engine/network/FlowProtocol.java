@@ -24,10 +24,13 @@
 package com.flowpowered.engine.network;
 
 import com.flowpowered.engine.network.codec.ChunkDataCodec;
+import com.flowpowered.engine.network.codec.InputSnapshotCodec;
 import com.flowpowered.engine.network.codec.LoginCodec;
 import com.flowpowered.engine.network.handler.ChunkDataHandler;
+import com.flowpowered.engine.network.handler.InputSnapshotHandler;
 import com.flowpowered.engine.network.handler.LoginHandler;
 import com.flowpowered.engine.network.message.ChunkDataMessage;
+import com.flowpowered.engine.network.message.InputSnapshotMessage;
 import com.flowpowered.engine.network.message.LoginMessage;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.exception.IllegalOpcodeException;
@@ -44,6 +47,7 @@ public class FlowProtocol extends SimpleProtocol {
 
         registerMessage(LoginMessage.class, LoginCodec.class, LoginHandler.class, 0);
         registerMessage(ChunkDataMessage.class, ChunkDataCodec.class, ChunkDataHandler.class, 1);
+        registerMessage(InputSnapshotMessage.class, InputSnapshotCodec.class, InputSnapshotHandler.class, 2);
         
     }
 

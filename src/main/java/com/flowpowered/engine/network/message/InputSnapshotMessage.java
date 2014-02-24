@@ -21,26 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.input;
+package com.flowpowered.engine.network.message;
 
-public class KeyboardEvent {
-    private final int key;
-    private final boolean pressedDown;
+import java.util.List;
 
-    public KeyboardEvent(int key, boolean pressedDown) {
-        this.key = key;
-        this.pressedDown = pressedDown;
+import com.flowpowered.api.input.KeyboardEvent;
+import com.flowpowered.api.input.MouseEvent;
+import com.flowpowered.networking.Message;
+
+public class InputSnapshotMessage implements Message {
+    private final float dt;
+    private final boolean mouseGrabbed;
+    private final List<KeyboardEvent> keyEvents;
+    private final List<MouseEvent> mouseEvents;
+
+    public InputSnapshotMessage(float dt, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {
+        this.dt = dt;
+        this.mouseGrabbed = mouseGrabbed;
+        this.keyEvents = keyEvents;
+        this.mouseEvents = mouseEvents;
     }
 
-    public int getKeyId() {
-        return key;
+    public float getDt() {
+        return dt;
     }
 
-    public boolean wasPressedDown() {
-        return pressedDown;
+    public boolean isMouseGrabbed() {
+        return mouseGrabbed;
     }
 
-    public Keyboard getKey() {
-        return Keyboard.get(key);
+    public List<KeyboardEvent> getKeyEvents() {
+        return keyEvents;
     }
+
+    public List<MouseEvent> getMouseEvents() {
+        return mouseEvents;
+    }
+
 }

@@ -208,18 +208,6 @@ public class MainThread extends TickingElement {
         doCopySnapshot();
         updateManagers();
 
-        // TEST CODE
-        if (scheduler.getInputThread().isActive()) {
-            List<InputSnapshot> inputList = new ArrayList<>();
-            Queue<InputSnapshot> inputQueue = scheduler.getInputThread().getInputQueue();
-            while (!inputQueue.isEmpty()) {
-                InputSnapshot current = inputQueue.poll();
-                inputList.add(current);
-            }
-            if (Flow.getEngine().getPlatform().isClient()) {
-                ((FlowClient) Flow.getEngine()).setInput(inputList);
-            }
-        }
         tpsMonitor.update();
     }
 

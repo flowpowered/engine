@@ -23,16 +23,29 @@
  */
 package com.flowpowered.engine.network;
 
+import java.util.concurrent.atomic.AtomicReference;
 import com.flowpowered.engine.network.message.LoginMessage;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.networking.Message;
 import com.flowpowered.networking.MessageHandler;
 import com.flowpowered.networking.session.BasicSession;
 import io.netty.channel.Channel;
 
 public class FlowSession extends BasicSession {
+    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
 
     public FlowSession(Channel channel) {
         super(channel, FlowProtocol.INSTANCE);
+    }
+
+    public FlowPlayer getPlayer() {
+        return player.get();
+    }
+
+    public void setPlayer(FlowPlayer player) {
+        if (!this.player.compareAndSet(null, player)) {
+            throw new IllegalStateException("Cannot set the player twice!");
+        }
     }
 
     @Override
@@ -63,5 +76,4 @@ public class FlowSession extends BasicSession {
         System.out.println("Error on handle: ");
         throwable.printStackTrace();
     }
-
 }

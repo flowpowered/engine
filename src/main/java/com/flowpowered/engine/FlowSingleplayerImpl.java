@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
@@ -31,17 +30,18 @@ import org.apache.logging.log4j.LogManager;
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.network.FlowSingeplayerSession;
+import com.flowpowered.engine.network.FlowSession;
+import com.flowpowered.engine.network.FlowSingleplayerSession;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
+    private final FlowSingleplayerSession session = new FlowSingleplayerSession(false);
 
     public FlowSingleplayerImpl(FlowApplication args) {
         super(args);
@@ -60,10 +60,11 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
         activeWorld.set(loadedWorld);
 
-        FlowPlayer serverPlayer = new FlowPlayer(new FlowSingeplayerSession(true), "Flowy");
-        addPlayer(serverPlayer);
-
-        this.player.set(serverPlayer);
+        FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(true));
+        this.player.set(player);
+        session.setPlayer(player);
+        
+        
     }
 
     @Override
@@ -104,7 +105,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     }
 
     @Override
-    public void setInput(List<InputSnapshot> inputSnapshots) {
-        player.get().setInput(inputSnapshots);
+    public FlowSession getSession() {
+        return session;
     }
 }

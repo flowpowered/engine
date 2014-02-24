@@ -66,7 +66,9 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
 
         // TEST CODE
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
+        @SuppressWarnings("unchecked")
         Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        @SuppressWarnings("unchecked")
         Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
         this.testEntity = entity;
         this.testEntity2 = entity2;
@@ -135,14 +137,16 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     }
 
     @Override
-    public void addPlayer(String name, FlowSession session) {
-        FlowPlayer player = new FlowPlayer(session, name);
-    }
-
-    protected void addPlayer(FlowPlayer player) {
+    public FlowPlayer addPlayer(String name, FlowSession session) {
+        FlowPlayer player = new FlowPlayer(snapshotManager, session, name);
         players.put(player.getName(), player);
+        session.setPlayer(player);
+
+        // TEST CODE
         player.setTransformProvider(testEntity.getPhysics());
         testEntity.add(PlayerControlledMovementComponent.class).setController(player);
+
+        return player;
     }
 
     @Override

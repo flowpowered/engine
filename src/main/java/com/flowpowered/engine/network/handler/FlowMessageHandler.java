@@ -32,14 +32,45 @@ public class FlowMessageHandler<T extends Message> implements MessageHandler<Flo
 
     @Override
     public void handle(FlowSession session, T message) {
-        if (Flow.getEngine().getPlatform().isClient()) {
-            handleClient(session, message);
+        if (Flow.getEngine().getPlatform().isServer()) {
+            handle0(session, message, true);
         } else {
-            handleServer(session, message);
+            handle0(session, message, false);
         }
     }
 
-    public void handleServer(FlowSession session, T message) {}
+    public void handle0(FlowSession session, T message, boolean server) {
+        if (session.getPlayer() == null) {
+            switch (requiresPlayer()) {
+                case ERROR:
+                    throw new UnsupportedOperationException("Handler " + getClass() + " requires a player, but it was null!");
+                case IGNORE:
+                    System.out.println("Ignoring handler b/c no player");
+                    return;
+            }
+        }
+        if (server) {
+            handleServer(session, message);
+        } else {
+            handleClient(session, message);
+        }
+    }
 
-    public void handleClient(FlowSession session, T message) {}
+    public void handleServer(FlowSession session, T message) {
+        throw new UnsupportedOperationException("This handler cannot handle on the server!");
+    }
+
+    public void handleClient(FlowSession session, T message) {
+        throw new UnsupportedOperationException("This handler cannot handle on the client!");
+    }
+
+    public PlayerRequirement requiresPlayer() {
+        return PlayerRequirement.NO;
+    }
+
+    public enum PlayerRequirement {
+        NO,
+        IGNORE,
+        ERROR;
+    }
 }

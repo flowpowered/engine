@@ -23,8 +23,6 @@
  */
 package com.flowpowered.engine.player;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -37,17 +35,21 @@ import com.flowpowered.api.player.PlayerSnapshot;
 import com.flowpowered.chat.ChatReceiver;
 import com.flowpowered.commands.CommandException;
 import com.flowpowered.engine.network.FlowSession;
+import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
+import com.flowpowered.engine.util.thread.snapshotable.SnapshotableArrayList;
 import com.flowpowered.permissions.PermissionDomain;
 
 public class FlowPlayer implements Player {
     protected final String name;
     protected final PlayerNetwork network;
+    private final SnapshotableArrayList<InputSnapshot> input;
     protected volatile TransformProvider transformProvider = TransformProvider.NullTransformProvider.INSTANCE;
-    private volatile List<InputSnapshot> input = new LinkedList<>();
+    private volatile InputSnapshot lastInput = new InputSnapshot();
 
-    public FlowPlayer(FlowSession session, String name) {
+    public FlowPlayer(SnapshotManager snapshotManager, FlowSession session, String name) {
         this.name = name;
         this.network = new PlayerNetwork(session);
+        input = new SnapshotableArrayList<>(snapshotManager);
     }
 
     @Override
@@ -197,11 +199,15 @@ public class FlowPlayer implements Player {
 
     @Override
     public List<InputSnapshot> getInput() {
-        return Collections.unmodifiableList(input);
+        return input.get();
     }
 
-    @Override
-    public void setInput(List<InputSnapshot> inputList) {
-        input = inputList;
+    public InputSnapshot getLastInput() {
+        return lastInput;
+    }
+
+    public void addInputSnapshot(InputSnapshot snapshot) {
+        input.add(snapshot);
+        lastInput = snapshot;
     }
 }

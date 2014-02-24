@@ -40,15 +40,12 @@ public class InputSnapshot {
     private final List<KeyboardEvent> keyEvents;
     private final List<MouseEvent> mouseEvents;
 
+    @SuppressWarnings("unchecked")
     public InputSnapshot() {
-        dt = 0;
-        keys = new boolean[Keyboard.getKeyCount()];
-        this.mouseGrabbed = false;
-        keyEvents = Collections.EMPTY_LIST;
-        mouseEvents = Collections.EMPTY_LIST;
+        this(0f, new boolean[Keyboard.getKeyCount()], false, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
     }
 
-    private InputSnapshot(float dt, boolean[] keys, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {
+    public InputSnapshot(float dt, boolean[] keys, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {
         this.dt = dt;
         this.keys = keys;
         this.mouseGrabbed = mouseGrabbed;
@@ -59,7 +56,7 @@ public class InputSnapshot {
     public InputSnapshot withChanges(float dt, boolean mouseGrabbed, List<KeyboardEvent> keyQueue, List<MouseEvent> mouseQueue) {
         boolean[] newKeys = Arrays.copyOf(keys, keys.length);
         for (KeyboardEvent e : keyQueue.toArray(new KeyboardEvent[0])) {
-            newKeys[e.getKey()] = e.wasPressedDown();
+            newKeys[e.getKeyId()] = e.wasPressedDown();
         }
         return new InputSnapshot(dt, newKeys, mouseGrabbed, keyQueue, mouseQueue);
     }
