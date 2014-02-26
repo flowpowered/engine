@@ -49,7 +49,7 @@ public class FlowPlayer implements Player {
     protected volatile TransformProvider transformProvider = TransformProvider.NullTransformProvider.INSTANCE;
     private volatile List<InputSnapshot> inputSnapshots = new ArrayList<>();
     private volatile List<InputSnapshot> liveInput = new ArrayList<>();;
-    private volatile InputSnapshot lastInput = new InputSnapshot();
+    private volatile InputSnapshot lastLiveInput = new InputSnapshot();
     private final Object inputMutex = new Object();
 
     public FlowPlayer(SnapshotManager snapshotManager, FlowSession session, String name) {
@@ -217,17 +217,9 @@ public class FlowPlayer implements Player {
         return inputSnapshots;
     }
 
-    /**
-     * Returns the last live input.
-     *
-     */
-    public InputSnapshot getLastInput() {
-        return lastInput;
-    }
-
     public void addInputChanges(float dt, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {
         synchronized (inputMutex) {
-            liveInput.add((lastInput = lastInput.withChanges(dt, mouseGrabbed, keyEvents, mouseEvents)));
+            liveInput.add((lastLiveInput = lastLiveInput.withChanges(dt, mouseGrabbed, keyEvents, mouseEvents)));
         }
     }
 }

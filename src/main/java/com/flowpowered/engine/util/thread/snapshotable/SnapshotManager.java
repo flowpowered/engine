@@ -27,9 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SnapshotManager {
-    private List<Snapshotable> managed = new ArrayList<>();
+    private final List<Snapshotable> managed = new ArrayList<>();
 
-    public synchronized void add(Snapshotable s) {
+    public void add(Snapshotable s) {
         synchronized (managed) {
             managed.add(s);
         }
