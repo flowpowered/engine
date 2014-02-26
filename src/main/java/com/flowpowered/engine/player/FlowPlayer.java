@@ -23,12 +23,16 @@
  */
 package com.flowpowered.engine.player;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.api.input.InputSnapshot;
+import com.flowpowered.api.input.KeyboardEvent;
+import com.flowpowered.api.input.MouseEvent;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.player.PlayerNetwork;
 import com.flowpowered.api.player.PlayerSnapshot;
@@ -36,20 +40,31 @@ import com.flowpowered.chat.ChatReceiver;
 import com.flowpowered.commands.CommandException;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
-import com.flowpowered.engine.util.thread.snapshotable.SnapshotableArrayList;
+import com.flowpowered.engine.util.thread.snapshotable.Snapshotable;
 import com.flowpowered.permissions.PermissionDomain;
 
 public class FlowPlayer implements Player {
     protected final String name;
     protected final PlayerNetwork network;
-    private final SnapshotableArrayList<InputSnapshot> input;
     protected volatile TransformProvider transformProvider = TransformProvider.NullTransformProvider.INSTANCE;
+    private volatile List<InputSnapshot> inputSnapshots = new ArrayList<>();
+    private volatile List<InputSnapshot> liveInput = new ArrayList<>();;
     private volatile InputSnapshot lastInput = new InputSnapshot();
+    private final Object inputMutex = new Object();
 
     public FlowPlayer(SnapshotManager snapshotManager, FlowSession session, String name) {
         this.name = name;
         this.network = new PlayerNetwork(session);
-        input = new SnapshotableArrayList<>(snapshotManager);
+        snapshotManager.add(new Snapshotable() {
+            @Override
+            public void copySnapshot() {
+                synchronized (inputMutex) {
+                    inputSnapshots = Collections.unmodifiableList(liveInput);
+                    // We will only be writing
+                    liveInput = Collections.synchronizedList(new ArrayList<InputSnapshot>());
+                }
+            }
+        });
     }
 
     @Override
@@ -199,15 +214,20 @@ public class FlowPlayer implements Player {
 
     @Override
     public List<InputSnapshot> getInput() {
-        return input.get();
+        return inputSnapshots;
     }
 
+    /**
+     * Returns the last live input.
+     *
+     */
     public InputSnapshot getLastInput() {
         return lastInput;
     }
 
-    public void addInputSnapshot(InputSnapshot snapshot) {
-        input.add(snapshot);
-        lastInput = snapshot;
+    public void addInputChanges(float dt, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {
+        synchronized (inputMutex) {
+            liveInput.add((lastInput = lastInput.withChanges(dt, mouseGrabbed, keyEvents, mouseEvents)));
+        }
     }
 }
