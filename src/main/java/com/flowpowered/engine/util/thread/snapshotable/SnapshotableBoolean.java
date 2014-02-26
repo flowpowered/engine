@@ -39,7 +39,9 @@ public class SnapshotableBoolean implements Snapshotable {
     public SnapshotableBoolean(SnapshotManager manager, boolean initial) {
         next = new AtomicBoolean(initial);
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

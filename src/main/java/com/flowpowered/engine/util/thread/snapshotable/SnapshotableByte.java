@@ -37,7 +37,9 @@ public class SnapshotableByte implements Snapshotable {
     public SnapshotableByte(SnapshotManager manager, byte initial) {
         next = initial;
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

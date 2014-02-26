@@ -37,7 +37,9 @@ public class SnapshotableShort implements Snapshotable {
     public SnapshotableShort(SnapshotManager manager, short initial) {
         next = initial;
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

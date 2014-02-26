@@ -25,6 +25,7 @@ package com.flowpowered.engine.scheduler;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -75,10 +76,10 @@ public class MainThread extends TickingElement {
         new CopySnapshotTask()
     };
 
-    // TODO: make sure that this is safe throughout the whole tick
-    // SnapshotableReference?
     @SuppressWarnings("unchecked")
     private final Set<ManagerRunnable>[][] managerRunnables = new Set[managerRunnableFactories.length][];
+    // We are going to synchronize on this, don't need concurrent
+    private final List<ManagerRunnableUpdateEntry> manageRunnableUpdates = new LinkedList<>();
 
     /**
      * Update count for physics and dynamic updates
@@ -111,6 +112,7 @@ public class MainThread extends TickingElement {
         if (scheduler.getInputThread() != null) {
             scheduler.getInputThread().subscribeToInput();
         }
+        updateManagers();
     }
 
     @Override
@@ -190,6 +192,7 @@ public class MainThread extends TickingElement {
         doFinalizeTick();
 
         doCopySnapshot();
+        updateManagers();
 
         // TEST CODE
         if (scheduler.getInputThread().isActive()) {
@@ -315,9 +318,12 @@ public class MainThread extends TickingElement {
                 if (manager.checkSequence(taskFactory.getTickStage(), s)) {
                     Set<ManagerRunnable> sequence = sequences[s - minSequence];
                     if (sequence == null) {
+                        // We can use HashSet because we're never going to modify this concurrently
                         sequences[s - minSequence] = sequence = new HashSet<>();
                     }
-                    sequence.add(taskFactory.getTask(manager, s));
+                    synchronized (manageRunnableUpdates) {
+                        manageRunnableUpdates.add(new ManagerRunnableUpdateEntry(stage, s - minSequence, taskFactory.getTask(manager, s), true));
+                    }
                 }
             }
         }
@@ -344,9 +350,41 @@ public class MainThread extends TickingElement {
             for (int s = minSequence; s <= maxSequence; s++) {
                 Set<ManagerRunnable> sequence = sequences[s - minSequence];
                 if (sequence != null) {
-                    sequence.remove(taskFactory.getTask(manager, s));
+                    synchronized (manageRunnableUpdates) {
+                        manageRunnableUpdates.add(new ManagerRunnableUpdateEntry(stage, s - minSequence, taskFactory.getTask(manager, s), false));
+                    }
                 }
             }
+        }
+    }
+
+    private void updateManagers() {
+        // Small and seldom possibility that there are sync updates to this that might conflict: use synchronized
+        synchronized (manageRunnableUpdates) {
+            if (manageRunnableUpdates.isEmpty()) {
+                return;
+            }
+            for (ManagerRunnableUpdateEntry e : manageRunnableUpdates) {
+                if (e.add) {
+                    managerRunnables[e.stage][e.sequence].add(e.runnable);
+                } else {
+                    managerRunnables[e.stage][e.sequence].remove(e.runnable);
+                }
+            }
+            manageRunnableUpdates.clear();
+        }
+    }
+
+    private static class ManagerRunnableUpdateEntry {
+        private final int stage, sequence;
+        private final ManagerRunnable runnable;
+        private final boolean add;
+
+        private ManagerRunnableUpdateEntry(int stage, int sequence, ManagerRunnable runnable, boolean add) {
+            this.stage = stage;
+            this.sequence = sequence;
+            this.runnable = runnable;
+            this.add = add;
         }
     }
 

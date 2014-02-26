@@ -55,7 +55,9 @@ public class SnapshotableLinkedHashMap<K, V> implements Snapshotable {
     private boolean dirtyListGenerated = false;
 
     public SnapshotableLinkedHashMap(SnapshotManager manager) {
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

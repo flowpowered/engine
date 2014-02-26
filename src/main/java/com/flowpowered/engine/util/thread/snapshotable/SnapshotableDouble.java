@@ -37,7 +37,9 @@ public class SnapshotableDouble implements Snapshotable {
     public SnapshotableDouble(SnapshotManager manager, double initial) {
         next = initial;
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**
