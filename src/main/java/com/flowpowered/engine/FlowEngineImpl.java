@@ -140,6 +140,10 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
 
     @Override
     public boolean checkSequence(TickStage stage, int sequence) {
+        switch (stage) {
+            case SNAPSHOT:
+                return sequence == 0;
+        }
         return true;
     }
 
