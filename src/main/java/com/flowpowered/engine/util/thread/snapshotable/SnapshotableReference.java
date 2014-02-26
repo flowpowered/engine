@@ -41,7 +41,9 @@ public class SnapshotableReference<T> implements Snapshotable {
     public SnapshotableReference(SnapshotManager manager, T initial) {
         next.set(initial);
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

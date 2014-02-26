@@ -52,7 +52,9 @@ public class SnapshotableArrayList<T> implements Snapshotable {
             snapshot = new ArrayList<>();
         }
         live = Collections.synchronizedList(new ArrayList<>(snapshot));
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

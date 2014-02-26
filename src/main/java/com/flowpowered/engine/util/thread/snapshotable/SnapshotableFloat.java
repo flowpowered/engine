@@ -37,7 +37,9 @@ public class SnapshotableFloat implements Snapshotable {
     public SnapshotableFloat(SnapshotManager manager, float initial) {
         next = initial;
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

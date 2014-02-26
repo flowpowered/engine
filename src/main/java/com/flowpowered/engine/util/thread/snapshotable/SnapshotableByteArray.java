@@ -50,6 +50,9 @@ public class SnapshotableByteArray implements Snapshotable {
             snapshot[i] = initial[i];
             live[i] = initial[i];
         }
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

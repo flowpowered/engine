@@ -37,7 +37,9 @@ public class SnapshotableLong implements Snapshotable {
     public SnapshotableLong(SnapshotManager manager, long initial) {
         next = initial;
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

@@ -57,7 +57,9 @@ public class SnapshotableHashSet<T> implements Snapshotable {
                 add(o);
             }
         }
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**
@@ -131,6 +133,9 @@ public class SnapshotableHashSet<T> implements Snapshotable {
      */
     @Override
     public void copySnapshot() {
+        if (dirty.isEmpty()) {
+            return;
+        }
         for (T o : dirty) {
             if (live.contains(o)) {
                 snapshot.add(o);

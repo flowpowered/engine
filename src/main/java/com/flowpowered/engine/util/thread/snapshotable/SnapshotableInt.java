@@ -37,7 +37,9 @@ public class SnapshotableInt implements Snapshotable {
     public SnapshotableInt(SnapshotManager manager, int initial) {
         next = initial;
         snapshot = initial;
-        manager.add(this);
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**

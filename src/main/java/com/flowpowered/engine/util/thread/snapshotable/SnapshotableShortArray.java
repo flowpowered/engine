@@ -54,6 +54,9 @@ public class SnapshotableShortArray implements Snapshotable {
             snapshot[i] = initial[i];
             set(i, initial[i]);
         }
+        if (manager != null) {
+            manager.add(this);
+        }
     }
 
     /**
