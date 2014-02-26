@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.network.handler;
 
-import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.InputSnapshotMessage;
 
@@ -31,14 +30,13 @@ public class InputSnapshotHandler extends FlowMessageHandler<InputSnapshotMessag
 
     @Override
     public void handleServer(FlowSession session, InputSnapshotMessage message) {
-        InputSnapshot newSnapshot = session.getPlayer().getLastInput().withChanges(message.getDt(), message.isMouseGrabbed(), message.getKeyEvents(), message.getMouseEvents());
-        session.getPlayer().addInputSnapshot(newSnapshot);
+        session.getPlayer().addInputChanges(message.getDt(), message.isMouseGrabbed(), message.getKeyEvents(), message.getMouseEvents());
         // TODO: mouse events
     }
 
     @Override
     public PlayerRequirement requiresPlayer() {
-        return PlayerRequirement.IGNORE;
+        return PlayerRequirement.ERROR;
     }
 
 }
