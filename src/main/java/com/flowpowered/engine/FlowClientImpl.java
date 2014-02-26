@@ -71,6 +71,12 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     }
 
     @Override
+    public boolean stop() {
+        client.shutdown();
+        return super.stop();
+    }
+
+    @Override
     public Platform getPlatform() {
         return Platform.CLIENT;
     }
