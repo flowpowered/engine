@@ -89,6 +89,12 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     }
 
     @Override
+    public boolean stop() {
+        server.shutdown();
+        return super.stop();
+    }
+
+    @Override
     public Platform getPlatform() {
         return Platform.SERVER;
     }
