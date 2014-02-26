@@ -121,6 +121,8 @@ public class MainThread extends TickingElement {
         RegionGenerator.shutdownExecutorService();
         RegionGenerator.awaitExecutorServiceTermination(logger);
 
+        executorService.shutdown();
+
         scheduler.getTaskManager().heartbeat(FlowScheduler.PULSE_EVERY << 2);
         scheduler.getTaskManager().stop();
 
