@@ -34,6 +34,7 @@ import com.flowpowered.engine.network.FlowNetworkClient;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
+import io.netty.util.ResourceLeakDetector;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -41,6 +42,8 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
     private final FlowWorldManager<FlowWorld> worldManager;
     private final FlowNetworkClient client = new FlowNetworkClient();
+
+    private volatile Transform transform = Transform.INVALID;
 
     public FlowClientImpl(FlowApplication args) {
         super(args);
@@ -98,7 +101,12 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
 
     @Override
     public Transform getTransform() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return transform;
+    }
+
+    @Override
+    public void setTransform(Transform transform) {
+        this.transform = transform;
     }
 
     @Override

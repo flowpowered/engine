@@ -105,6 +105,11 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     }
 
     @Override
+    public void setTransform(Transform transform) {
+        throw new UnsupportedOperationException("Singleplayer does not gets it's Transform set.");
+    }
+
+    @Override
     public FlowSession getSession() {
         return session;
     }

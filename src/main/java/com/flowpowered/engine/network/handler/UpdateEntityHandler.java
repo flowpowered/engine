@@ -21,24 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine;
+package com.flowpowered.engine.network.handler;
 
-import com.flowpowered.api.Client;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.api.Flow;
+import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.engine.network.message.UpdateEntityMessage;
 
-public interface FlowClient extends Client, FlowEngine {
-
-    @Override
-	FlowWorld getWorld();
+public class UpdateEntityHandler extends FlowMessageHandler<UpdateEntityMessage> {
 
     @Override
-    FlowRenderer getRenderer();
+    public void handleClient(FlowSession session, UpdateEntityMessage message) {
+        // Player-only atm
+        // TODO: other entities
+        ((FlowClient) Flow.getEngine()).setTransform(message.getTransform());
+    }
 
-    // TODO: move to Client
-    FlowSession getSession();
-
-    void setTransform(Transform transform);
 }
