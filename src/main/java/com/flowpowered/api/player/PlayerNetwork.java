@@ -45,6 +45,7 @@ import com.flowpowered.commons.concurrent.set.TSyncIntHashSet;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.ChunkDataMessage;
+import com.flowpowered.engine.network.message.UpdateEntityMessage;
 import com.flowpowered.engine.util.OutwardIterator;
 import com.flowpowered.events.Listener;
 import com.flowpowered.math.vector.Vector3i;
@@ -76,7 +77,7 @@ public class PlayerNetwork implements Listener {
     private boolean sync = false;
     protected int tickCounter = 0;
     private int chunksSentThisTick = 0;
-    private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.getInstance());
+    private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.INSTANCE);
 
     public PlayerNetwork(FlowSession session) {
         this.session = session;
@@ -141,7 +142,7 @@ public class PlayerNetwork implements Listener {
 
     public void setRepositionManager(RepositionManager rm) {
         if (rm == null) {
-            this.rm.set(NullRepositionManager.getInstance());
+            this.rm.set(NullRepositionManager.INSTANCE);
         } else {
             this.rm.set(rm);
         }
@@ -325,7 +326,9 @@ public class PlayerNetwork implements Listener {
     }
 
     private void sendPositionUpdates(Transform transform) {
-        if (transform.equals(previousTransform) && sync) {
+        sync = true;
+        if (!transform.equals(previousTransform) && sync) {
+            session.send(new UpdateEntityMessage(-1, transform, UpdateEntityMessage.UpdateAction.TRANSFORM, NullRepositionManager.INSTANCE));
             //callProtocolEvent(new EntityUpdateEvent(player, live, EntityUpdateEvent.UpdateAction.TRANSFORM, getRepositionManager()), player);
             sync = false;
         }

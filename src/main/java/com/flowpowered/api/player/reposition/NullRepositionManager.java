@@ -24,11 +24,7 @@
 package com.flowpowered.api.player.reposition;
 
 public class NullRepositionManager extends RepositionManagerImpl {
-	private static RepositionManager instance = new NullRepositionManager();
-
-	public static RepositionManager getInstance() {
-		return instance;
-	}
+	public static final RepositionManager INSTANCE = new NullRepositionManager();
 
 	@Override
 	public double convertX(double x) {
@@ -47,6 +43,6 @@ public class NullRepositionManager extends RepositionManagerImpl {
 
 	@Override
 	public RepositionManager getInverse() {
-		return getInstance();
+		return INSTANCE;
 	}
 }

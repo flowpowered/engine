@@ -25,9 +25,11 @@ package com.flowpowered.engine.network.codec;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.flowpowered.api.input.KeyboardEvent;
+import com.flowpowered.api.input.MouseEvent;
 import com.flowpowered.engine.network.message.InputSnapshotMessage;
 import com.flowpowered.networking.Codec;
 import io.netty.buffer.ByteBuf;
@@ -42,13 +44,19 @@ public class InputSnapshotCodec implements Codec<InputSnapshotMessage> {
     }
 
     @Override
-    public InputSnapshotMessage decode(ByteBuf buffer) throws IOException {
-        int amount = buffer.readInt();
-        List<KeyboardEvent> keyEvents = new ArrayList<>();
+    public InputSnapshotMessage decode(ByteBuf buf) throws IOException {
+        List<KeyboardEvent> keyEvents = new LinkedList<>();
+        int amount = buf.readInt();
         for (int i = 0; i < amount; i++) {
-            keyEvents.add(new KeyboardEvent(buffer.readByte(), buffer.readBoolean()));
+            keyEvents.add(new KeyboardEvent(buf.readByte(), buf.readBoolean()));
         }
-        return new InputSnapshotMessage(buffer.readFloat(), buffer.readBoolean(), keyEvents, null);
+        amount = buf.readInt();
+        List<MouseEvent> mouseEvents = new LinkedList<>();
+        for (int i = 0; i < amount; i++) {
+            mouseEvents.add(new MouseEvent(buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readBoolean()));
+        }     
+
+        return new InputSnapshotMessage(buf.readFloat(), buf.readBoolean(), keyEvents, mouseEvents);
     }
 
     @Override
@@ -56,6 +64,16 @@ public class InputSnapshotCodec implements Codec<InputSnapshotMessage> {
         buf.writeInt(message.getKeyEvents().size());
         for (KeyboardEvent e : message.getKeyEvents()) {
             buf.writeByte(e.getKeyId());
+            buf.writeBoolean(e.wasPressedDown());
+        }
+        buf.writeInt(message.getMouseEvents().size());
+        for (MouseEvent e : message.getMouseEvents()) {
+            buf.writeInt(e.getX());
+            buf.writeInt(e.getY());
+            buf.writeInt(e.getDX());
+            buf.writeInt(e.getDY());
+            buf.writeInt(e.getDWheel());
+            buf.writeInt(e.getButton());
             buf.writeBoolean(e.wasPressedDown());
         }
         buf.writeFloat(message.getDt());
