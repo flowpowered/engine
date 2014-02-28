@@ -29,18 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.flowpowered.commons.Named;
+
 import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.api.scheduler.Task;
-import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TaskPriority;
-import com.flowpowered.api.util.concurrent.LongPrioritized;
 
 import org.apache.commons.lang3.Validate;
 
 /**
  * Represents a task which is executed periodically.
  */
-public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized {
+public class FlowTask extends FutureTask<Void> implements Task {
     /**
      * The next task ID pending.
      */
@@ -84,20 +83,16 @@ public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized 
     /**
      * The manager associated with this task
      */
-    private final TaskManager manager;
+    private final FlowTaskManager manager;
     /**
      * The scheduler for the engine
      */
     private final Scheduler scheduler;
-    /**
-     * Return the last state returned by {@link #shouldExecute()}
-     */
-    private volatile TaskExecutionState lastExecutionState = TaskExecutionState.WAIT;
 
     /**
-     * Creates a new task with the specified period between consecutive calls to {@link #pulse()}.
+     * Creates a new task with the specified period between consecutive calls to {@link #run()}.
      */
-    public FlowTask(TaskManager manager, Scheduler scheduler, Object owner, Runnable task, boolean sync, long delay, long period, TaskPriority priority) {
+    public FlowTask(FlowTaskManager manager, Scheduler scheduler, Object owner, Runnable task, boolean sync, long delay, long period, TaskPriority priority) {
         super(task, null);
         Validate.isTrue(!sync || priority != null, "Priority cannot be null if sync!");
         this.taskId = nextTaskId.getAndIncrement();
@@ -136,22 +131,8 @@ public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized 
     }
 
     @Override
-    public boolean isAlive() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isLongLived() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void cancel() {
         this.cancel(false);
-    }
-
-    public long getNextCallTime() {
-        return nextCallTime.get();
     }
 
     protected long getPeriod() {
@@ -160,36 +141,6 @@ public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized 
 
     protected long getDelay() {
         return this.delay;
-    }
-
-    /**
-     * Called every 'pulse'. This method
-     * updates the counters and returns whether execute() should be called
-     * @return Execution state for this task
-     */
-    TaskExecutionState shouldExecute() {
-        final TaskExecutionState execState = shouldExecuteUpdate();
-        lastExecutionState = execState;
-        return execState;
-    }
-
-    private TaskExecutionState shouldExecuteUpdate() {
-        // Stop running if cancelled, exception, or not repeating
-        if (isDone()) {
-            return TaskExecutionState.STOP;
-        }
-        if (manager.getUpTime() >= nextCallTime.get()) {
-            return TaskExecutionState.RUN;
-        }
-        return TaskExecutionState.WAIT;
-    }
-
-    /**
-     * Return the last execution state returned by {@link #shouldExecute()}
-     * @return the last state (most likely the state the task is currently in)
-     */
-    TaskExecutionState getLastExecutionState() {
-        return lastExecutionState;
     }
 
     @Override
@@ -206,9 +157,8 @@ public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized 
                 super.run();
             } else {
                 super.runAndReset();
+                updateCallTime(period);
             }
-
-            updateCallTime();
         } finally {
             executing.set(false);
         }
@@ -257,10 +207,6 @@ public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized 
         return true;
     }
 
-    private void updateCallTime() {
-        updateCallTime(period);
-    }
-
     private boolean updateCallTime(long offset) {
         boolean success = !isDone();
         if (!success) {
@@ -270,11 +216,11 @@ public class FlowTask extends FutureTask<Void> implements Task, LongPrioritized 
         if (nextCallTime.addAndGet(offset) <= now) {
             nextCallTime.set(now + 1);
         }
+        manager.schedule(this);
         return true;
     }
 
-    @Override
-    public long getPriority() {
+    public long getNextCallTime() {
         return nextCallTime.get();
     }
 }

@@ -21,11 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.util.concurrent;
+package com.flowpowered.engine.scheduler;
 
-public interface LongPrioritized {
-    /**
-     * Gets the priority of this object
-     */
-    public long getPriority();
+import org.junit.Test;
+
+public class FlowTaskManagerTest {
+
+    @Test
+    public void testTaskManager() {
+        // TODO
+    }
 }
