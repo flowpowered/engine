@@ -61,7 +61,7 @@ public class FlowEntitySnapshot implements EntitySnapshot {
         //this.location = e.getPhysics().getTransform();
         this.location = null;
         this.worldName = e.getWorld().getName();
-        this.worldId = e.getWorld().getUID();
+        this.worldId = e.getWorld().refresh(e.getEngine().getWorldManager()).getUID();
         this.savable = e.isSavable();
         if (e.getData().size() > 0) {
             this.dataMap = e.getData().deepCopy();

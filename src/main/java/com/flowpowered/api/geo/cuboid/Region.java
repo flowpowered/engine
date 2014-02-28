@@ -26,6 +26,7 @@ package com.flowpowered.api.geo.cuboid;
 import java.util.Iterator;
 import java.util.List;
 
+import com.flowpowered.api.Engine;
 import com.flowpowered.commons.BitSize;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.player.Player;
@@ -55,6 +56,7 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
     private final int chunkX;
     private final int chunkY;
     private final int chunkZ;
+    private final Engine engine;
 
     public Region(World world, int x, int y, int z) {
         super(new Point(world, x, y, z), BLOCKS.SIZE);
@@ -64,6 +66,7 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
         this.chunkX = getRegionX() << CHUNKS.BITS;
         this.chunkY = getRegionY() << CHUNKS.BITS;
         this.chunkZ = getRegionZ() << CHUNKS.BITS;
+        this.engine = world.getEngine();
     }
 
     /**
@@ -158,6 +161,10 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
     public abstract Entity getEntity(int id);
 
     public abstract List<Player> getPlayers();
+
+    public Engine getEngine() {
+        return engine;
+    }
 
     @Override
     public Iterator<Chunk> iterator() {

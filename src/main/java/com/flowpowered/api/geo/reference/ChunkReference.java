@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.geo.cuboid.reference;
+package com.flowpowered.api.geo.reference;
 
 import java.lang.ref.WeakReference;
 
 import com.flowpowered.api.geo.LoadOption;
+import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.geo.discrete.Point;
@@ -62,11 +63,11 @@ public class ChunkReference {
         return get;
     }
 
-    public Chunk refresh(LoadOption opt) {
+    public Chunk refresh(LoadOption opt, WorldManager manager) {
         Chunk newChunk = get();
         if (newChunk != null) return newChunk;
 
-        Region newRegion = region.refresh(opt);
+        Region newRegion = region.refresh(opt, manager);
         if (newRegion == null) return null;
 
         newChunk = newRegion.getChunkFromBlock(base.getVector(), opt);

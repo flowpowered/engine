@@ -24,6 +24,8 @@
 package com.flowpowered.engine.network;
 
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.flowpowered.api.Engine;
 import com.flowpowered.engine.network.message.LoginMessage;
 import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.networking.Message;
@@ -32,10 +34,12 @@ import com.flowpowered.networking.session.BasicSession;
 import io.netty.channel.Channel;
 
 public class FlowSession extends BasicSession {
+    private final Engine engine;
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
 
-    public FlowSession(Channel channel) {
+    public FlowSession(Engine engine, Channel channel) {
         super(channel, FlowProtocol.INSTANCE);
+        this.engine = engine;
     }
 
     public FlowPlayer getPlayer() {
@@ -75,5 +79,9 @@ public class FlowSession extends BasicSession {
     public void onHandlerThrowable(Message message, MessageHandler<?, ?> handle, Throwable throwable) {
         System.out.println("Error on handle: ");
         throwable.printStackTrace();
+    }
+
+    public Engine getEngine() {
+        return engine;
     }
 }

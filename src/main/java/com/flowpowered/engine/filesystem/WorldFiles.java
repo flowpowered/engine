@@ -44,7 +44,6 @@ import org.spout.nbt.stream.NBTInputStream;
 import org.spout.nbt.stream.NBTOutputStream;
 import org.spout.nbt.util.NBTMapper;
 
-import com.flowpowered.api.Server;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.nbt.TransformTag;

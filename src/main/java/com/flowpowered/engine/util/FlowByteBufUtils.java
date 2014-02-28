@@ -23,88 +23,95 @@
  */
 package com.flowpowered.engine.util;
 
+import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.flowpowered.api.Client;
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 
 public class FlowByteBufUtils {
-	public static Transform readTransform(ByteBuf buffer) {
-		Point position = readPoint(buffer);
-		Quaternionf rotation = readQuaternion(buffer);
-		Vector3f scale = readVector3(buffer);
-		return new Transform(position, rotation, scale);
-	}
+    public static Transform readTransform(ByteBuf buffer) {
+        Point position = readPoint(buffer);
+        Quaternionf rotation = readQuaternion(buffer);
+        Vector3f scale = readVector3(buffer);
+        return new Transform(position, rotation, scale);
+    }
 
-	public static void writeTransform(ByteBuf buffer, Transform transform) {
-		writePoint(buffer, transform.getPosition());
-		writeQuaternion(buffer, transform.getRotation());
-		writeVector3(buffer, transform.getScale());
-	}
+    public static void writeTransform(ByteBuf buffer, Transform transform) {
+        writePoint(buffer, transform.getPosition());
+        writeQuaternion(buffer, transform.getRotation());
+        writeVector3(buffer, transform.getScale());
+    }
 
-	public static Vector3f readVector3(ByteBuf buffer) {
-		final float x = buffer.readFloat();
-		final float y = buffer.readFloat();
-		final float z = buffer.readFloat();
-		return new Vector3f(x, y, z);
-	}
+    public static Vector3f readVector3(ByteBuf buffer) {
+        final float x = buffer.readFloat();
+        final float y = buffer.readFloat();
+        final float z = buffer.readFloat();
+        return new Vector3f(x, y, z);
+    }
 
-	public static void writeVector3(ByteBuf buffer, Vector3f vec) {
-		buffer.writeFloat(vec.getX());
-		buffer.writeFloat(vec.getY());
-		buffer.writeFloat(vec.getZ());
-	}
+    public static void writeVector3(ByteBuf buffer, Vector3f vec) {
+        buffer.writeFloat(vec.getX());
+        buffer.writeFloat(vec.getY());
+        buffer.writeFloat(vec.getZ());
+    }
 
-	public static UUID readUUID(ByteBuf buffer) {
-		final long lsb = buffer.readLong();
-		final long msb = buffer.readLong();
-		return new UUID(msb, lsb);
-	}
+    public static UUID readUUID(ByteBuf buffer) {
+        final long lsb = buffer.readLong();
+        final long msb = buffer.readLong();
+        return new UUID(msb, lsb);
+    }
 
-	public static void writeUUID(ByteBuf buffer, UUID uuid) {
-		buffer.writeLong(uuid.getLeastSignificantBits());
-		buffer.writeLong(uuid.getMostSignificantBits());
-	}
+    public static void writeUUID(ByteBuf buffer, UUID uuid) {
+        buffer.writeLong(uuid.getLeastSignificantBits());
+        buffer.writeLong(uuid.getMostSignificantBits());
+    }
 
-    // TODO: pass in engine?
-	public static Point readPoint(ByteBuf buffer) {
-		UUID uuid = readUUID(buffer);
-		World world = ((Client) Flow.getEngine()).getWorld();
-		if (world == null) {
-			throw new IllegalArgumentException("Unknown world with UUID " + uuid);
-		}
+    public static Point readPoint(ByteBuf buffer) {
+        WorldReference world;
+        try {
+            world = new WorldReference(ByteBufUtils.readUTF8(buffer));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        final float x = buffer.readFloat();
+        final float y = buffer.readFloat();
+        final float z = buffer.readFloat();
+        return new Point(world, x, y, z);
+    }
 
-		final float x = buffer.readFloat();
-		final float y = buffer.readFloat();
-		final float z = buffer.readFloat();
-		return new Point(world, x, y, z);
-	}
+    public static void writePoint(ByteBuf buffer, Point vec) {
+        try {
+            ByteBufUtils.writeUTF8(buffer, vec.getWorld().getName());
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        buffer.writeFloat(vec.getBlockX());
+        buffer.writeFloat(vec.getBlockY());
+        buffer.writeFloat(vec.getBlockZ());
+    }
 
-	public static void writePoint(ByteBuf buffer, Point vec) {
-		writeUUID(buffer, vec.getWorld().getUID());
-		buffer.writeFloat(vec.getBlockX());
-		buffer.writeFloat(vec.getBlockY());
-		buffer.writeFloat(vec.getBlockZ());
-	}
+    public static Quaternionf readQuaternion(ByteBuf buffer) {
+        final float x = buffer.readFloat();
+        final float y = buffer.readFloat();
+        final float z = buffer.readFloat();
+        final float w = buffer.readFloat();
+        return new Quaternionf(x, y, z, w);
+    }
 
-	public static Quaternionf readQuaternion(ByteBuf buffer) {
-		final float x = buffer.readFloat();
-		final float y = buffer.readFloat();
-		final float z = buffer.readFloat();
-		final float w = buffer.readFloat();
-		return new Quaternionf(x, y, z, w);
-	}
-
-	public static void writeQuaternion(ByteBuf buffer, Quaternionf quaternion) {
-		buffer.writeFloat(quaternion.getX());
-		buffer.writeFloat(quaternion.getY());
-		buffer.writeFloat(quaternion.getZ());
-		buffer.writeFloat(quaternion.getW());
-	}
+    public static void writeQuaternion(ByteBuf buffer, Quaternionf quaternion) {
+        buffer.writeFloat(quaternion.getX());
+        buffer.writeFloat(quaternion.getY());
+        buffer.writeFloat(quaternion.getZ());
+        buffer.writeFloat(quaternion.getW());
+    }
 }

@@ -36,7 +36,6 @@ import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.events.Cause;
 import com.flowpowered.math.vector.Vector3f;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.LoadOption;
@@ -554,9 +553,8 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return (CHUNKS.AREA * x) + (CHUNKS.SIZE * y) + z;
     }
 
-    @Override
-    public FlowWorld getWorld() {
-        return (FlowWorld) super.getWorld();
+    public FlowWorld getFlowWorld() {
+        return (FlowWorld) super.getWorld().refresh(engine.getWorldManager());
     }
 
     public FlowChunk[] getChunks() {
@@ -573,7 +571,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         while (true) {
             FlowChunk[] live = this.live.get();
             FlowChunk[] newArray = Arrays.copyOf(live, live.length);
-            newArray[chunkIndex] = blocks == null ? null : new FlowChunk(this, getWorld(), worldChunkX, worldChunkY, worldChunkZ, 0, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, blocks));
+            newArray[chunkIndex] = blocks == null ? null : new FlowChunk(this, worldChunkX, worldChunkY, worldChunkZ, 0, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, blocks));
             if (this.live.compareAndSet(live, newArray)) {
                 break;
             }

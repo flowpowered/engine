@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.flowpowered.commons.datatable.defaulted.DefaultedKey;
 import com.flowpowered.commons.datatable.defaulted.DefaultedKeyImpl;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
@@ -179,13 +178,13 @@ public class Observer {
      * @param live A copy of the owner's live transform state
      */
     public void finalizeRun(final Transform live) {
-        if (!entity.getWorld().getEngine().getPlatform().isServer()) {
+        if (!entity.getEngine().getPlatform().isServer()) {
             return;
         }
         //Entity changed chunks as observer OR observer status changed so update
         WrappedSerizableIterator old = entity.getData().get(OBSERVER_ITERATOR);
-        Chunk snapChunk = entity.getPhysics().getPosition().getChunk(LoadOption.NO_LOAD);
-        Chunk liveChunk = live.getPosition().getChunk(LoadOption.NO_LOAD);
+        Chunk snapChunk = entity.getPhysics().getPosition().getChunk(LoadOption.NO_LOAD, entity.getEngine().getWorldManager());
+        Chunk liveChunk = live.getPosition().getChunk(LoadOption.NO_LOAD, entity.getEngine().getWorldManager());
         if (isObserver() && 
             ((snapChunk == null ? liveChunk != null : !snapChunk.equals(liveChunk))
                 || liveObserverIterator.get() != old
@@ -217,13 +216,13 @@ public class Observer {
     protected void updateObserver() {
         first = false;
         final int syncDistance = getSyncDistance();
-        World w = entity.getWorld();
+        World w = entity.getWorld().refresh(entity.getEngine().getWorldManager());
         Transform t = entity.getPhysics().getSnapshottedTransform();
         Point p = t.getPosition();
         int cx = p.getChunkX();
         int cy = p.getChunkY();
         int cz = p.getChunkZ();
-        Chunk center = p.getChunk(LOAD_GEN_NOWAIT);
+        Chunk center = p.getChunk(LOAD_GEN_NOWAIT, entity.getEngine().getWorldManager());
 
         HashSet<Chunk> observing = new HashSet<>((syncDistance * syncDistance * syncDistance * 3) / 2);
         Iterator<Vector3i> itr = liveObserverIterator.get();

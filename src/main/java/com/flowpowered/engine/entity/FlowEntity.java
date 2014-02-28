@@ -33,10 +33,10 @@ import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.EntitySnapshot;
 import com.flowpowered.api.entity.Physics;
 import com.flowpowered.api.geo.LoadOption;
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.region.FlowRegion;
 
@@ -66,11 +66,6 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
     }
 
     @Override
-    public Engine getEngine() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void remove() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -92,13 +87,13 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
 
     @Override
     public FlowChunk getChunk() {
-        Chunk chunk = physics.getPosition().getChunk(LoadOption.NO_LOAD);
+        Chunk chunk = physics.getPosition().getChunk(LoadOption.NO_LOAD, getEngine().getWorldManager());
         return (FlowChunk) chunk;
     }
 
     @Override
     public FlowRegion getRegion() {
-        Region region = physics.getPosition().getRegion(LoadOption.LOAD_GEN);
+        Region region = physics.getPosition().getRegion(LoadOption.LOAD_GEN, getEngine().getWorldManager());
         return (FlowRegion) region;
     }
 
@@ -115,13 +110,13 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
     }
 
     @Override
-    public World getWorld() {
+    public WorldReference getWorld() {
         return physics.getPosition().getWorld();
     }
 
     void finalizeRun() {
         FlowRegion regionLive = getRegion();
-        FlowRegion regionSnapshot = (FlowRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN);
+        FlowRegion regionSnapshot = (FlowRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN, getEngine().getWorldManager());
         //Move entity from Region A to Region B
         if (regionSnapshot != regionLive) {
             boolean activated = physics.isActivated();

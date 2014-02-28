@@ -25,6 +25,7 @@ package com.flowpowered.engine.network;
 
 import java.net.InetSocketAddress;
 
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.network.handler.FlowMessageHandler;
 import com.flowpowered.networking.Message;
 
@@ -34,8 +35,8 @@ import io.netty.channel.ChannelOption;
 public class FlowSingleplayerSession extends FlowSession {
     private final boolean isServer;
 
-    public FlowSingleplayerSession(boolean isServer) {
-        super(null);
+    public FlowSingleplayerSession(FlowEngine engine, boolean isServer) {
+        super(engine, null);
         this.isServer = isServer;
     }
 

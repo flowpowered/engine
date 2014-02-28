@@ -48,7 +48,7 @@ import com.flowpowered.math.vector.Vector3f;
 public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
     private final FlowServerWorldManager worldManager;
-    private final FlowNetworkServer server = new FlowNetworkServer();
+    private final FlowNetworkServer server = new FlowNetworkServer(this);
 
     // TEST CODE
     protected Entity testEntity;

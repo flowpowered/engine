@@ -43,7 +43,6 @@ import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.region.FlowRegion;
-import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
 
@@ -64,8 +63,8 @@ public class FlowChunk extends Chunk {
      */
     protected final AtomicBlockStore blockStore;
 
-    public FlowChunk(FlowRegion region, World world, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
-        super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
+    public FlowChunk(FlowRegion region, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
+        super(region.getEngine(), region.getWorld(), x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.region = region;
         this.dataMap = new ManagedHashMap();
         this.generationIndex = generationIndex;
@@ -214,7 +213,7 @@ public class FlowChunk extends Chunk {
 
     @Override
     public FlowBlock getBlock(float x, float y, float z) {
-        return new FlowBlock((FlowWorld) getWorld(), GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
+        return new FlowBlock(getWorld(), getEngine(), GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
     }
 
     @Override
@@ -287,7 +286,7 @@ public class FlowChunk extends Chunk {
             short packed = NibbleQuadHashed.key(x, y, z, 0);
             BlockComponentOwner value = blockComponents.get(packed);
             if (value == null && create) {
-                value = new BlockComponentOwner(dataMap, NibbleQuadHashed.key1(packed), NibbleQuadHashed.key2(packed), NibbleQuadHashed.key3(packed), getWorld());
+                value = new BlockComponentOwner(dataMap, NibbleQuadHashed.key1(packed), NibbleQuadHashed.key2(packed), NibbleQuadHashed.key3(packed), getWorld(), getEngine());
                 blockComponents.put(packed, value);
             }
             return value;

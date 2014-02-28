@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.flowpowered.api.geo.ServerWorld;
 import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.api.geo.cuboid.Chunk;
@@ -38,14 +39,12 @@ import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.commons.Named;
 import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
-import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
 import com.flowpowered.math.GenericMath;
 
 public class RegionGenerator implements Named {
     private static AtomicReference<ExecutorService> pool = new AtomicReference<>();
     private final FlowRegion region;
-    private final FlowServerWorld world;
     private final Lock[][][] sectionLocks;
     private final AtomicReference<GenerateState>[][][] generatedChunks;
     private final int shift;
@@ -56,9 +55,9 @@ public class RegionGenerator implements Named {
     private final int baseChunkY;
     private final int baseChunkZ;
 
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings ({"unchecked", "rawtypes"})
     public RegionGenerator(FlowRegion region, int width) {
-        initExecutorService(region.getWorld().getEngine().getLogger());
+        initExecutorService(region.getEngine().getLogger());
         if (GenericMath.roundUpPow2(width) != width || width > Region.CHUNKS.SIZE || width < 0) {
             throw new IllegalArgumentException("Width must be a power of 2 and can't be more than one region width");
         }
@@ -81,7 +80,6 @@ public class RegionGenerator implements Named {
 
         shift = GenericMath.multiplyToShift(width);
         this.region = region;
-        world = (FlowServerWorld) region.getWorld();
         baseChunkX = region.getChunkX();
         baseChunkY = region.getChunkY();
         baseChunkZ = region.getChunkZ();
@@ -143,7 +141,7 @@ public class RegionGenerator implements Named {
             int generationIndex = generationCounter.getAndIncrement();
 
             while (generationIndex == -1) {
-                world.getEngine().getLogger().info("Ran out of generation index ids, starting again");
+                region.getEngine().getLogger().info("Ran out of generation index ids, starting again");
                 generationIndex = generationCounter.getAndIncrement();
             }
 
@@ -156,7 +154,7 @@ public class RegionGenerator implements Named {
             int chunkInWorldZ = baseChunkZ + chunkZLocal;
 
             final CuboidBlockMaterialBuffer buffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift);
-            world.getGenerator().generate(buffer, world);
+            ((ServerWorld) region.getWorld().get()).getGenerator().generate(buffer, region.getWorld().get());
 
             FlowChunk[][][] chunks = new FlowChunk[width][width][width];
             for (int xx = 0; xx < width; xx++) {
@@ -167,7 +165,7 @@ public class RegionGenerator implements Named {
                         chunkInWorldY = baseChunkY + chunkYLocal + yy;
                         final CuboidBlockMaterialBuffer chunkBuffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
                         chunkBuffer.write(buffer);
-                        FlowChunk newChunk = new FlowChunk(region, world, chunkInWorldX, chunkInWorldY, chunkInWorldZ, generationIndex, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, chunkBuffer.getRawId(), chunkBuffer.getRawData()));
+                        FlowChunk newChunk = new FlowChunk(region, chunkInWorldX, chunkInWorldY, chunkInWorldZ, generationIndex, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, chunkBuffer.getRawId(), chunkBuffer.getRawData()));
                         chunks[xx][yy][zz] = newChunk;
                     }
 

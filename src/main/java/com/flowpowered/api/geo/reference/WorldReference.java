@@ -21,64 +21,70 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.geo.cuboid.reference;
+package com.flowpowered.api.geo.reference;
 
 import java.lang.ref.WeakReference;
 
-import com.flowpowered.api.geo.LoadOption;
-import com.flowpowered.api.geo.cuboid.Region;
-import com.flowpowered.api.geo.discrete.Point;
+import com.flowpowered.api.geo.World;
+import com.flowpowered.api.geo.WorldManager;
 
 /**
- * This holds a {@code WeakReference<Region>} that can be used streamline the get() with a isLoaded check. It also adds a
- * store of a {@code Point} representing the base. Because of this, a RegionReference may contain only base info.
+ * This holds a {@code WeakReference<World>} that can be used streamline the get() with a isLoaded check. It also adds a
+ * store of a {@code String} representing the name. Because of this, a WorldReference may contain only the name.
  */
-public class RegionReference {
-    private final Point base;
-    private WeakReference<Region> region;
-    public RegionReference(Region referent) {
-        this.region = new WeakReference<>(referent);
-        base = referent.getBase();
+public class WorldReference {
+    private String name;
+    private WeakReference<World> world;
+
+    public WorldReference(World referent) {
+        this.world = new WeakReference<>(referent);
+        this.name = referent.getName();
     }
 
-    public RegionReference(Point base) {
-        region = null;
-        this.base = base;
+    public WorldReference(String name) {
+        world = null;
+        this.name = name;
     }
 
-    public Region get() {
-        Region get = region == null ? null : region.get();
+    public WorldReference(WorldReference reference) {
+        this.name = reference.name;
+        World get = reference.world.get();
+        this.world = get == null ? null : new WeakReference<>(get);
+    }
+
+    public World get() {
+        World get = world == null ? null : world.get();
         if (get != null) {
             if (!get.isLoaded()) {
-                region = null;
+                world = null;
                 return null;
             }
         }
         return get;
     }
 
-    public Region refresh(LoadOption opt) {
-        Region newRegion = get();
-        if (newRegion != null) return newRegion;
-        newRegion = base.getRegion(opt);
-        this.region = newRegion == null ? null : new WeakReference<>(newRegion);
-        return newRegion;
+    public World refresh(WorldManager manager) {
+        World newWorld = get();
+        if (newWorld != null) return newWorld;
+        newWorld = manager.getWorld(name);
+        this.world = newWorld == null ? null : new WeakReference<>(newWorld);
+        return newWorld;
     }
 
     @Override
     public int hashCode() {
-        return base.hashCode();
+        return name.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof RegionReference) {
-            return base.equals(((RegionReference) obj).base);
+        if (obj instanceof WorldReference) {
+            return name.equals(((WorldReference) obj).name);
         }
         return false;
     }
 
-    public Point getBase() {
-        return base;
+    public String getName() {
+        return name;
     }
 }

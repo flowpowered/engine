@@ -29,6 +29,7 @@ import com.flowpowered.api.component.ComponentOwner;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.WorldSource;
 import com.flowpowered.api.geo.discrete.Point;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.Material;
 import com.flowpowered.api.material.block.BlockFace;
@@ -63,7 +64,7 @@ public interface Block extends WorldSource, ComponentOwner {
      * @return the World
      */
     @Override
-    World getWorld();
+    WorldReference getWorld();
 
     /**
      * Gets the x-coordinate of this block

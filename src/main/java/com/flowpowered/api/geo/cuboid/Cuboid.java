@@ -25,9 +25,9 @@ package com.flowpowered.api.geo.cuboid;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.WorldSource;
 import com.flowpowered.api.geo.discrete.Point;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.math.vector.Vector3f;
 
 /**
@@ -87,7 +87,7 @@ public class Cuboid implements WorldSource {
     }
 
     @Override
-    public World getWorld() {
+    public WorldReference getWorld() {
         return base.getWorld();
     }
 

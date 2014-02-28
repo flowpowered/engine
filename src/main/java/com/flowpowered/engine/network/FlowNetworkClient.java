@@ -24,17 +24,24 @@
 package com.flowpowered.engine.network;
 
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.networking.NetworkClient;
 import com.flowpowered.networking.session.Session;
 
 import io.netty.channel.Channel;
 
 public class FlowNetworkClient extends NetworkClient {
+    private final FlowEngine engine;
     private final AtomicReference<FlowSession> session = new AtomicReference<>();
+
+    public FlowNetworkClient(FlowEngine engine) {
+        this.engine = engine;
+    }
 
     @Override
     public Session newSession(Channel c) {
-        if (!session.compareAndSet(null, new FlowSession(c))) {
+        if (!session.compareAndSet(null, new FlowSession(engine, c))) {
             throw new IllegalStateException("Two sessions created on the client!");
         }
         return session.get();

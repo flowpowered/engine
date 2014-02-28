@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.flowpowered.commons.concurrent.TripleIntObjectMap;
 import com.flowpowered.commons.concurrent.TripleIntObjectReferenceArrayMap;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.World;

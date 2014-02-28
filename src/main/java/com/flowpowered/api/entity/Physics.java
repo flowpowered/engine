@@ -23,11 +23,11 @@
  */
 package com.flowpowered.api.entity;
 
-import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.discrete.TransformProvider;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.api.util.thread.annotation.SnapshotRead;
@@ -189,7 +189,7 @@ public abstract class Physics implements TransformProvider {
      *
      * @return The world this entity is in.
      */
-    public World getWorld() {
+    public WorldReference getWorld() {
         return entity.getWorld();
     }
 
