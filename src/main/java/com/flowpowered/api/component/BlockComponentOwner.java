@@ -23,21 +23,22 @@
  */
 package com.flowpowered.api.component;
 
+import com.flowpowered.api.Engine;
 import com.flowpowered.commons.datatable.ManagedHashMap;
 
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.cuboid.Chunk;
+import com.flowpowered.api.geo.reference.WorldReference;
 
 public class BlockComponentOwner extends BaseComponentOwner {
     /**
      * Stored as world, not chunk, coords
      */
     private final int x, y, z;
-    private final World world;
+    private final WorldReference world;
 
-    public BlockComponentOwner(ManagedHashMap chunkData, int x, int y, int z, World world) {
-        super(world.getEngine(), new ManagedHashMap(chunkData, "" + (x & Chunk.BLOCKS.MASK) + "," + (y & Chunk.BLOCKS.MASK) + "," + (z & Chunk.BLOCKS.MASK)));
+    public BlockComponentOwner(ManagedHashMap chunkData, int x, int y, int z, WorldReference world, Engine engine) {
+        super(engine, new ManagedHashMap(chunkData, "" + (x & Chunk.BLOCKS.MASK) + "," + (y & Chunk.BLOCKS.MASK) + "," + (z & Chunk.BLOCKS.MASK)));
         this.x = x;
         this.y = y;
         this.z = z;
@@ -45,7 +46,7 @@ public class BlockComponentOwner extends BaseComponentOwner {
     }
 
     public Block getBlock() {
-        return world.getBlock(x, y, z);
+        return world.refresh(getEngine().getWorldManager()).getBlock(x, y, z);
     }
 
     public int getX() {
@@ -60,7 +61,7 @@ public class BlockComponentOwner extends BaseComponentOwner {
         return z;
     }
 
-    public World getWorld() {
+    public WorldReference getWorld() {
         return world;
     }
 }

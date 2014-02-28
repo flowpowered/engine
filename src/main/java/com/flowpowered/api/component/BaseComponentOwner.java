@@ -55,6 +55,7 @@ public class BaseComponentOwner implements ComponentOwner {
     /**
      * For use de-serializing a list of components all at once, without having to worry about dependencies
      */
+    @SuppressWarnings("unchecked")
     protected void add(Class<? extends Component>... components) {
         HashSet<Component> added = new HashSet<>();
         synchronized (components) {
@@ -250,5 +251,9 @@ public class BaseComponentOwner implements ComponentOwner {
         }
 
         return null;
+    }
+
+    public Engine getEngine() {
+        return engine;
     }
 }

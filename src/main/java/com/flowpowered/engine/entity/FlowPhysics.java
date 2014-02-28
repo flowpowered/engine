@@ -30,6 +30,7 @@ import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.math.imaginary.Quaternionf;
@@ -209,7 +210,7 @@ public class FlowPhysics extends Physics {
     }
 
     @Override
-    public World getWorld() {
+    public WorldReference getWorld() {
         return getPosition().getWorld();
     }
 

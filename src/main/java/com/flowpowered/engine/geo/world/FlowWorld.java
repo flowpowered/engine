@@ -116,7 +116,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Entity spawnEntity(Vector3f point, LoadOption option, EntityPrefab prefab) {
         return spawnEntity(point, option, prefab.getComponents().toArray(new Class[0]));
     }
@@ -469,5 +469,20 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     public void setChunk(int x, int y, int z, int[] blocks) {
         FlowRegion region = getRegionFromChunk(x, y, z, LoadOption.LOAD_GEN);
         region.setChunk(x, y, z, blocks);
+    }
+
+    @Override
+    public void unload(boolean save) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void save() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return true;
     }
 }

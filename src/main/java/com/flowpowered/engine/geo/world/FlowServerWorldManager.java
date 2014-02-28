@@ -82,7 +82,7 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
 
     @Override
     public void save(boolean worlds, boolean players) {
-        // TODO: Auto-generated method stub
+        throw new UnsupportedOperationException();
     }
 
     @Override

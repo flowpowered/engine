@@ -23,13 +23,10 @@
  */
 package com.flowpowered.engine.scheduler;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,13 +36,10 @@ import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.api.Flow;
-import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.Server;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.scheduler.TickStage;
-import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.util.thread.AsyncManager;
@@ -197,8 +191,8 @@ public class MainThread extends TickingElement {
 
         doFinalizeTick();
 
-        if (Flow.getEngine().getPlatform().isServer()) {
-            for (Player p : ((Server) Flow.getEngine()).getOnlinePlayers()) {
+        if (scheduler.getEngine().getPlatform().isServer()) {
+            for (Player p : ((Server) scheduler.getEngine()).getOnlinePlayers()) {
                 Transform transform = p.getTransformProvider().getTransform();
                 ((FlowPlayer) p).getNetwork().finalizeRun(transform);
                 ((FlowPlayer) p).getNetwork().preSnapshotRun(transform);
@@ -302,7 +296,7 @@ public class MainThread extends TickingElement {
     /**
      * Adds an async manager to the scheduler
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void addAsyncManager(AsyncManager manager) {
         for (int stage = 0; stage < managerRunnableFactories.length; stage++) {
             ManagerRunnableFactory taskFactory = managerRunnableFactories[stage];

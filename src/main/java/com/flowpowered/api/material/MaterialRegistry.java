@@ -28,8 +28,8 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.flowpowered.api.Engine;
 import com.flowpowered.api.Server;
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.material.block.BlockFullState;
 import com.flowpowered.api.util.SyncedStringMap;
 import com.flowpowered.commons.store.BinaryFileStore;
@@ -42,7 +42,7 @@ import com.flowpowered.math.GenericMath;
 public abstract class MaterialRegistry {
     private final static ConcurrentHashMap<String, Material> nameLookup = new ConcurrentHashMap<>(1000);
     private final static int MAX_SIZE = 1 << 16;
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings ({"unchecked", "rawtypes"})
     private final static AtomicReference<Material[]>[] materialLookup = new AtomicReference[MAX_SIZE];
     private static boolean setup = false;
     private static SyncedStringMap materialRegistry;
@@ -62,12 +62,12 @@ public abstract class MaterialRegistry {
      *
      * @return StringToUniqueIntegerMap of registered materials
      */
-    public static SyncedStringMap setupRegistry() {
+    public static SyncedStringMap setupRegistry(Engine engine) {
         if (setup) {
             throw new IllegalStateException("Can not setup material registry twice!");
         }
-        if (Flow.getEngine().getPlatform().isServer()) {
-            setupServer();
+        if (engine.getPlatform().isServer()) {
+            setupServer((Server) engine);
         } else {
             setupClient();
         }
@@ -76,8 +76,8 @@ public abstract class MaterialRegistry {
         return materialRegistry;
     }
 
-    private static void setupServer() {
-        File serverItemMap = new File(((Server) Flow.getEngine()).getWorldManager().getWorldFolder(), "materials.dat");
+    private static void setupServer(Server server) {
+        File serverItemMap = new File(server.getWorldManager().getWorldFolder(), "materials.dat");
         BinaryFileStore store = new BinaryFileStore(serverItemMap);
         materialRegistry = SyncedStringMap.create(null, store, 1, Short.MAX_VALUE, Material.class.getName());
         if (serverItemMap.exists()) {

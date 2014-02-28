@@ -33,8 +33,6 @@ import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.flowpowered.api.Flow;
-
 public class AsyncExecutorUtils {
     private static final String LINE = "------------------------------";
     private static final Logger defaultLogger = LogManager.getLogger("Flow." + AsyncExecutorUtils.class.getSimpleName());

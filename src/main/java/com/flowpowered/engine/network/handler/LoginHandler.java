@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.network.handler;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.LoginMessage;
@@ -33,7 +32,7 @@ public class LoginHandler extends FlowMessageHandler<LoginMessage> {
     @Override
     public void handleServer(FlowSession session, LoginMessage message) {
         System.out.println("Login on Server from " + session.getAddress());
-        ((FlowServer) Flow.getEngine()).addPlayer(message.getPlayerName(), session);
+        ((FlowServer) session.getEngine()).addPlayer(message.getPlayerName(), session);
     }
 
     @Override

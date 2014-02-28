@@ -84,6 +84,7 @@ public final class SyncedStringMap extends StringToUniqueIntegerMap implements E
         return super.register(key, id);
     }
 
+    @SuppressWarnings("fallthrough")
     public void handleUpdate(SyncedMapEvent message) {
         switch (message.getAction()) {
             case SET:

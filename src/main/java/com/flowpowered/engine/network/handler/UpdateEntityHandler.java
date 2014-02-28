@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.network.handler;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.UpdateEntityMessage;
@@ -34,7 +33,7 @@ public class UpdateEntityHandler extends FlowMessageHandler<UpdateEntityMessage>
     public void handleClient(FlowSession session, UpdateEntityMessage message) {
         // Player-only atm
         // TODO: other entities
-        ((FlowClient) Flow.getEngine()).setTransform(message.getTransform());
+        ((FlowClient) session.getEngine()).setTransform(message.getTransform());
     }
 
 }

@@ -26,23 +26,22 @@ package com.flowpowered.engine.geo;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.region.FlowRegion;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 
+import com.flowpowered.api.Engine;
 import com.flowpowered.commons.StringUtil;
 import com.flowpowered.commons.datatable.ManagedMap;
 import com.flowpowered.events.Cause;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.flowpowered.api.Platform;
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
-import com.flowpowered.api.geo.cuboid.reference.ChunkReference;
+import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.discrete.Point;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.Material;
 import com.flowpowered.api.material.block.BlockFace;
@@ -50,16 +49,24 @@ import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 
 public class FlowBlock implements Block {
+    private final Engine engine;
     private final int x, y, z;
-    private final WeakReference<? extends FlowWorld> world;
     private final ChunkReference chunk;
 
     public FlowBlock(FlowWorld world, int x, int y, int z) {
+        this.engine = world.getEngine();
         this.x = x;
         this.y = y;
         this.z = z;
-        this.world = new WeakReference<>(world);
-        this.chunk = new ChunkReference(new Point(getWorld(), this.x, this.y, this.z));
+        this.chunk = new ChunkReference(new Point(world, this.x, this.y, this.z));
+    }
+
+    public FlowBlock(WorldReference world, Engine engine, int x, int y, int z) {
+        this.engine = engine;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.chunk = new ChunkReference(new Point(world, this.x, this.y, this.z));
     }
 
     @Override
@@ -69,16 +76,12 @@ public class FlowBlock implements Block {
 
     @Override
     public FlowChunk getChunk() {
-        return (FlowChunk) this.chunk.refresh(LoadOption.LOAD_GEN);
+        return (FlowChunk) this.chunk.refresh(LoadOption.LOAD_GEN, engine.getWorldManager());
     }
 
     @Override
-    public FlowWorld getWorld() {
-        FlowWorld world = this.world.get();
-        if (world == null) {
-            throw new IllegalStateException("The world has been unloaded!");
-        }
-        return world;
+    public WorldReference getWorld() {
+        return chunk.getBase().getWorld();
     }
 
     @Override
@@ -121,7 +124,7 @@ public class FlowBlock implements Block {
 
     @Override
     public Block translate(int dx, int dy, int dz) {
-        return new FlowBlock(getWorld(), this.x + dx, this.y + dy, this.z + dz);
+        return new FlowBlock(getWorld(), engine, this.x + dx, this.y + dy, this.z + dz);
     }
 
     @Override
@@ -143,14 +146,14 @@ public class FlowBlock implements Block {
 
     @Override
     public String toString() {
-        return StringUtil.toNamedString(this, this.world.get(), this.x, this.y, this.z);
+        return StringUtil.toNamedString(this, this.chunk.getBase().getWorld().get(), this.x, this.y, this.z);
     }
 
     @Override
     public boolean setMaterial(BlockMaterial material, int data, Cause<?> cause) {
         FlowChunk chunk = this.getChunk();
         // TODO once stable, remove this
-        if (!chunk.getWorld().getEngine().getPlatform().isServer()) {
+        if (!engine.getPlatform().isServer()) {
             throw new UnsupportedOperationException("Temporary lockdown of setMaterial. Server only!");
         }
         return chunk.setBlockMaterial(x, y, z, material, (short) data, cause);
@@ -219,7 +222,7 @@ public class FlowBlock implements Block {
 
     @Override
     public FlowRegion getRegion() {
-        return (FlowRegion) this.getChunk().getRegion();
+        return this.getChunk().getRegion();
     }
 
     @Override

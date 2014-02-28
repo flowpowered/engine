@@ -41,7 +41,7 @@ import org.apache.logging.log4j.LogManager;
 public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
     private final FlowWorldManager<FlowWorld> worldManager;
-    private final FlowNetworkClient client = new FlowNetworkClient();
+    private final FlowNetworkClient client = new FlowNetworkClient(this);
 
     private volatile Transform transform = Transform.INVALID;
 

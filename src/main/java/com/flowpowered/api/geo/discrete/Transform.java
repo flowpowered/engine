@@ -84,7 +84,7 @@ public final class Transform implements Serializable {
     }
 
     public Transform translated(Vector3f offset) {
-        return new Transform(new Point(position.getWorld(),position.getVector().add(offset)), rotation, scale);
+        return new Transform(new Point(position.getWorld(), position.getVector().add(offset)), rotation, scale);
     }
 
     public Transform rotated(Quaternionf offset) {

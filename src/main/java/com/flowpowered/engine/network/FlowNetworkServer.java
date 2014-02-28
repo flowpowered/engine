@@ -23,16 +23,22 @@
  */
 package com.flowpowered.engine.network;
 
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.networking.NetworkServer;
 import com.flowpowered.networking.session.Session;
 
 import io.netty.channel.Channel;
 
 public class FlowNetworkServer extends NetworkServer {
+    private final FlowEngine engine;
+
+    public FlowNetworkServer(FlowEngine engine) {
+        this.engine = engine;
+    }
 
     @Override
     public Session newSession(Channel c) {
-        return new FlowSession(c);
+        return new FlowSession(engine, c);
     }
 
     @Override

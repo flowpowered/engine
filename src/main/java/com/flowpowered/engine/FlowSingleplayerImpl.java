@@ -41,7 +41,7 @@ import com.flowpowered.engine.render.FlowRenderer;
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
-    private final FlowSingleplayerSession session = new FlowSingleplayerSession(false);
+    private final FlowSingleplayerSession session = new FlowSingleplayerSession(this, false);
 
     public FlowSingleplayerImpl(FlowApplication args) {
         super(args);
@@ -60,7 +60,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
         activeWorld.set(loadedWorld);
 
-        FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(true));
+        FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(this, true));
         this.player.set(player);
         session.setPlayer(player);
         

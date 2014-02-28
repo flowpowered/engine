@@ -27,31 +27,56 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
+import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.math.vector.Vector3f;
 
 public class Point implements Serializable {
-    public static final Point INVALID = new Point(null, Vector3f.ZERO);
+    public static final Point INVALID = new Point();
     private static final Field worldField = getWorldField();
+    private static final long serialVersionUID = 1L;
 
-    private final transient World world;
+    private final transient WorldReference world;
     private final Vector3f vector;
 
+    // INVALID
+    private Point() {
+       this.world = null;
+       this.vector = Vector3f.ZERO;
+    }
+
     public Point(World world, float x, float y, float z) {
-        this.world = world;
-        this.vector = new Vector3f(x, y, z);
+        this(world, new Vector3f(x, y, z));
     }
 
     public Point(World world, Vector3f vector) {
-        this.world = world;
+        this.world = new WorldReference(world);
         this.vector = vector;
     }
 
-    public World getWorld() {
+    public Point(String world, float x, float y, float z) {
+        this(world, new Vector3f(x, y, z));
+    }
+
+    public Point(String world, Vector3f vector) {
+        this.world = new WorldReference(world);
+        this.vector = vector;
+    }
+
+    public Point(WorldReference reference, float x, float y, float z) {
+        this(reference, new Vector3f(x, y, z));
+    }
+
+    public Point(WorldReference reference, Vector3f vector) {
+        this.world = reference;
+        this.vector = vector;
+    }
+
+    public WorldReference getWorld() {
         return world;
     }
 
@@ -83,12 +108,12 @@ public class Point implements Serializable {
         return getBlockZ() >> Chunk.BLOCKS.BITS;
     }
 
-    public Chunk getChunk(LoadOption loadopt) {
-        return world.getChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
+    public Chunk getChunk(LoadOption loadopt, WorldManager manager) {
+        return world.refresh(manager).getChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
     }
 
-    public Region getRegion(LoadOption loadopt) {
-        return world.getRegionFromChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
+    public Region getRegion(LoadOption loadopt, WorldManager manager) {
+        return world.refresh(manager).getRegionFromChunk(getChunkX(), getChunkY(), getChunkZ(), loadopt);
     }
 
     public String toBlockString() {
@@ -107,14 +132,12 @@ public class Point implements Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         String world = in.readUTF();
-        World w = Flow.getEngine().getWorldManager().getWorld(world, true);
+        WorldReference w = new WorldReference(world);
         if (worldField != null) {
             try {
                 worldField.set(this, w);
             } catch (IllegalArgumentException | IllegalAccessException e) {
-                if (Flow.getEngine().debugMode()) {
-                    e.printStackTrace();
-                }
+                e.printStackTrace();
             }
         }
     }

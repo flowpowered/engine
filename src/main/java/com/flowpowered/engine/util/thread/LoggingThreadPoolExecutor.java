@@ -24,22 +24,17 @@
 package com.flowpowered.engine.util.thread;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.engine.scheduler.MarkedNamedThreadFactory;
 
 public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {

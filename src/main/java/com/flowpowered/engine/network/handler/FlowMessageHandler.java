@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.network.handler;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.networking.Message;
 import com.flowpowered.networking.MessageHandler;
@@ -32,7 +31,7 @@ public class FlowMessageHandler<T extends Message> implements MessageHandler<Flo
 
     @Override
     public void handle(FlowSession session, T message) {
-        if (Flow.getEngine().getPlatform().isServer()) {
+        if (session.getEngine().getPlatform().isServer()) {
             handle0(session, message, true);
         } else {
             handle0(session, message, false);

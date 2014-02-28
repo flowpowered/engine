@@ -38,13 +38,14 @@ import com.flowpowered.api.entity.EntityPrefab;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.scheduler.TaskManager;
+import com.flowpowered.api.util.UnloadSavable;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.math.vector.Vector3f;
 
 /**
  * Represents a World.
  */
-public interface World extends AreaRegionAccess, Named, ComponentOwner {
+public interface World extends AreaRegionAccess, Named, ComponentOwner, UnloadSavable {
     /**
      * Gets the name of the world
      *
@@ -95,6 +96,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
      * @param classes The classes to attach
      * @return The spawned entity at the point with the components attached
      */
+    @SuppressWarnings("unchecked")
     Entity spawnEntity(Vector3f point, LoadOption option, Class<? extends Component>... classes);
 
     /**
@@ -105,6 +107,7 @@ public interface World extends AreaRegionAccess, Named, ComponentOwner {
      * @param classes The classes to attach
      * @return The spawned entities at the points with the components attached
      */
+    @SuppressWarnings("unchecked")
     Entity[] spawnEntities(Vector3f[] points, LoadOption option, Class<? extends Component>... classes);
 
     /**

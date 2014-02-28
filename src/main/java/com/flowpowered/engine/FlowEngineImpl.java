@@ -81,7 +81,7 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
         String loggerName = logger.getName();
         System.setOut(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDOUT"), Level.INFO), true));
         System.setErr(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDERR"), Level.WARN), true));
-        itemMap = MaterialRegistry.setupRegistry();
+        itemMap = MaterialRegistry.setupRegistry(this);
         scheduler = new FlowScheduler(this);
     }
 

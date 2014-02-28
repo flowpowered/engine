@@ -23,13 +23,10 @@
  */
 package com.flowpowered.engine;
 
-import java.io.File;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.api.Flow;
 import com.flowpowered.engine.util.argument.PlatformConverter;
 
 /**
@@ -70,7 +67,6 @@ public class FlowApplication {
                     throw new IllegalArgumentException("Unknown platform: " + main.platform);
             }
 
-            Flow.setEngine(engine);
             engine.init();
             engine.start();
         } catch (Throwable t) {

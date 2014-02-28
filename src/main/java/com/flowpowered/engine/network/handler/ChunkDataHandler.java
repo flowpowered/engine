@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.network.handler;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
@@ -33,7 +32,7 @@ public class ChunkDataHandler extends FlowMessageHandler<ChunkDataMessage> {
 
     @Override
     public void handleClient(FlowSession session, ChunkDataMessage message) {
-        FlowClient client = (FlowClient) Flow.getEngine();
+        FlowClient client = (FlowClient) session.getEngine();
         // TODO: allow adding chunks to other worlds
         FlowWorld world = client.getWorld();
         if (message.isUnload()) {

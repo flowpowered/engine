@@ -112,7 +112,7 @@ public class FlowChunkSnapshot extends ChunkSnapshot {
      * @return Whether or not the snapshot state has changed
      */
     public boolean update(FlowChunk current) {
-        if (!current.getPosition().toInt().equals(position) || !current.getWorld().getUID().equals(world.getID())) {
+        if (!current.getPosition().toInt().equals(position) || !current.getWorld().getName().equals(world.getName())) {
             throw new IllegalArgumentException("Cannot accept a chunk from another position or world");
         }
         final Lock lock = this.lock.writeLock();

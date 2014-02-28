@@ -39,7 +39,6 @@ import com.flowpowered.math.vector.Vector3f;
  * buffer[0] = data(0, 0, 0 ) buffer[1] = data(0, 1, 0 ) ..... buffer[SY-1] = data(0, SY-1, 0 ) buffer[SY] = data(0, 0 1 ) .... buffer[SZ*SY - 1] = data(0, SY-1, SZ-1) buffer[SZ*SY] = data(1, 0, 0 )
  * .... buffer[SZ*SY*SX -1] = data(SX-1, SY-1, SZ-1)
  *
- * TODO is this the best package to put this?
  */
 public abstract class CuboidBuffer {
     protected final Vector3f size;

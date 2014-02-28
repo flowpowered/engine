@@ -31,12 +31,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.flowpowered.api.Flow;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Chunk;
-import com.flowpowered.api.geo.cuboid.reference.ChunkReference;
+import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.reposition.NullRepositionManager;
@@ -160,7 +159,7 @@ public class PlayerNetwork implements Listener {
         chunkSendQueueRegular.clear();
         futureChunksToSend.clear();
 
-        final World world = currentPosition.getWorld();
+        final World world = currentPosition.getWorld().refresh(session.getEngine().getWorldManager());
         final int bx = currentPosition.getBlockX();
         final int by = currentPosition.getBlockX();
         final int bz = currentPosition.getBlockX();
@@ -187,8 +186,8 @@ public class PlayerNetwork implements Listener {
             // If it's in the target area, we first check if we can just load it. If so, do that
             // If not, queue it for LOAD_GEN, but don't wait
             // If it's not in the target area, don't even wait for load
-            if (!inTargetArea || ref.refresh(LoadOption.LOAD_ONLY) == null) {
-                ref.refresh(LoadOption.LOAD_GEN_NOWAIT);
+            if (!inTargetArea || ref.refresh(LoadOption.LOAD_ONLY, session.getEngine().getWorldManager()) == null) {
+                ref.refresh(LoadOption.LOAD_GEN_NOWAIT, session.getEngine().getWorldManager());
             }
 
             futureChunksToSend.add(ref);
@@ -200,7 +199,7 @@ public class PlayerNetwork implements Listener {
         Point playerChunkBase = Chunk.pointToBase(currentPosition);
         for (Iterator<ChunkReference> it = futureChunksToSend.iterator(); it.hasNext();) {
             ChunkReference ref = it.next();
-            if (ref.refresh(LoadOption.NO_LOAD) == null) {
+            if (ref.refresh(LoadOption.NO_LOAD, session.getEngine().getWorldManager()) == null) {
                 continue;
             }
             it.remove();
@@ -224,7 +223,7 @@ public class PlayerNetwork implements Listener {
      *
      */
     public void finalizeRun(Transform transform) {
-        if (Flow.getEngine().getPlatform().isClient()) {
+        if (session.getEngine().getPlatform().isClient()) {
             return;
         }
         tickCounter++;
@@ -252,7 +251,7 @@ public class PlayerNetwork implements Listener {
      *
      */
     public void preSnapshotRun(Transform transform) {
-        if (Flow.getEngine().getPlatform().isClient()) {
+        if (session.getEngine().getPlatform().isClient()) {
             return;
         }
         Point ep = transform.getPosition();
@@ -317,7 +316,7 @@ public class PlayerNetwork implements Listener {
     private void sendChunks(Iterator<ChunkReference> i, boolean priority) {
         // We always send all priority chunks
         // Send regular chunks while we aren't overloaded and we haven't exceeded our send amount
-        while (i.hasNext() && (priority || (chunksSentThisTick < CHUNKS_PER_TICK && !Flow.getEngine().getScheduler().isServerOverloaded()))) {
+        while (i.hasNext() && (priority || (chunksSentThisTick < CHUNKS_PER_TICK && !session.getEngine().getScheduler().isServerOverloaded()))) {
             Chunk c = i.next().get();
             if (c == null || attemptSendChunk(c)) {
                 i.remove();

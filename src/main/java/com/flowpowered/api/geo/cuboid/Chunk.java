@@ -26,6 +26,7 @@ package com.flowpowered.api.geo.cuboid;
 import java.util.List;
 import java.util.Set;
 
+import com.flowpowered.api.Engine;
 import com.flowpowered.commons.BitSize;
 
 import com.flowpowered.api.entity.Entity;
@@ -33,10 +34,11 @@ import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.AreaBlockAccess;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
+import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.geo.discrete.Point;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.util.UnloadSavable;
-import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 
 /**
@@ -57,12 +59,14 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
     private final int blockX;
     private final int blockY;
     private final int blockZ;
+    private final Engine engine;
 
-    public Chunk(World world, int x, int y, int z) {
+    public Chunk(Engine engine, WorldReference world, int x, int y, int z) {
         super(new Point(world, x, y, z), BLOCKS.SIZE);
-        blockX = getChunkX() << BLOCKS.BITS;
-        blockY = getChunkY() << BLOCKS.BITS;
-        blockZ = getChunkZ() << BLOCKS.BITS;
+        this.blockX = getChunkX() << BLOCKS.BITS;
+        this.blockY = getChunkY() << BLOCKS.BITS;
+        this.blockZ = getChunkZ() << BLOCKS.BITS;
+        this.engine = engine;
     }
 
     /**
@@ -234,7 +238,7 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
             // Get the chunk from the current region
             return getRegion().getChunk(otherChunkX - otherRegionX, otherChunkY - otherRegionY, otherChunkZ - otherRegionZ, opt);
         }
-        return this.getWorld().getChunk(otherChunkX, otherChunkY, otherChunkZ, opt);
+        return this.getWorld().refresh(engine.getWorldManager()).getChunk(otherChunkX, otherChunkY, otherChunkZ, opt);
     }
 
     /**
@@ -245,7 +249,7 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
      * @return The Chunk, or null if not loaded and load is False
      */
     public Chunk getRelative(Vector3i offset, LoadOption opt) {
-        return this.getWorld().getChunk(this.getChunkX() + offset.getX(), this.getChunkY() + offset.getY(), this.getChunkZ() + offset.getZ(), opt);
+        return this.getWorld().refresh(engine.getWorldManager()).getChunk(this.getChunkX() + offset.getX(), this.getChunkY() + offset.getY(), this.getChunkZ() + offset.getZ(), opt);
     }
 
     /**
@@ -273,4 +277,8 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
 	public static Point pointToBase(Point p) {
 		return new Point(p.getWorld(), p.getBlockX() & POINT_BASE_MASK, p.getBlockY() & POINT_BASE_MASK, p.getBlockZ() & POINT_BASE_MASK);
 	}
+
+    public Engine getEngine() {
+        return engine;
+    }
 }

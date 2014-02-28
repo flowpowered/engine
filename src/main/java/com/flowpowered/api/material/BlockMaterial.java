@@ -34,7 +34,6 @@ import com.flowpowered.api.component.block.BlockComponent;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.event.cause.MaterialCause;
 import com.flowpowered.api.geo.cuboid.Block;
-import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.material.basic.Air;
 import com.flowpowered.api.material.basic.Solid;
 import com.flowpowered.api.material.block.BlockFace;
@@ -421,18 +420,6 @@ public class BlockMaterial extends Material implements Placeable {
      */
     public Cause<BlockMaterial> toCause(Block block) {
         return new MaterialCause<>(this, block);
-    }
-
-    /**
-     * Helper method to create a MaterialCause.
-     *
-     * Same as using new MaterialCause(material, block)
-     *
-     * @param p location of the event
-     * @return cause
-     */
-    public Cause<BlockMaterial> toCause(Point p) {
-        return new MaterialCause<>(this, p.getWorld().getBlock(p.getVector()));
     }
 
     public Set<Class<? extends BlockComponent>> getComponents() {

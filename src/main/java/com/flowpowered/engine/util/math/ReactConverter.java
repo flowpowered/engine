@@ -26,6 +26,7 @@ package com.flowpowered.engine.util.math;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 
@@ -60,7 +61,7 @@ public class ReactConverter {
         return new Quaternionf(reactQuaternion.getX(), reactQuaternion.getY(), reactQuaternion.getZ(), reactQuaternion.getW());
     }
 
-    public static Transform toFlowTransform(final org.spout.physics.math.Transform reactTransform, final World world, final Vector3f scale) {
+    public static Transform toFlowTransform(final org.spout.physics.math.Transform reactTransform, final WorldReference world, final Vector3f scale) {
         return new Transform(new Point(world, toFlowVector3(reactTransform.getPosition())), new Quaternionf(toFlowQuaternion(reactTransform.getOrientation())), scale);
     }
 }

@@ -23,6 +23,8 @@
  */
 package com.flowpowered.api.geo;
 
+import com.flowpowered.api.geo.reference.WorldReference;
+
 /**
  * Represents an object that can be contained within a {@link World}
  */
@@ -32,5 +34,5 @@ public interface WorldSource {
      *
      * @return the World
      */
-    public World getWorld();
+    public WorldReference getWorld();
 }

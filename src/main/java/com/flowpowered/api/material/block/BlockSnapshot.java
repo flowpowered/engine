@@ -24,7 +24,9 @@
 package com.flowpowered.api.material.block;
 
 import com.flowpowered.api.geo.World;
+import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.geo.cuboid.Block;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.Material;
 
@@ -37,7 +39,7 @@ public class BlockSnapshot {
     private final BlockMaterial material;
     private final short data;
     private final int x, y, z;
-    private final World world;
+    private final WorldReference world;
 
     public BlockSnapshot(Block block) {
         this(block, block.getMaterial(), block.getBlockData());
@@ -47,7 +49,7 @@ public class BlockSnapshot {
         this(block.getWorld(), block.getX(), block.getY(), block.getZ(), material, data);
     }
 
-    public BlockSnapshot(World world, int x, int y, int z, BlockMaterial material, short data) {
+    public BlockSnapshot(WorldReference world, int x, int y, int z, BlockMaterial material, short data) {
         this.material = material;
         this.data = data;
         this.x = x;
@@ -88,7 +90,7 @@ public class BlockSnapshot {
      *
      * @return the World
      */
-    public World getWorld() {
+    public WorldReference getWorld() {
         return this.world;
     }
 
@@ -97,8 +99,8 @@ public class BlockSnapshot {
      *
      * @return the block
      */
-    public Block getBlock() {
-        return this.world.getBlock(this.x, this.y, this.z);
+    public Block getBlock(WorldManager manager) {
+        return this.world.refresh(manager).getBlock(this.x, this.y, this.z);
     }
 
     /**
