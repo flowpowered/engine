@@ -24,15 +24,16 @@
 package com.flowpowered.engine.scheduler;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Queue;
+import java.util.PriorityQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -50,9 +51,10 @@ public class FlowTaskManager implements TaskManager {
     private final ExecutorService asyncTaskExecutor = Executors.newCachedThreadPool(new MarkedNamedThreadFactory("Async task exectuor - ", false));
 
     /**
-     * A list of active tasks.
+     * Tasks
      */
-    private final TaskPriorityQueue taskQueue;
+    private final PriorityQueue<FlowTask> prioritizedTaskQueue = new PriorityQueue<>(10, new TaskComparator());
+    private final LinkedTransferQueue<FlowTask> newTasks = new LinkedTransferQueue<>();
     private final ConcurrentHashMap<Integer, FlowTask> activeTasks = new ConcurrentHashMap<>();
 
     /**
@@ -71,7 +73,6 @@ public class FlowTaskManager implements TaskManager {
     public FlowTaskManager(FlowScheduler scheduler, AsyncManager taskManager, long age) {
         this.scheduler = scheduler;
         primaryThread = Thread.currentThread();
-        this.taskQueue = new TaskPriorityQueue(taskManager, FlowScheduler.PULSE_EVERY / 4);
         this.upTime = new AtomicLong(age);
         
     }
@@ -88,9 +89,12 @@ public class FlowTaskManager implements TaskManager {
      * Schedules the specified task.
      *
      * @param task The task.
+     * @throws IllegalArgumentException if the task is already scheduled
      */
-    private FlowTask schedule(FlowTask task) {
-        taskQueue.add(task);
+    FlowTask schedule(FlowTask task) throws IllegalArgumentException {
+        if (!newTasks.add(task)) {
+            throw new IllegalArgumentException("Task is already scheduled!");
+        }
         activeTasks.put(task.getTaskId(), task);
         return task;
     }
@@ -111,31 +115,19 @@ public class FlowTaskManager implements TaskManager {
         primaryThread = Thread.currentThread();
         long upTime = this.upTime.addAndGet(delta);
 
-        Queue<FlowTask> q;
+        newTasks.drainTo(prioritizedTaskQueue);
 
-        while ((q = taskQueue.poll(upTime)) != null) {
-            boolean checkRequired = !taskQueue.isFullyBelowThreshold(q, upTime);
-            Iterator<FlowTask> itr = q.iterator();
-            while (itr.hasNext()) {
-                FlowTask task = itr.next();
-                if (checkRequired && task.getPriority() > upTime) {
-                    continue;
-                }
-                switch (task.shouldExecute()) {
-                    case RUN:
-                        if (task.isSync()) {
-                            task.run();
-                        } else {
-                            asyncTaskExecutor.submit(task);
-                        }
-                        break;
-                    case STOP:
-                        itr.remove();
-                        activeTasks.remove(task.getTaskId());
-                }
-            }
-            if (taskQueue.complete(q, upTime)) {
+        FlowTask task;
+        while ((task = prioritizedTaskQueue.peek()) != null) {
+            if (task.getNextCallTime() > upTime) {
                 break;
+            }
+            prioritizedTaskQueue.remove();
+            activeTasks.remove(task.getTaskId());
+            if (task.isSync()) {
+                task.run();
+            } else {
+                asyncTaskExecutor.submit(task);
             }
         }
     }
@@ -201,7 +193,9 @@ public class FlowTaskManager implements TaskManager {
 
     @Override
     public void cancelTask(int taskId) {
-        taskQueue.remove(activeTasks.remove(taskId));
+        FlowTask task = activeTasks.remove(taskId);
+        newTasks.remove(task);
+        prioritizedTaskQueue.remove(task);
     }
 
     @Override
@@ -248,5 +242,12 @@ public class FlowTaskManager implements TaskManager {
             return false;
         }
         return true;
+    }
+
+    private static class TaskComparator implements Comparator<FlowTask> {
+        @Override
+        public int compare(FlowTask o1, FlowTask o2) {
+            return o1.getNextCallTime() < o2.getNextCallTime() ? 1 : (o2.getNextCallTime() < o1.getNextCallTime() ? -1 : 0);
+        }
     }
 }
