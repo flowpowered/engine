@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.render;
 
-import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.image.BufferedImage;
@@ -35,17 +34,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.engine.render.graph.RenderGraph;
-import com.flowpowered.math.imaginary.Quaternionf;
-import com.flowpowered.math.matrix.Matrix3f;
-import com.flowpowered.math.matrix.Matrix4f;
-import com.flowpowered.math.vector.Vector2f;
-import com.flowpowered.math.vector.Vector3f;
-
-import org.lwjgl.opengl.GLContext;
+import javax.imageio.ImageIO;
 
 import com.flowpowered.api.render.Renderer;
+import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.engine.render.graph.RenderGraph;
+import com.flowpowered.engine.render.graph.node.BlurNode;
+import com.flowpowered.engine.render.graph.node.CascadedShadowMappingNode;
 import com.flowpowered.engine.render.graph.node.LightingNode;
 import com.flowpowered.engine.render.graph.node.RenderGUINode;
 import com.flowpowered.engine.render.graph.node.RenderModelsNode;
@@ -54,20 +50,24 @@ import com.flowpowered.engine.render.graph.node.SSAONode;
 import com.flowpowered.engine.render.graph.node.ShadowMappingNode;
 import com.flowpowered.engine.scheduler.MainThread;
 import com.flowpowered.engine.scheduler.render.RenderThread;
+import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2i;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector4f;
+
+import org.lwjgl.opengl.GLContext;
+
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 import org.spout.renderer.api.Material;
-import org.spout.renderer.api.data.Color;
-import org.spout.renderer.api.data.Uniform.ColorUniform;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
+import org.spout.renderer.api.data.Uniform.Vector4Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
@@ -86,14 +86,12 @@ public class FlowRenderer implements Renderer {
     // Settings
     private Vector2i windowSize = new Vector2i(1200, 800);
     private boolean cullBackFaces = true;
-    private Color solidModelColor = Color.WHITE;
     // Effect uniforms
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
     private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
-    // OpenGL version, factory and context
-    private GLFactory glFactory;
+    // OpenGL version and context
     private Context context;
     // Included materials
     private Material solidMaterial;
@@ -104,7 +102,6 @@ public class FlowRenderer implements Renderer {
     // Graph nodes
     private RenderModelsNode renderModelsNode;
     private ShadowMappingNode shadowMappingNode;
-    private SSAONode ssaoNode;
     private LightingNode lightingNode;
     private RenderTransparentModelsNode renderTransparentModelsNode;
     private RenderGUINode renderGUINode;
@@ -134,17 +131,15 @@ public class FlowRenderer implements Renderer {
     }
 
     private void initContext() {
-        // CONTEXT
-        context = glFactory.createContext();
         context.setWindowTitle(WINDOW_TITLE);
-        context.setWindowSize(windowSize.toFloat());
+        context.setWindowSize(windowSize);
         context.create();
-        context.setClearColor(new Color(0, 0, 0, 0));
+        context.setClearColor(Vector4f.ZERO);
         if (cullBackFaces) {
             context.enableCapability(Capability.CULL_FACE);
         }
         context.enableCapability(Capability.DEPTH_TEST);
-        if (getGLFactory().getGLVersion() == GLVersion.GL30 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
+        if (context.getGLVersion() == GLVersion.GL30 || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
         final UniformHolder uniforms = context.getUniforms();
@@ -153,46 +148,60 @@ public class FlowRenderer implements Renderer {
     }
 
     private void initGraph() {
-        graph = new RenderGraph(glFactory, context, "/shaders/" + glFactory.getGLVersion().toString().toLowerCase());
+        graph = new RenderGraph(context, "/shaders/" + context.getGLVersion().toString().toLowerCase());
         graph.setWindowSize(windowSize);
         graph.setFieldOfView(60);
         graph.setNearPlane(0.1f);
-        graph.setFarPlane(1000);
+        graph.setFarPlane(200);
         graph.create();
-        final int blurSize = 5;
+        final int blurSize = 2;
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
         renderModelsNode.create();
         graph.addNode(renderModelsNode);
         // Shadows
-        shadowMappingNode = new ShadowMappingNode(graph, "shadows");
+        shadowMappingNode = new CascadedShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
-        shadowMappingNode.setShadowMapSize(new Vector2i(2048, 2048));
+        shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
+        shadowMappingNode.create();
         shadowMappingNode.setKernelSize(8);
         shadowMappingNode.setNoiseSize(blurSize);
         shadowMappingNode.setBias(0.005f);
-        shadowMappingNode.setRadius(0.0004f);
-        shadowMappingNode.create();
+        shadowMappingNode.setRadius(0.05f);
         graph.addNode(shadowMappingNode);
+        // Blur shadows
+        final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
+        blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
+        blurShadowsNode.create();
+        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
+        blurShadowsNode.setKernelSize(blurSize + 1);
+        graph.addNode(blurShadowsNode);
         // SSAO
-        ssaoNode = new SSAONode(graph, "ssao");
+        final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
+        ssaoNode.create();
         ssaoNode.setKernelSize(8, 0.15f);
         ssaoNode.setNoiseSize(blurSize);
         ssaoNode.setRadius(0.5f);
         ssaoNode.setPower(2);
-        ssaoNode.create();
         graph.addNode(ssaoNode);
+        // Blur occlusions
+        final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
+        blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
+        blurOcclusionsNode.create();
+        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
+        blurOcclusionsNode.setKernelSize(blurSize + 1);
+        graph.addNode(blurOcclusionsNode);
         // Lighting
         lightingNode = new LightingNode(graph, "lighting");
         lightingNode.connect("colors", "colors", renderModelsNode);
         lightingNode.connect("normals", "normals", renderModelsNode);
         lightingNode.connect("depths", "depths", renderModelsNode);
         lightingNode.connect("materials", "materials", renderModelsNode);
-        lightingNode.connect("occlusions", "occlusions", ssaoNode);
-        lightingNode.connect("shadows", "shadows", shadowMappingNode);
+        lightingNode.connect("occlusions", "colors", blurOcclusionsNode);
+        lightingNode.connect("shadows", "colors", blurShadowsNode);
         lightingNode.create();
         graph.addNode(lightingNode);
         // Transparent models
@@ -232,16 +241,16 @@ public class FlowRenderer implements Renderer {
     private void addDefaultObjects() {
         addHUD();
 
-        final VertexArray sphere = glFactory.createVertexArray();
-        sphere.setData(MeshGenerator.generateSphere(null, 5));
-        sphere.create();
-        final Model model1 = new Model(sphere, transparencyMaterial);
+        final VertexArray shape = context.newVertexArray();
+        shape.create();
+        shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
+        final Model model1 = new Model(shape, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
-        model1.getUniforms().add(new ColorUniform("modelColor", new Color(1, 0, 0, 0.3)));
+        model1.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(1, 0, 0, 0.3)));
         addTransparentModel(model1);
         final Model model2 = model1.getInstance();
         model2.setPosition(new Vector3f(0, 22, 6));
-        model2.getUniforms().add(new ColorUniform("modelColor", new Color(0, 0, 1, 0.7)));
+        model2.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(0, 0, 1, 0.7)));
         addTransparentModel(model2);
     }
 
@@ -253,15 +262,15 @@ public class FlowRenderer implements Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(glFactory, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "ClientWIPFPS0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = 1 / graph.getAspectRatio();
-        sandboxModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.315, -0.1));
+        sandboxModel.setPosition(new Vector3f(0.005, .97 * aspect, -0.1));
         sandboxModel.setString("Client - WIP");
         renderGUINode.addModel(sandboxModel);
         final StringModel fpsModel = sandboxModel.getInstance();
         final StringModel tpsModel = sandboxModel.getInstance();
-        fpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.285, -0.1));
-        tpsModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.255, -0.1));
+        fpsModel.setPosition(new Vector3f(0.005, .94 * aspect, -0.1));
+        tpsModel.setPosition(new Vector3f(0.005, .91 * aspect, -0.1));
         fpsModel.setString("FPS: " + fpsMonitor.getTPS());
         tpsModel.setString("TPS: " + mainThread.getTPS());
         renderGUINode.addModel(fpsModel);
@@ -270,7 +279,7 @@ public class FlowRenderer implements Renderer {
         tpsMonitorModel = tpsModel;
 
         final StringModel posModel = sandboxModel.getInstance();
-        posModel.setPosition(new Vector3f(0.005, aspect / 2 + 0.225, -0.1));
+        posModel.setPosition(new Vector3f(0.005, .88 * aspect, -0.1));
         posModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
         renderGUINode.addModel(posModel);
         positionModel = posModel;
@@ -332,20 +341,13 @@ public class FlowRenderer implements Renderer {
     }
 
     /**
-     * Returns the OpenGL factory.
-     *
-     * @return The OpenGL factory
-     */
-    public GLFactory getGLFactory() {
-        return glFactory;
-    }
-
-    /**
      * Returns the OpenGL version.
      *
      * @return The OpenGL version
      */
-    public GLVersion getGLVersion() { return glFactory.getGLVersion(); }
+    public GLVersion getGLVersion() {
+        return context.getGLVersion();
+    }
 
     /**
      * Sets the OpenGL version. Must be done before initializing the renderer.
@@ -356,16 +358,22 @@ public class FlowRenderer implements Renderer {
         switch (version) {
             case GL20:
             case GL21:
-                glFactory = GLImplementation.get(LWJGLUtil.GL21_IMPL);
+                context = GLImplementation.get(LWJGLUtil.GL21_IMPL);
                 break;
             case GL30:
             case GL31:
             case GL32:
-                glFactory = GLImplementation.get(LWJGLUtil.GL32_IMPL);
+                context = GLImplementation.get(LWJGLUtil.GL32_IMPL);
         }
     }
 
-    public RenderModelsNode getRenderModelsNode() { return renderModelsNode; }
+    public Context getContext() {
+        return context;
+    }
+
+    public RenderModelsNode getRenderModelsNode() {
+        return renderModelsNode;
+    }
 
     public RenderGUINode getRenderGUINode() {
         return renderGUINode;
@@ -385,63 +393,16 @@ public class FlowRenderer implements Renderer {
     }
 
     /**
-     * Sets the color of solid untextured objects.
-     *
-     * @param color The solid color
-     */
-    public void setSolidColor(Color color) {
-        solidModelColor = color;
-    }
-
-    /**
-     * Updates the light direction and camera bounds to ensure that shadows are casted inside the cuboid defined by size.
+     * Updates the light direction and camera bounds to ensure that shadows are casted inside the frustum.
      *
      * @param direction The light direction
-     * @param position The light camera position
-     * @param size The size of the cuboid that must have shadows
+     * @param frustum The frustum in which to cast shadows
      */
-    public void updateLight(Vector3f direction, Vector3f position, Vector3f size) {
-        // Set the direction uniform
+    public void updateLight(Vector3f direction, ViewFrustum frustum) {
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
-        ((ShadowMappingNode) graph.getNode("shadows")).setLightDirection(direction);
-        ((LightingNode) graph.getNode("lighting")).setLightDirection(direction);
-        // Set the camera position
-        final Camera camera = shadowMappingNode.getCamera();
-        camera.setPosition(position);
-        // Calculate the camera rotation from the direction and set
-        final Quaternionf rotation = Quaternionf.fromRotationTo(Vector3f.FORWARD.negate(), direction);
-        camera.setRotation(rotation);
-        // Calculate the transformation from the camera bounds rotation to the identity rotation (its axis aligned space)
-        final Matrix3f axisAlignTransform = Matrix3f.createRotation(rotation).invert();
-        // Calculate the points of the box to completely include inside the camera bounds
-        size = size.div(2);
-        Vector3f p6 = size;
-        Vector3f p0 = p6.negate();
-        Vector3f p7 = new Vector3f(-size.getX(), size.getY(), size.getZ());
-        Vector3f p1 = p7.negate();
-        Vector3f p4 = new Vector3f(-size.getX(), size.getY(), -size.getZ());
-        Vector3f p2 = p4.negate();
-        Vector3f p5 = new Vector3f(size.getX(), size.getY(), -size.getZ());
-        Vector3f p3 = p5.negate();
-        // Transform those points to the axis aligned space of the camera bounds
-        p0 = axisAlignTransform.transform(p0);
-        p1 = axisAlignTransform.transform(p1);
-        p2 = axisAlignTransform.transform(p2);
-        p3 = axisAlignTransform.transform(p3);
-        p4 = axisAlignTransform.transform(p4);
-        p5 = axisAlignTransform.transform(p5);
-        p6 = axisAlignTransform.transform(p6);
-        p7 = axisAlignTransform.transform(p7);
-        // Calculate the new camera bounds so that the box is fully included in those bounds
-        final Vector3f low = p0.min(p1).min(p2).min(p3)
-                .min(p4).min(p5).min(p6).min(p7);
-        final Vector3f high = p0.max(p1).max(p2).max(p3)
-                .max(p4).max(p5).max(p6).max(p7);
-        // Calculate the size of the new camera bounds
-        size = high.sub(low).div(2);
-        // Update the camera to the new bounds
-        camera.setProjection(Matrix4f.createOrthographic(size.getX(), -size.getX(), size.getY(), -size.getY(), -size.getZ(), size.getZ()));
+        shadowMappingNode.updateLight(direction, frustum);
+        lightingNode.setLightDirection(direction);
     }
 
     /**
@@ -451,7 +412,7 @@ public class FlowRenderer implements Renderer {
      */
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
-        model.getUniforms().add(new ColorUniform("modelColor", new Color(Math.random(), Math.random(), Math.random(), 1)));
+        model.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(Math.random(), Math.random(), Math.random(), 1)));
         renderModelsNode.addModel(model);
     }
 
@@ -471,7 +432,7 @@ public class FlowRenderer implements Renderer {
      * @param outputDir The directory in which to output the file
      */
     public void saveScreenshot(File outputDir) {
-        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2f.ZERO, windowSize.toFloat()), Format.RGB);
+        final ByteBuffer buffer = context.readCurrentFrame(new Rectangle(Vector2i.ZERO, windowSize), Format.RGB);
         final int width = context.getWindowWidth();
         final int height = context.getWindowHeight();
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);

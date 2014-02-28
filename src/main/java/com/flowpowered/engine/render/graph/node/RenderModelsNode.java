@@ -30,9 +30,9 @@ import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
@@ -58,59 +58,53 @@ public class RenderModelsNode extends GraphNode {
 
     public RenderModelsNode(RenderGraph graph, String name) {
         super(graph, name);
-        final GLFactory glFactory = graph.getGLFactory();
-        colorsOutput = glFactory.createTexture();
-        normalsOutput = glFactory.createTexture();
-        depthsOutput = glFactory.createTexture();
-        vertexNormalsOutput = glFactory.createTexture();
-        materialsOutput = glFactory.createTexture();
-        frameBuffer = glFactory.createFrameBuffer();
+        final Context context = graph.getContext();
+        colorsOutput = context.newTexture();
+        normalsOutput = context.newTexture();
+        depthsOutput = context.newTexture();
+        vertexNormalsOutput = context.newTexture();
+        materialsOutput = context.newTexture();
+        frameBuffer = context.newFrameBuffer();
         camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
     }
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Render models stage has already been created");
-        }
+        checkNotCreated();
         // Create the colors texture
-        colorsOutput.setFormat(Format.RGBA);
-        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setMagFilter(FilterMode.LINEAR);
-        colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
+        colorsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the normals texture
-        normalsOutput.setFormat(Format.RGBA);
-        normalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         normalsOutput.create();
-        // Create the detphs texture
-        depthsOutput.setFormat(Format.DEPTH);
-        depthsOutput.setInternalFormat(InternalFormat.DEPTH_COMPONENT32);
-        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        depthsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        depthsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
+        normalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        normalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        // Create the depths texture
         depthsOutput.create();
+        depthsOutput.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
+        depthsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        depthsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the vertex normals texture
-        vertexNormalsOutput.setFormat(Format.RGBA);
-        vertexNormalsOutput.setInternalFormat(InternalFormat.RGBA8);
-        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         vertexNormalsOutput.create();
+        vertexNormalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        vertexNormalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the materials texture
-        materialsOutput.setFormat(Format.RGBA);
-        materialsOutput.setInternalFormat(InternalFormat.RGBA8);
-        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         materialsOutput.create();
+        materialsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        materialsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the frame buffer
+        frameBuffer.create();
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR1, normalsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR2, vertexNormalsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR3, materialsOutput);
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
-        frameBuffer.create();
         // Create the pipeline
         pipeline = new PipelineBuilder().useCamera(camera).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
         // Update the state to created

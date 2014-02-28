@@ -55,9 +55,7 @@ public class RenderGUINode extends GraphNode {
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Render models stage has already been created");
-        }
+        checkNotCreated();
         // Create the material
         material.addTexture(0, colorsInput);
         // Create the model

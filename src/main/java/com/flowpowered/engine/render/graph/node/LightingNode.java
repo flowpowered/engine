@@ -32,9 +32,9 @@ import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.UniformHolder;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
@@ -63,25 +63,20 @@ public class LightingNode extends GraphNode {
     public LightingNode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("lighting"));
-        final GLFactory glFactory = graph.getGLFactory();
-        frameBuffer = glFactory.createFrameBuffer();
-        colorsOutput = glFactory.createTexture();
+        final Context context = graph.getContext();
+        frameBuffer = context.newFrameBuffer();
+        colorsOutput = context.newTexture();
     }
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Lighting stage has already been created");
-        }
+        checkNotCreated();
         // Create the colors texture
-        colorsOutput.setFormat(Format.RGBA);
-        colorsOutput.setInternalFormat(InternalFormat.RGBA8);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWrapS(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setWrapT(WrapMode.CLAMP_TO_EDGE);
-        colorsOutput.setMagFilter(FilterMode.LINEAR);
-        colorsOutput.setMinFilter(FilterMode.LINEAR);
         colorsOutput.create();
+        colorsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the material
         material.addTexture(0, colorsInput);
         material.addTexture(1, normalsInput);
@@ -96,8 +91,8 @@ public class LightingNode extends GraphNode {
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         // Create the pipeline
         pipeline = new PipelineBuilder().bindFrameBuffer(frameBuffer).renderModels(Arrays.asList(model)).unbindFrameBuffer(frameBuffer).build();
         // Update state to created

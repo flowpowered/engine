@@ -63,9 +63,9 @@ public class ChunkModel extends Model {
             // If the chunk mesher returned a mesh. It may not return one if the chunk has no mesh (completely invisible)
             if (vertexData != null) {
                 // Create the vertex array from the mesh
-                final VertexArray vertexArray = renderer.getRenderer().getGLFactory().createVertexArray();
-                vertexArray.setData(vertexData);
+                final VertexArray vertexArray = renderer.getRenderer().getContext().newVertexArray();
                 vertexArray.create();
+                vertexArray.setData(vertexData);
                 // Set it for rendering
                 setVertexArray(vertexArray);
             }

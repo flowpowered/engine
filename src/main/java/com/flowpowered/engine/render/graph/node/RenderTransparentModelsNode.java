@@ -31,12 +31,14 @@ import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
 import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
+import org.spout.renderer.api.data.VertexAttribute.DataType;
+import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.BlendFunction;
 import org.spout.renderer.api.gl.Context.Capability;
 import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
-import org.spout.renderer.api.gl.GLFactory;
 import org.spout.renderer.api.gl.Texture;
+import org.spout.renderer.api.gl.Texture.FilterMode;
 import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.model.Model;
@@ -60,42 +62,39 @@ public class RenderTransparentModelsNode extends GraphNode {
     public RenderTransparentModelsNode(RenderGraph graph, String name) {
         super(graph, name);
         material = new Material(graph.getProgram("transparencyBlending"));
-        final GLFactory glFactory = graph.getGLFactory();
-        weightedColors = glFactory.createTexture();
-        layerCounts = glFactory.createTexture();
-        weightedSumFrameBuffer = glFactory.createFrameBuffer();
-        frameBuffer = glFactory.createFrameBuffer();
+        final Context context = graph.getContext();
+        weightedColors = context.newTexture();
+        layerCounts = context.newTexture();
+        weightedSumFrameBuffer = context.newFrameBuffer();
+        frameBuffer = context.newFrameBuffer();
     }
 
     @Override
     public void create() {
-        if (isCreated()) {
-            throw new IllegalStateException("Render transparent models stage has already been created");
-        }
+        checkNotCreated();
         // Create the weighted colors texture
-        weightedColors.setFormat(Format.RGBA);
-        weightedColors.setInternalFormat(InternalFormat.RGBA16F);
-        weightedColors.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         weightedColors.create();
+        weightedColors.setFormat(Format.RGBA, InternalFormat.RGBA16F, DataType.HALF_FLOAT);
+        weightedColors.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        weightedColors.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the layer counts texture
-        layerCounts.setFormat(Format.RED);
-        layerCounts.setInternalFormat(InternalFormat.R16F);
-        layerCounts.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         layerCounts.create();
+        layerCounts.setFormat(Format.RED, InternalFormat.R16F, DataType.HALF_FLOAT);
+        layerCounts.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        layerCounts.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the material
         material.addTexture(0, weightedColors);
         material.addTexture(1, layerCounts);
         // Create the screen model
         final Model model = new Model(graph.getScreen(), material);
         // Create the weighted sum frame buffer
+        weightedSumFrameBuffer.create();
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR0, weightedColors);
         weightedSumFrameBuffer.attach(AttachmentPoint.COLOR1, layerCounts);
         weightedSumFrameBuffer.attach(AttachmentPoint.DEPTH, depthsInput);
-        weightedSumFrameBuffer.create();
         // Create the frame buffer
-        frameBuffer.attach(AttachmentPoint.COLOR0, colorsInput);
-        //frameBuffer.attach(AttachmentPoint.COLOR1, velocitiesInput);
         frameBuffer.create();
+        frameBuffer.attach(AttachmentPoint.COLOR0, colorsInput);
         // Create the pipeline
         pipeline = new PipelineBuilder().disableDepthMask().disableCapabilities(Capability.CULL_FACE).enableCapabilities(Capability.BLEND)
                 .setBlendingFunctions(BlendFunction.GL_ONE, BlendFunction.GL_ONE).bindFrameBuffer(weightedSumFrameBuffer).clearBuffer().renderModels(models)

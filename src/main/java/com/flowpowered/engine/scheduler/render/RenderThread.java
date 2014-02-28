@@ -320,8 +320,7 @@ public class RenderThread extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
-        final Vector3f position = renderer.getRenderModelsNode().getCamera().getPosition();
-        renderer.updateLight(direction, new Vector3f(position.getX(), 0, position.getZ()), SHADOWED_CHUNKS);
+        renderer.updateLight(direction, frustum);
         // TODO: lower light intensity at night
     }
 

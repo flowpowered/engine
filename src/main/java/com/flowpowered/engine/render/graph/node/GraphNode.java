@@ -97,7 +97,7 @@ public abstract class GraphNode extends Creatable {
     }
 
     private void findInputsAndOutputs() {
-        for (Method method : getClass().getDeclaredMethods()) {
+        for (Method method : getClass().getMethods()) {
             method.setAccessible(true);
             final Input inputAnnotation = method.getAnnotation(Input.class);
             final Output outputAnnotation = method.getAnnotation(Output.class);
