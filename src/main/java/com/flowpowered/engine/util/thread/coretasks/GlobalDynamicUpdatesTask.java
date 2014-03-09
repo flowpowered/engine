@@ -23,7 +23,7 @@
  */
 package com.flowpowered.engine.util.thread.coretasks;
 
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.DynamicUpdateManager;
 
@@ -50,8 +50,8 @@ public class GlobalDynamicUpdatesTask extends SequencedManagerRunnableFactory {
     }
 
     @Override
-    public TickStage getTickStage() {
-        return TickStage.GLOBAL_DYNAMIC_BLOCKS;
+    public WorldTickStage getTickStage() {
+        return WorldTickStage.GLOBAL_DYNAMIC_BLOCKS;
     }
 
 }

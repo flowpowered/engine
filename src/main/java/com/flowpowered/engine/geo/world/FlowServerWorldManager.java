@@ -56,11 +56,11 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
 
     @Override
     public FlowServerWorld loadWorld(String name, WorldGenerator generator) {
-        if (loadedWorlds.get().containsKey((name))) {
-            return loadedWorlds.get().get(name);
+        if (loadedWorlds.containsKey((name))) {
+            return loadedWorlds.get(name);
         }
-        if (loadedWorlds.getLive().containsKey(name)) {
-            return loadedWorlds.getLive().get(name);
+        if (loadedWorlds.containsKey(name)) {
+            return loadedWorlds.get(name);
         }
 
         if (generator == null) {
@@ -75,7 +75,6 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
             return oldWorld;
         }
 
-        engine.getScheduler().addAsyncManager(world);
         //getEventManager().callDelayedEvent(new WorldLoadEvent(world));
         return world;
     }
@@ -113,7 +112,7 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
 
     @Override
     public boolean unloadWorld(String name, boolean save) {
-        return unloadWorld((ServerWorld) loadedWorlds.getLive().get(name), save);
+        return unloadWorld((ServerWorld) loadedWorlds.get(name), save);
     }
 
     @Override
@@ -126,7 +125,6 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
         boolean success = loadedWorlds.remove(world.getName(), w);
         if (success) {
             if (save) {
-                engine.getScheduler().removeAsyncManager(w);
                 //getEventManager().callDelayedEvent(new WorldUnloadEvent(world));
                 w.unload(save);
             }

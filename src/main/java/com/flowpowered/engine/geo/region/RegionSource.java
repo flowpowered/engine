@@ -36,7 +36,7 @@ import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Region;
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
 import com.flowpowered.engine.FlowEngine;
@@ -64,7 +64,7 @@ public class RegionSource implements Iterable<Region> {
 
     @DelayedWrite
     public void removeRegion(final FlowRegion r) {
-        TickStage.checkStage(TickStage.SNAPSHOT);
+       ((FlowWorld) r.getWorld().get()).getThread().checkStage(WorldTickStage.SNAPSHOT);
 
         if (!r.getWorld().equals(world)) {
             throw new IllegalArgumentException("Provided region's world is not the same world as this RegionSource's world!");
@@ -89,7 +89,7 @@ public class RegionSource implements Iterable<Region> {
             return;
         }
 
-        world.getEngine().getScheduler().removeAsyncManager(r);
+        world.getThread().removeAsyncManager(r);
 
         if (regionsLoaded.decrementAndGet() < 0) {
             engine.getLogger().info("Regions loaded dropped below zero");
@@ -130,7 +130,7 @@ public class RegionSource implements Iterable<Region> {
             return current;
         }
 
-        world.getEngine().getScheduler().addAsyncManager(region);
+        world.getThread().addAsyncManager(region);
         return region;
     }
     /**

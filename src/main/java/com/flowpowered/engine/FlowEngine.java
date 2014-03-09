@@ -28,7 +28,6 @@ import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.scheduler.FlowScheduler;
-import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 
 public interface FlowEngine extends Engine {
 
@@ -41,5 +40,5 @@ public interface FlowEngine extends Engine {
     @Override
     FlowWorldManager<? extends FlowWorld> getWorldManager();
 
-    SnapshotManager getSnapshotManager();
+    void copySnapshot();
 }

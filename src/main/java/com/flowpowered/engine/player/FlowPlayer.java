@@ -23,12 +23,17 @@
  */
 package com.flowpowered.engine.player;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 import com.flowpowered.api.entity.Entity;
+import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.TransformProvider;
 import com.flowpowered.api.input.InputSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
@@ -38,33 +43,35 @@ import com.flowpowered.api.player.PlayerNetwork;
 import com.flowpowered.api.player.PlayerSnapshot;
 import com.flowpowered.chat.ChatReceiver;
 import com.flowpowered.commands.CommandException;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
-import com.flowpowered.engine.util.thread.snapshotable.Snapshotable;
 import com.flowpowered.permissions.PermissionDomain;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 
 public class FlowPlayer implements Player {
     protected final String name;
     protected final PlayerNetwork network;
     protected volatile TransformProvider transformProvider = TransformProvider.NullTransformProvider.INSTANCE;
-    private volatile List<InputSnapshot> inputSnapshots = new ArrayList<>();
-    private volatile List<InputSnapshot> liveInput = new ArrayList<>();;
+    private volatile Map<String, List<InputSnapshot>> inputSnapshots = new HashMap<>();
+    private volatile Cache<FlowWorld, ConcurrentLinkedQueue<InputSnapshot>> liveInput = CacheBuilder.newBuilder()
+            .concurrencyLevel(4)
+            .weakKeys()
+            .removalListener(new RemovalListener<FlowWorld, ConcurrentLinkedQueue<InputSnapshot>>() {
+                @Override
+                public void onRemoval(RemovalNotification<FlowWorld, ConcurrentLinkedQueue<InputSnapshot>> rn) {
+                    network.getSession().getEngine().getLogger().warn("World '" + rn.getKey() + "' evicted from input cache for player '" + name + "' because: " + rn.getCause());
+                }
+            })
+            .build();
     private volatile InputSnapshot lastLiveInput = new InputSnapshot();
     private final Object inputMutex = new Object();
 
-    public FlowPlayer(SnapshotManager snapshotManager, FlowSession session, String name) {
+    public FlowPlayer(FlowSession session, String name) {
         this.name = name;
         this.network = new PlayerNetwork(session);
-        snapshotManager.add(new Snapshotable() {
-            @Override
-            public void copySnapshot() {
-                synchronized (inputMutex) {
-                    inputSnapshots = Collections.unmodifiableList(liveInput);
-                    // We will only be writing
-                    liveInput = Collections.synchronizedList(new ArrayList<InputSnapshot>());
-                }
-            }
-        });
     }
 
     @Override
@@ -212,14 +219,44 @@ public class FlowPlayer implements Player {
         this.transformProvider = provider == null ? TransformProvider.NullTransformProvider.INSTANCE : provider;
     }
 
+    public void copyInput(FlowWorld world) {
+        synchronized (inputMutex) {
+            LinkedList<InputSnapshot> snapshot = new LinkedList<InputSnapshot>();
+            inputSnapshots.put(world.getName(), snapshot);
+            ConcurrentLinkedQueue<InputSnapshot> get = liveInput.getIfPresent(world);
+            if (get == null) {
+                return;
+            }
+            while (!get.isEmpty()) {
+                snapshot.add(get.poll());
+            }
+        }
+    }
+
+    /**
+     * @return the input for the current thread
+     */
+    // TODO: I want to store this by thread id, but this is called by asyncmanagers
     @Override
-    public List<InputSnapshot> getInput() {
-        return inputSnapshots;
+    public List<InputSnapshot> getInput(String world) {
+        List<InputSnapshot> get = inputSnapshots.get(world);
+        if (get == null) {
+            get = Collections.EMPTY_LIST;
+            inputSnapshots.put(world, get);
+        }
+        return get;
     }
 
     public void addInputChanges(float dt, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {
         synchronized (inputMutex) {
-            liveInput.add((lastLiveInput = lastLiveInput.withChanges(dt, mouseGrabbed, keyEvents, mouseEvents)));
+            for (World world : network.getSession().getEngine().getWorldManager().getWorlds()) {
+                ConcurrentLinkedQueue<InputSnapshot> get = liveInput.getIfPresent(world);
+                if (get == null) {
+                    get = new ConcurrentLinkedQueue<>();
+                    liveInput.put((FlowWorld) world, get);
+                }
+                get.add((lastLiveInput = lastLiveInput.withChanges(dt, mouseGrabbed, keyEvents, mouseEvents)));
+            }
         }
     }
 }

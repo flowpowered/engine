@@ -21,24 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.scheduler;
+package com.flowpowered.engine.scheduler;
 
-public class IllegalTickSequenceException extends RuntimeException {
+public class IllegalWorldTickSequenceException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public IllegalTickSequenceException(int allowedStages, int restrictedStages, Thread t, TickStage actualStage) {
+    public IllegalWorldTickSequenceException(int allowedStages, int restrictedStages, Thread t, WorldTickStage actualStage) {
         super(getMessage(allowedStages, restrictedStages, t, actualStage));
     }
 
-    public IllegalTickSequenceException(int allowedStages, TickStage actualStage) {
-        super("Method called during (" + actualStage + ") when only (" + TickStage.getAllStages(allowedStages) + ") were allowed");
+    public IllegalWorldTickSequenceException(int allowedStages, WorldTickStage actualStage) {
+        super("Method called during (" + actualStage + ") when only (" + WorldTickStage.getAllStages(allowedStages) + ") were allowed");
     }
 
-    private static String getMessage(int allowedStages, int restrictedStages, Thread t, TickStage actualStage) {
+    private static String getMessage(int allowedStages, int restrictedStages, Thread t, WorldTickStage actualStage) {
         if (Thread.currentThread() != t) {
-            return "Method called by non-owning thread (" + Thread.currentThread() + ") during (" + actualStage + ") when only calls by (" + t + ") during (" + TickStage.getAllStages(allowedStages) + ") were allowed";
+            return "Method called by non-owning thread (" + Thread.currentThread() + ") during (" + actualStage + ") when only calls by (" + t + ") during (" + WorldTickStage.getAllStages(allowedStages) + ") were allowed";
         } else {
-            return "Method called during (" + actualStage + ") when only (" + TickStage.getAllStages(restrictedStages) + ") were allowed for owning thread " + t;
+            return "Method called during (" + actualStage + ") when only (" + WorldTickStage.getAllStages(restrictedStages) + ") were allowed for owning thread " + t;
         }
     }
 }

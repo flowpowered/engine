@@ -41,15 +41,15 @@ public class PlayerControlledMovementComponent extends EntityComponent {
 
     @Override
     public void onTick(float dt) {
-        Player controller = this.controller;
-        if (controller == null) {
+        Player player = this.controller;
+        if (player == null) {
             return;
         }
         final Vector3f right = getRight(getOwner().getPhysics().getRotation());
         final Vector3f up = getUp(getOwner().getPhysics().getRotation());
         final Vector3f forward = getForward(getOwner().getPhysics().getRotation());
         Vector3f translation = Vector3f.ZERO;
-        List<InputSnapshot> input = controller.getInput();
+        List<InputSnapshot> input = player.getInput(getOwner().getWorld().getName());
         for (InputSnapshot snapshot : input) {
             if (!snapshot.isMouseGrabbed()) {
                 continue;

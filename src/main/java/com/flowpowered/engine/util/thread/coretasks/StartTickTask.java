@@ -25,7 +25,7 @@ package com.flowpowered.engine.util.thread.coretasks;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.StartTickManager;
 
@@ -49,7 +49,7 @@ public class StartTickTask extends LocalManagerRunnableFactory {
     }
 
     @Override
-    public TickStage getTickStage() {
-        return TickStage.TICKSTART;
+    public WorldTickStage getTickStage() {
+        return WorldTickStage.TICKSTART;
     }
 }

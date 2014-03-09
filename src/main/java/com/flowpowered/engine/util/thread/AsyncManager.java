@@ -24,18 +24,18 @@
 package com.flowpowered.engine.util.thread;
 
 import com.flowpowered.commons.bit.ShortBitMask;
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 
 public interface AsyncManager {
 
     /**
      * Checks if the current sequence is 
      *
-     * @param stage the current TickStage
+     * @param stage the current WorldTickStage
      * @param sequence the current sequence
      * @return true if the AsyncManager should be called, false if not
      */
-    public boolean checkSequence(TickStage stage, int sequence);
+    public boolean checkSequence(WorldTickStage stage, int sequence);
 
     /**
      * Gets the execution thread associated with this manager

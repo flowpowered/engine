@@ -33,22 +33,17 @@ import com.flowpowered.commons.LoggerOutputStream;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.events.SimpleEventManager;
 import com.flowpowered.api.material.MaterialRegistry;
-import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.SyncedStringMap;
-import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.scheduler.FlowScheduler;
-import com.flowpowered.engine.util.thread.CopySnapshotManager;
-import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 
 import uk.org.lidalia.slf4jext.Level;
 
-public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager {
+public abstract class FlowEngineImpl implements FlowEngine {
     private final FlowApplication args;
     private final EventManager eventManager;
     private final FlowFileSystem fileSystem;
     private FlowScheduler scheduler;
-    protected final SnapshotManager snapshotManager = new SnapshotManager();
     private SyncedStringMap itemMap;
     private PrintStream realSystemOut;
     private PrintStream realSystemErr;
@@ -87,7 +82,6 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
 
     public void start() {
         scheduler.startMainThread();
-        scheduler.addAsyncManager(this);
         System.out.println("Engine started.");
     }
 
@@ -128,38 +122,6 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
         return "Flow Engine";
     }
 
-    @Override
-    public SnapshotManager getSnapshotManager() {
-        return snapshotManager;
+    public void copySnapshot() {
     }
-
-    @Override
-    public void copySnapshotRun(int sequence) {
-        snapshotManager.copyAllSnapshots();
-    }
-
-    @Override
-    public boolean checkSequence(TickStage stage, int sequence) {
-        switch (stage) {
-            case SNAPSHOT:
-                return sequence == 0;
-        }
-        return true;
-    }
-
-    @Override
-    public Thread getExecutionThread() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setExecutionThread(Thread t) {
-    }
-
-    private final ShortBitMask STAGES = TickStage.SNAPSHOT;
-    @Override
-    public ShortBitMask getTickStages() {
-        return STAGES;
-    }
-
 }

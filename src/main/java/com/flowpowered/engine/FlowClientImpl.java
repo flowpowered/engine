@@ -34,7 +34,6 @@ import com.flowpowered.engine.network.FlowNetworkClient;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
-import io.netty.util.ResourceLeakDetector;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -62,8 +61,8 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
         // TEST CODE
         FlowWorld world = new FlowWorld(this, "TestWorld");
         worldManager.addWorld(world);
-        getScheduler().addAsyncManager(world);
         activeWorld.set(world);
+        world.getThread().start();
     }
 
     @Override

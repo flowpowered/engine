@@ -147,7 +147,7 @@ public class EntityManager {
     }
 
     /**
-     * Snapshots the manager and all the entities managed in the SNAPSHOT tickstage.
+     * Snapshots the manager and all the entities managed in the SNAPSHOT WorldTickStage.
      */
     public void copyAllSnapshots() {
         for (FlowEntity e : entities.get().values()) {

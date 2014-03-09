@@ -23,7 +23,7 @@
  */
 package com.flowpowered.engine.util.thread.coretasks;
 
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.engine.util.thread.AsyncManager;
 
 public interface ManagerRunnableFactory {
@@ -33,5 +33,5 @@ public interface ManagerRunnableFactory {
 
     public int getMinSequence();
 
-    public TickStage getTickStage();
+    public WorldTickStage getTickStage();
 }

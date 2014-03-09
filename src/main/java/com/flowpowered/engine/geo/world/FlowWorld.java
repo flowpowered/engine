@@ -43,7 +43,7 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.scheduler.TaskManager;
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
@@ -53,6 +53,7 @@ import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
+import com.flowpowered.engine.scheduler.WorldThread;
 import com.flowpowered.engine.util.thread.CopySnapshotManager;
 import com.flowpowered.engine.util.thread.StartTickManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
@@ -78,6 +79,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     private final SnapshotableLong age;
     private final RegionSource regionSource;
     private final FlowWorldSnapshot snapshot;
+    private final WorldThread thread;
 
     public FlowWorld(FlowEngine engine, String name, UUID uid, long age) {
         super(engine);
@@ -88,6 +90,8 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         this.age = new SnapshotableLong(snapshotManager, age);
         this.regionSource = new RegionSource(engine, this);
         this.snapshot = new FlowWorldSnapshot(this);
+        this.thread = new WorldThread(engine.getScheduler(), this);
+        this.thread.addAsyncManager(this);
     }
 
     public FlowWorld(FlowEngine engine, String name) {
@@ -444,8 +448,8 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     }
 
     @Override
-    public boolean checkSequence(TickStage stage, int sequence) {
-        if (stage == TickStage.SNAPSHOT) {
+    public boolean checkSequence(WorldTickStage stage, int sequence) {
+        if (stage == WorldTickStage.SNAPSHOT) {
             return sequence == 0;
         }
         return sequence == -1;
@@ -460,7 +464,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     public void setExecutionThread(Thread t) {
     }
 
-    private static ShortBitMask STAGES = TickStage.allOf(TickStage.STAGE1, TickStage.SNAPSHOT);
+    private static ShortBitMask STAGES = WorldTickStage.allOf(WorldTickStage.STAGE1, WorldTickStage.SNAPSHOT);
     @Override
     public ShortBitMask getTickStages() {
         return STAGES;
@@ -484,5 +488,9 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     @Override
     public boolean isLoaded() {
         return true;
+    }
+
+    public WorldThread getThread() {
+        return thread;
     }
 }

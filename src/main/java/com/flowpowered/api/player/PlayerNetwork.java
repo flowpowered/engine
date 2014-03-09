@@ -182,13 +182,7 @@ public class PlayerNetwork implements Listener {
             if (activeChunks.contains(ref)) {
                 continue;
             }
-            boolean inTargetArea = inPriorityArea(playerChunkBase, base);
-            // If it's in the target area, we first check if we can just load it. If so, do that
-            // If not, queue it for LOAD_GEN, but don't wait
-            // If it's not in the target area, don't even wait for load
-            if (!inTargetArea || ref.refresh(LoadOption.LOAD_ONLY, session.getEngine().getWorldManager()) == null) {
-                ref.refresh(LoadOption.LOAD_GEN_NOWAIT, session.getEngine().getWorldManager());
-            }
+            ref.refresh(LoadOption.NO_LOAD, session.getEngine().getWorldManager());
 
             futureChunksToSend.add(ref);
         }

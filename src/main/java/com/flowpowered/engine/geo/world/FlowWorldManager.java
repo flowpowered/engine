@@ -26,20 +26,20 @@ package com.flowpowered.engine.geo.world;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
-
-import com.flowpowered.commons.StringUtil;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.WorldManager;
+import com.flowpowered.commons.StringUtil;
 import com.flowpowered.engine.FlowEngine;
-import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
 public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
     protected final FlowEngine engine;
-    protected final SnapshotableLinkedHashMap<String, T> loadedWorlds;
+    protected final ConcurrentMap<String, T> loadedWorlds;
 
     public FlowWorldManager(FlowEngine engine) {
-        loadedWorlds = new SnapshotableLinkedHashMap<>(engine.getSnapshotManager());
+        loadedWorlds = new ConcurrentHashMap<>();
         this.engine = engine;
     }
 
@@ -55,13 +55,13 @@ public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
     @Override
     public World getWorld(String name, boolean exact) {
         if (exact) {
-            FlowWorld world = loadedWorlds.get().get(name);
+            FlowWorld world = loadedWorlds.get(name);
             if (world != null) {
                 return world;
             }
-            return loadedWorlds.get().get(name);
+            return loadedWorlds.get(name);
         } else {
-            return StringUtil.getShortest(StringUtil.matchName(loadedWorlds.getValues(), name));
+            return StringUtil.getShortest(StringUtil.matchName(loadedWorlds.values(), name));
         }
     }
 
@@ -72,7 +72,7 @@ public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
 
     @Override
     public FlowWorld getWorld(UUID uid) {
-        for (FlowWorld world : loadedWorlds.getValues()) {
+        for (FlowWorld world : loadedWorlds.values()) {
             if (world.getUID().equals(uid)) {
                 return world;
             }
@@ -83,7 +83,7 @@ public class FlowWorldManager<T extends FlowWorld> implements WorldManager {
     @Override
     public Collection<World> getWorlds() {
         Collection<World> w = new ArrayList<>();
-        for (FlowWorld world : loadedWorlds.getValues()) {
+        for (FlowWorld world : loadedWorlds.values()) {
             w.add(world);
         }
         return w;

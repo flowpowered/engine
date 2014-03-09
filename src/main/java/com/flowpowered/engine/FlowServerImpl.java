@@ -56,7 +56,7 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
 
     public FlowServerImpl(FlowApplication args) {
         super(args);
-        players = new SnapshotableLinkedHashMap<>(snapshotManager);
+        players = new SnapshotableLinkedHashMap<>(null);
         worldManager = new FlowServerWorldManager(this);
     }
 
@@ -66,6 +66,7 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
 
         // TEST CODE
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
+        loadedWorld.getThread().start();
         @SuppressWarnings("unchecked")
         Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
         @SuppressWarnings("unchecked")
@@ -144,7 +145,7 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
 
     @Override
     public FlowPlayer addPlayer(String name, FlowSession session) {
-        FlowPlayer player = new FlowPlayer(snapshotManager, session, name);
+        FlowPlayer player = new FlowPlayer(session, name);
         players.put(player.getName(), player);
         session.setPlayer(player);
 
@@ -158,5 +159,10 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     @Override
     public FlowServerWorldManager getWorldManager() {
         return worldManager;
+    }
+
+    @Override
+    public void copySnapshot() {
+        players.copySnapshot();
     }
 }

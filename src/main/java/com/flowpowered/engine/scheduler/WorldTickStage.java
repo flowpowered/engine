@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.scheduler;
+package com.flowpowered.engine.scheduler;
 
 import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.commons.bit.ShortBitSet;
@@ -29,10 +29,7 @@ import com.flowpowered.commons.bit.ShortBitSet;
 /**
  * Represents the various tick stages.<br> <br> The exact bit fields used are subject to change
  */
-public enum TickStage implements ShortBitMask {
-    /**
-     * All tasks submitted to the main thread are executed during TICKSTART.<br> <br> This stage is single threaded
-     */
+public enum WorldTickStage implements ShortBitMask {
     TICKSTART(1),
     /**
      * This is the first stage of the execution of the tick
@@ -82,7 +79,7 @@ public enum TickStage implements ShortBitMask {
     private final short mask;
     private final int order;
 
-    private TickStage(int stage) {
+    private WorldTickStage(int stage) {
         this.order = stage;
         this.mask = (short) (1 << (stage - 1));
     }
@@ -98,10 +95,6 @@ public enum TickStage implements ShortBitMask {
 
     public static int getNumStages() {
         return values().length;
-    }
-
-    public static TickStage getStage() {
-        return currentStage;
     }
 
     public static String getStage(int num) {
@@ -141,76 +134,19 @@ public enum TickStage implements ShortBitMask {
         while (scan != 0) {
             int checkNum = num & scan;
             if (checkNum != 0) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
                 String stage = getStage(checkNum);
-                if (stage != null) {
+                if (stage != null) {   
+                    if (first) {
+                        first = false;
+                    } else {
+                        sb.append(", ");
+                    }
                     sb.append(stage);
                 }
             }
             scan <<= 1;
         }
         return sb.toString();
-    }
-
-    private static TickStage currentStage = TICKSTART;
-
-    /**
-     * Sets the current stage. This is not synchronised, so should only be called during the stable period between stages.
-     *
-     * @param stage the stage
-     */
-    public static void setStage(TickStage stage) {
-        TickStage.currentStage = stage;
-    }
-
-    /**
-     * Checks if the current stages is one of the valid allowed stages.
-     *
-     * @param allowedStages the OR of all the allowed stages
-     */
-    public static void checkStage(ShortBitMask allowedStages) {
-        if (!testStage(allowedStages)) {
-            throw new IllegalTickSequenceException(allowedStages.getMask(), currentStage);
-        }
-    }
-
-    /**
-     * Checks if the current currentStages is one of the valid allowed currentStages, but does not throw an exception.
-     *
-     * @param allowedStages the OR of all the allowed currentStages
-     * @return true if the current currentStage is one of the allowed currentStages
-     */
-    public static boolean testStage(ShortBitMask allowedStages) {
-        return (currentStage.getMask() & allowedStages.getMask()) != 0;
-    }
-
-    /**
-     * Checks if the current thread is the owner thread and the current currentStage is one of the restricted currentStages, or that the current currentStage is one of the open currentStages
-     *
-     * @param allowedStages the OR of all the open currentStages
-     * @param restrictedStages the OR of all restricted currentStages
-     * @param ownerThread the thread that has restricted access
-     */
-    public static void checkStage(ShortBitMask allowedStages, ShortBitMask restrictedStages, Thread ownerThread) {
-        if ((currentStage.getMask() & allowedStages.getMask()) != 0 && ((Thread.currentThread() != ownerThread || (currentStage.getMask() & restrictedStages.getMask()) == 0))) {
-            throw new IllegalTickSequenceException(allowedStages.getMask(), restrictedStages.getMask(), ownerThread, currentStage);
-        }
-    }
-
-    /**
-     * Checks if the current thread is the owner thread and the current currentStage is one of the restricted currentStages
-     *
-     * @param restrictedStages the OR of all restricted currentStages
-     * @param ownerThread the thread that has restricted access
-     */
-    public static void checkStage(ShortBitMask restrictedStages, Thread ownerThread) {
-        if (((currentStage.getMask() & restrictedStages.getMask()) == 0) || Thread.currentThread() != ownerThread) {
-            throw new IllegalTickSequenceException(restrictedStages.getMask(), 0, ownerThread, currentStage);
-        }
     }
 
     public static ShortBitMask allOf(ShortBitMask... stages) {

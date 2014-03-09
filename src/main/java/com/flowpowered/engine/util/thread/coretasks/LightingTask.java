@@ -23,7 +23,7 @@
  */
 package com.flowpowered.engine.util.thread.coretasks;
 
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LightingManager;
 
@@ -44,7 +44,7 @@ public class LightingTask extends SequencedManagerRunnableFactory {
     }
 
     @Override
-    public TickStage getTickStage() {
-        return TickStage.LIGHTING;
+    public WorldTickStage getTickStage() {
+        return WorldTickStage.LIGHTING;
     }
 }

@@ -29,15 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.Level;
-
-import com.flowpowered.commons.bit.ShortBitMask;
-import com.flowpowered.commons.bit.ShortBitSet;
-import com.flowpowered.events.Cause;
-import com.flowpowered.math.vector.Vector3f;
-
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.cuboid.Chunk;
@@ -46,8 +38,10 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.block.BlockFace;
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
+import com.flowpowered.commons.bit.ShortBitMask;
+import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
@@ -59,8 +53,14 @@ import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.FlowRegionSnapshot;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.CompleteAsyncManager;
+import com.flowpowered.events.Cause;
+import com.flowpowered.math.vector.Vector3f;
+
+import org.apache.logging.log4j.Level;
+
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 
@@ -140,9 +140,9 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         // If we're not waiting, then we don't care because it's async anyways
         if (loadopt.isWait()) {
             if (loadopt.generateIfNeeded()) {
-                TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT, TickStage.PRESNAPSHOT, TickStage.LIGHTING));
+                ((FlowWorld) getWorld().get()).getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.SNAPSHOT, WorldTickStage.PRESNAPSHOT, WorldTickStage.LIGHTING));
             } else if (loadopt.loadIfNeeded()) {
-                TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
+                ((FlowWorld) getWorld().get()).getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.SNAPSHOT));
             }
         }
 
@@ -164,7 +164,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             return loadOrGenChunkImmediately(x, y, z, loadopt);
         }
 
-        engine.getScheduler().runCoreAsyncTask(new Runnable() {
+        engine.getScheduler().getTaskManager().runCoreAsyncTask(new Runnable() {
             @Override
             public void run() {
                 loadOrGenChunkImmediately(x, y, z, loadopt);
@@ -514,8 +514,8 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     }
 
     @Override
-    public boolean checkSequence(TickStage stage, int seqence) {
-        if (stage == TickStage.SNAPSHOT) {
+    public boolean checkSequence(WorldTickStage stage, int seqence) {
+        if (stage == WorldTickStage.SNAPSHOT) {
             return seqence == -1;
         }
         return seqence == -1;

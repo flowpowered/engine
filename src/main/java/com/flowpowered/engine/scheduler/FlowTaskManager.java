@@ -244,6 +244,10 @@ public class FlowTaskManager implements TaskManager {
         return true;
     }
 
+    public void runCoreAsyncTask(Runnable runnable) {
+        asyncTaskExecutor.execute(runnable);
+    }
+
     private static class TaskComparator implements Comparator<FlowTask> {
         @Override
         public int compare(FlowTask o1, FlowTask o2) {

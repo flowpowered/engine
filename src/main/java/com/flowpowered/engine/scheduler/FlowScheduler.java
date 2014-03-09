@@ -32,6 +32,7 @@ import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.api.scheduler.Task;
 import com.flowpowered.api.scheduler.TaskPriority;
 import com.flowpowered.engine.FlowClient;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.engine.util.thread.AsyncManager;
@@ -59,7 +60,7 @@ public final class FlowScheduler implements Scheduler {
      */
     public static final int TARGET_FPS = 60;
     private final FlowTaskManager taskManager;
-    private final Engine engine;
+    private final FlowEngine engine;
     // SchedulerElements
     private final MainThread mainThread;
     private RenderThread renderThread;
@@ -68,7 +69,7 @@ public final class FlowScheduler implements Scheduler {
     /**
      * Creates a new task scheduler.
      */
-    public FlowScheduler(Engine engine) {
+    public FlowScheduler(FlowEngine engine) {
         this.engine = engine;
         mainThread = new MainThread(this);
         taskManager = new FlowTaskManager(this);
@@ -184,7 +185,7 @@ public final class FlowScheduler implements Scheduler {
         return taskManager;
     }
 
-    public Engine getEngine() {
+    public FlowEngine getEngine() {
         return engine;
     }
 
@@ -193,33 +194,11 @@ public final class FlowScheduler implements Scheduler {
         return false;
     }
 
-    public MainThread getMainThread() {
-        return mainThread;
-    }
-
     public RenderThread getRenderThread() {
         return renderThread;
     }
 
     public InputThread getInputThread() {
         return inputThread;
-    }
-
-    /**
-     * Adds an async manager to the scheduler
-     */
-    public void addAsyncManager(AsyncManager manager) {
-        mainThread.addAsyncManager(manager);
-    }
-
-    /**
-     * Removes an async manager from the scheduler
-     */
-    public void removeAsyncManager(AsyncManager manager) {
-        mainThread.removeAsyncManager(manager);
-    }
-
-    public void runCoreAsyncTask(Runnable r) {
-        mainThread.executorService.submit(r);
     }
 }
