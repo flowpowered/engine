@@ -39,7 +39,9 @@ import javax.imageio.ImageIO;
 
 import com.flowpowered.api.render.Renderer;
 import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.engine.FlowClient;
 import com.flowpowered.engine.geo.region.RegionGenerator;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.math.vector.Vector2i;
@@ -261,7 +263,7 @@ public class FlowRenderer implements Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789.-: GenCountModels", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789.-: GenCountModelsN/A", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, .97 * aspect, -0.1));
         sandboxModel.setString("Flow Engine - WIP");
@@ -332,7 +334,12 @@ public class FlowRenderer implements Renderer {
     private void updateHUD() {
         fpsMonitor.update();
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
-        tpsMonitorModel.setString("TPS: " + scheduler.getMainThread().getTPS());
+        FlowWorld currentWorld = (FlowWorld) ((FlowClient) scheduler.getEngine()).getTransform().getPosition().getWorld().get();
+        if (currentWorld != null) {
+            tpsMonitorModel.setString("TPS: " + currentWorld.getThread().getTPS());
+        } else {
+            tpsMonitorModel.setString("TPS: N/A");
+        }
         itpsMonitorModel.setString("Input TPS: " + scheduler.getInputThread().getTPS());
 
         Camera camera = renderModelsNode.getAttribute("camera");

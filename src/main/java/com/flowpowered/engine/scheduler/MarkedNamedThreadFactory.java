@@ -30,15 +30,21 @@ public class MarkedNamedThreadFactory implements ThreadFactory {
     private final AtomicInteger idCounter = new AtomicInteger();
     private final String namePrefix;
     private final boolean daemon;
+    private final ThreadGroup group;
 
-    public MarkedNamedThreadFactory(String namePrefix, boolean daemon) {
+    public MarkedNamedThreadFactory(ThreadGroup group, String namePrefix, boolean daemon) {
+        this.group = group;
         this.namePrefix = namePrefix;
         this.daemon = daemon;
     }
 
+    public MarkedNamedThreadFactory(String namePrefix, boolean daemon) {
+        this(new ThreadGroup(namePrefix), namePrefix, daemon);
+    }
+
     @Override
     public Thread newThread(Runnable runnable) {
-        Thread thread = new Thread(runnable, "Executor{" + namePrefix + "-" + idCounter.getAndIncrement() + "}");
+        Thread thread = new Thread(group, runnable, "Executor{" + namePrefix + "-" + idCounter.getAndIncrement() + "}");
         thread.setDaemon(daemon);
         return thread;
     }

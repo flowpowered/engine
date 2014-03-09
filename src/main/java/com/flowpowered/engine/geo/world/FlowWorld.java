@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.events.Cause;
 
 import com.flowpowered.api.component.BaseComponentOwner;
@@ -43,7 +42,6 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.scheduler.TaskManager;
-import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
@@ -53,15 +51,14 @@ import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
-import com.flowpowered.engine.util.thread.CopySnapshotManager;
-import com.flowpowered.engine.util.thread.StartTickManager;
+import com.flowpowered.engine.scheduler.WorldThread;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLong;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 
-public class FlowWorld extends BaseComponentOwner implements World, StartTickManager, CopySnapshotManager {
+public class FlowWorld extends BaseComponentOwner implements World {
     // TEST CODE
     /**
      * Number of milliseconds in a day.
@@ -78,6 +75,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     private final SnapshotableLong age;
     private final RegionSource regionSource;
     private final FlowWorldSnapshot snapshot;
+    private final WorldThread thread;
 
     public FlowWorld(FlowEngine engine, String name, UUID uid, long age) {
         super(engine);
@@ -88,6 +86,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         this.age = new SnapshotableLong(snapshotManager, age);
         this.regionSource = new RegionSource(engine, this);
         this.snapshot = new FlowWorldSnapshot(this);
+        this.thread = new WorldThread(engine.getScheduler(), this);
     }
 
     public FlowWorld(FlowEngine engine, String name) {
@@ -430,32 +429,16 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         return snapshot;
     }
 
-    @Override
     public void startTickRun(int stage, long delta) {
         if (stage == 0) {
             age.set((long) (age.get() + (delta / 1000000d * (MILLIS_IN_DAY / GAME_DAY_IRL))));
         }
     }
 
-    @Override
-    public void copySnapshotRun(int sequence) {
+    public void copySnapshotRun() {
         snapshotManager.copyAllSnapshots();
         // TODO: modified status
         snapshot.update(this);
-    }
-
-    @Override
-    public boolean checkSequence(TickStage stage, int sequence) {
-        if (stage == TickStage.SNAPSHOT) {
-            return sequence == 0;
-        }
-        return sequence == -1;
-    }
-
-    private static ShortBitMask STAGES = TickStage.allOf(TickStage.STAGE1, TickStage.SNAPSHOT);
-    @Override
-    public ShortBitMask getTickStages() {
-        return STAGES;
     }
 
     public void setChunk(int x, int y, int z, int[] blocks) {
@@ -476,5 +459,9 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
     @Override
     public boolean isLoaded() {
         return true;
+    }
+
+    public WorldThread getThread() {
+        return thread;
     }
 }

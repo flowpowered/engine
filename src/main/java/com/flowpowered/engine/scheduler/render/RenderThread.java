@@ -49,6 +49,7 @@ import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
 import com.flowpowered.engine.render.model.ChunkModel;
 import com.flowpowered.engine.scheduler.input.InputThread;
+import com.flowpowered.engine.util.ClientObserver;
 import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
@@ -74,6 +75,7 @@ public class RenderThread extends TickingElement {
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
     private final CountDownLatch intializedLatch = new CountDownLatch(1);
+    private final ClientObserver observe;
 
     public RenderThread(FlowClient client) {
         super("RenderThread", FPS);
@@ -82,6 +84,7 @@ public class RenderThread extends TickingElement {
         this.frustum = new ViewFrustum();
         this.input = client.getScheduler().getInputThread();
         this.mesher = new ParallelChunkMesher(this, new StandardChunkMesher());
+        this.observe = new ClientObserver(client);
     }
 
     @Override
@@ -107,6 +110,7 @@ public class RenderThread extends TickingElement {
     public void onTick(long dt) {
         handleInput();
         updateCameraAndFrustrum();
+        observe.update();
         WorldReference ref = client.getTransform().getPosition().getWorld();
         FlowWorld world = ref == null ? null : (FlowWorld) ref.get();
         updateChunkModels();

@@ -38,10 +38,7 @@ import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.player.Player;
-import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
-import com.flowpowered.commons.bit.ShortBitMask;
-import com.flowpowered.commons.bit.ShortBitSet;
 import com.flowpowered.commons.store.block.impl.AtomicPaletteBlockStore;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
@@ -57,7 +54,7 @@ import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.physics.FlowLinkedWorldInfo;
 import com.flowpowered.engine.util.math.ReactConverter;
-import com.flowpowered.engine.util.thread.CompleteAsyncManager;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.events.Cause;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
@@ -65,7 +62,7 @@ import org.apache.logging.log4j.Level;
 import org.spout.physics.engine.DynamicsWorld;
 import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 
-public class FlowRegion extends Region implements CompleteAsyncManager {
+public class FlowRegion extends Region {
     private final RegionGenerator generator;
     /**
      * Reference to the persistent ByteArrayArray that stores chunk data
@@ -142,9 +139,9 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         // If we're not waiting, then we don't care because it's async anyways
         if (loadopt.isWait()) {
             if (loadopt.generateIfNeeded()) {
-                TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT, TickStage.PRESNAPSHOT, TickStage.LIGHTING));
+                ((FlowWorld) getWorld().get()).getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.COPY_SNAPSHOT, WorldTickStage.PRESNAPSHOT, WorldTickStage.LIGHTING));
             } else if (loadopt.loadIfNeeded()) {
-                TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
+                ((FlowWorld) getWorld().get()).getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.COPY_SNAPSHOT));
             }
         }
 
@@ -166,7 +163,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             return loadOrGenChunkImmediately(x, y, z, loadopt);
         }
 
-        engine.getScheduler().runCoreAsyncTask(new Runnable() {
+        engine.getScheduler().getTaskManager().runCoreAsyncTask(new Runnable() {
             @Override
             public void run() {
                 loadOrGenChunkImmediately(x, y, z, loadopt);
@@ -464,24 +461,20 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return entityManager;
     }
 
-    @Override
     public void finalizeRun() {
         entityManager.finalizeRun();
     }
 
-    @Override
     public void preSnapshotRun() {
         entityManager.preSnapshotRun();
     }
 
-    @Override
-    public void copySnapshotRun(int sequence) {
+    public void copySnapshotRun() {
         entityManager.copyAllSnapshots();
         chunks.set(live.get());
         snapshot.update(this);
     }
 
-    @Override
     public void startTickRun(int stage, long delta) {
         if (stage == 0) {
             updateEntities(delta);
@@ -513,37 +506,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 			((FlowPhysics) entity.getPhysics()).onPostPhysicsTick(dt);
 		}
 	}
-
-    @Override
-    public void runPhysics(int sequence) {
-    }
-
-    @Override
-    public void runDynamicUpdates(long threshold, int sequence) {
-    }
-
-    @Override
-    public void runLighting(int sequence) {
-    }
-
-    @Override
-    public boolean checkSequence(TickStage stage, int seqence) {
-        if (stage == TickStage.SNAPSHOT) {
-            return seqence == -1;
-        }
-        return seqence == -1;
-    }
-
-    @Override
-    public long getFirstDynamicUpdateTime() {
-        return 0;
-    }
-
-    private static ShortBitSet ALL_STAGES = new ShortBitSet(Short.MAX_VALUE);
-    @Override
-    public ShortBitMask getTickStages() {
-        return ALL_STAGES;
-    }
 
     public FlowWorld getFlowWorld() {
         return (FlowWorld) super.getWorld().refresh(engine.getWorldManager());

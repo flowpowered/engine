@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
-import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
 import com.flowpowered.api.util.thread.annotation.SnapshotRead;
@@ -172,7 +171,6 @@ public class SnapshotableLinkedHashMap<K, V> implements Snapshotable {
      * @return the list of elements that have been updated
      */
     public List<K> getDirtyList() {
-        TickStage.checkStage(TickStage.PRESNAPSHOT);
         if (!dirtyListGenerated) {
             for (K o : dirty) {
                 if (dirtyListTemp.add(o)) {

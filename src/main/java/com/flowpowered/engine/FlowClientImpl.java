@@ -60,7 +60,7 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
         // TEST CODE
         FlowWorld world = new FlowWorld(this, "TestWorld");
         worldManager.addWorld(world);
-        getScheduler().addAsyncManager(world);
+        world.getThread().start();
     }
 
     @Override

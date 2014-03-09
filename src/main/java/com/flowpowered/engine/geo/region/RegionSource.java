@@ -34,7 +34,7 @@ import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Region;
-import com.flowpowered.api.scheduler.TickStage;
+import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
 import com.flowpowered.commons.concurrent.TripleIntObjectReferenceArrayMap;
@@ -63,7 +63,7 @@ public class RegionSource implements Iterable<Region> {
 
     @DelayedWrite
     public void removeRegion(final FlowRegion r) {
-        TickStage.checkStage(TickStage.SNAPSHOT);
+       ((FlowWorld) r.getWorld().get()).getThread().checkStage(WorldTickStage.COPY_SNAPSHOT);
 
         if (!r.getWorld().equals(world)) {
             throw new IllegalArgumentException("Provided region's world is not the same world as this RegionSource's world!");
@@ -88,8 +88,6 @@ public class RegionSource implements Iterable<Region> {
             return;
         }
 
-        world.getEngine().getScheduler().removeAsyncManager(r);
-
         if (regionsLoaded.decrementAndGet() < 0) {
             engine.getLogger().info("Regions loaded dropped below zero");
         }
@@ -108,7 +106,7 @@ public class RegionSource implements Iterable<Region> {
     public FlowRegion getRegion(int x, int y, int z, LoadOption loadopt) {
         if (loadopt != LoadOption.NO_LOAD) {
             // TEST CODE how do we handle async chunk additions on the client?
-            //TickStage.checkStage(TickStage.noneOf(TickStage.SNAPSHOT));
+            //TickStage.checkStage(TickStage.noneOf(TickStage.COPY_SNAPSHOT));
         }
 
         FlowRegion region = loadedRegions.get(x, y, z);
@@ -129,7 +127,6 @@ public class RegionSource implements Iterable<Region> {
             return current;
         }
 
-        world.getEngine().getScheduler().addAsyncManager(region);
         return region;
     }
     /**

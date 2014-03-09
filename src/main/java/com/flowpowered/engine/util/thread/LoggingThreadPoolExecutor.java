@@ -43,6 +43,11 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
                 new MarkedNamedThreadFactory(name, true), logger);
     }
 
+    public static LoggingThreadPoolExecutor newFixedThreadExecutorWithMarkedName(ThreadGroup group, int nThreads, String name, Logger logger) {
+        return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+                new MarkedNamedThreadFactory(group, name, true), logger);
+    }
+
     private Logger logger;
 
     public LoggingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, Logger logger) {

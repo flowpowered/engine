@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.flowpowered.api.scheduler.Task;
 import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.scheduler.TaskPriority;
-import com.flowpowered.engine.util.thread.AsyncManager;
 
 public class FlowTaskManager implements TaskManager {
     private final FlowScheduler scheduler;
@@ -64,13 +63,13 @@ public class FlowTaskManager implements TaskManager {
     private final AtomicLong upTime;
  
     public FlowTaskManager(FlowScheduler scheduler) {
-        this(scheduler, null, 0L);
+        this(scheduler, 0L);
     }
 
     /**
      * Creates a new task scheduler.
      */
-    public FlowTaskManager(FlowScheduler scheduler, AsyncManager taskManager, long age) {
+    public FlowTaskManager(FlowScheduler scheduler, long age) {
         this.scheduler = scheduler;
         primaryThread = Thread.currentThread();
         this.upTime = new AtomicLong(age);
@@ -242,6 +241,10 @@ public class FlowTaskManager implements TaskManager {
             return false;
         }
         return true;
+    }
+
+    public void runCoreAsyncTask(Runnable runnable) {
+        asyncTaskExecutor.execute(runnable);
     }
 
     private static class TaskComparator implements Comparator<FlowTask> {

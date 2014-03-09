@@ -21,11 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.util.thread;
+package com.flowpowered.engine.scheduler;
 
-public interface CopySnapshotManager extends AsyncManager {
-    /**
-     * This method is called in order to update the snapshot at the end of each tick
-     */
-    void copySnapshotRun(int sequence);
+public class IllegalWorldTickSequenceException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    public IllegalWorldTickSequenceException(int allowedStages, int restrictedStages, Thread t, WorldTickStage actualStage) {
+        super(getMessage(allowedStages, restrictedStages, t, actualStage));
+    }
+
+    public IllegalWorldTickSequenceException(int allowedStages, WorldTickStage actualStage) {
+        super("Method called during (" + actualStage + ") when only (" + WorldTickStage.getAllStages(allowedStages) + ") were allowed");
+    }
+
+    private static String getMessage(int allowedStages, int restrictedStages, Thread t, WorldTickStage actualStage) {
+        if (Thread.currentThread() != t) {
+            return "Method called by non-owning thread (" + Thread.currentThread() + ") during (" + actualStage + ") when only calls by (" + t + ") during (" + WorldTickStage.getAllStages(allowedStages) + ") were allowed";
+        } else {
+            return "Method called during (" + actualStage + ") when only (" + WorldTickStage.getAllStages(restrictedStages) + ") were allowed for owning thread " + t;
+        }
+    }
 }
