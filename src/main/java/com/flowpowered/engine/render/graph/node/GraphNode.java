@@ -21,7 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.flowpowered.engine.render.graph.node;
+
+
+import com.flowpowered.engine.render.graph.RenderGraph;
+import org.spout.renderer.api.gl.Texture;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -33,18 +38,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.spout.renderer.api.Creatable;
-import org.spout.renderer.api.gl.Texture;
-
-import com.flowpowered.engine.render.graph.RenderGraph;
-
-public abstract class GraphNode extends Creatable {
+/**
+ *
+ */
+public abstract class GraphNode {
     protected final RenderGraph graph;
     protected final String name;
-    protected final Map<String, Method> inputs = new HashMap<>();
-    protected final Map<String, Method> outputs = new HashMap<>();
-    protected final Map<String, GraphNode> inputNodes = new HashMap<>();
-    protected final Map<String, GraphNode> outputNodes = new HashMap<>();
+    private final Map<String, Method> inputs = new HashMap<>();
+    private final Map<String, Method> outputs = new HashMap<>();
+    private final Map<String, GraphNode> inputNodes = new HashMap<>();
+    private final Map<String, GraphNode> outputNodes = new HashMap<>();
 
     protected GraphNode(RenderGraph graph, String name) {
         this.graph = graph;
@@ -53,6 +56,8 @@ public abstract class GraphNode extends Creatable {
     }
 
     public abstract void render();
+
+    public abstract void destroy();
 
     public String getName() {
         return name;
@@ -107,12 +112,12 @@ public abstract class GraphNode extends Creatable {
                 }
                 final Class<?>[] parameterTypes = method.getParameterTypes();
                 if (parameterTypes.length != 1 || !Texture.class.isAssignableFrom(parameterTypes[0])) {
-                    throw new IllegalStateException("Output method must have one argument of type org.spout.renderer.api.gl.Texture");
+                    throw new IllegalStateException("Output method must have one argument of type " + Texture.class.getCanonicalName());
                 }
                 inputs.put(inputAnnotation.value(), method);
             } else if (outputAnnotation != null) {
                 if (!Texture.class.isAssignableFrom(method.getReturnType())) {
-                    throw new IllegalStateException("Input method must have return type org.spout.renderer.api.gl.Texture");
+                    throw new IllegalStateException("Input method must have return type " + Texture.class.getCanonicalName());
                 }
                 outputs.put(outputAnnotation.value(), method);
             }
