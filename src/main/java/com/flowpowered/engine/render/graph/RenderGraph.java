@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.flowpowered.engine.render.graph;
 
 import java.util.HashMap;
@@ -31,6 +32,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.engine.render.graph.node.GraphNode;
 import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.math.vector.Vector2i;
 
@@ -44,20 +47,10 @@ import org.spout.renderer.api.gl.Shader;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.util.MeshGenerator;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.node.GraphNode;
-
 /**
  *
  */
 public class RenderGraph extends Creatable {
-    private Vector2i windowSize = new Vector2i(1200, 800);
-    private final FloatUniform aspectRatioUniform = new FloatUniform("aspectRatio", windowSize.getX() / windowSize.getY());
-    private float fieldOfView = 60;
-    private final FloatUniform tanHalfFOVUniform = new FloatUniform("tanHalfFOV", (float) Math.tan(Math.toRadians(fieldOfView) / 2));
-    private float nearPlane = 0.1f;
-    private float farPlane = 1000;
-    private final Vector2Uniform projectionUniform = new Vector2Uniform("projection", new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
     private final Context context;
     private final String shaderSrcDir;
     private final Map<String, Program> programs = new HashMap<>();
@@ -132,6 +125,7 @@ public class RenderGraph extends Creatable {
         for (Stage stage : stages) {
             stage.render();
         }
+        context.updateDisplay();
     }
 
     public void addNode(GraphNode node) {
@@ -140,74 +134,6 @@ public class RenderGraph extends Creatable {
 
     public GraphNode getNode(String name) {
         return nodes.get(name);
-    }
-
-    public Vector2i getWindowSize() {
-        return windowSize;
-    }
-
-    public int getWindowWidth() {
-        return windowSize.getX();
-    }
-
-    public int getWindowHeight() {
-        return windowSize.getY();
-    }
-
-    public void setWindowSize(Vector2i windowSize) {
-        this.windowSize = windowSize;
-        aspectRatioUniform.set(windowSize.getX() / (float) windowSize.getY());
-    }
-
-    public float getAspectRatio() {
-        return aspectRatioUniform.get();
-    }
-
-    public FloatUniform getAspectRatioUniform() {
-        return aspectRatioUniform;
-    }
-
-    public float getFieldOfView() {
-        return fieldOfView;
-    }
-
-    public void setFieldOfView(float fieldOfView) {
-        this.fieldOfView = fieldOfView;
-        tanHalfFOVUniform.set((float) Math.tan(Math.toRadians(fieldOfView) / 2));
-    }
-
-    public float getTanHalfFOV() {
-        return tanHalfFOVUniform.get();
-    }
-
-    public FloatUniform getTanHalfFOVUniform() {
-        return tanHalfFOVUniform;
-    }
-
-    public float getNearPlane() {
-        return nearPlane;
-    }
-
-    public void setNearPlane(float nearPlane) {
-        this.nearPlane = nearPlane;
-        projectionUniform.set(new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
-    }
-
-    public float getFarPlane() {
-        return farPlane;
-    }
-
-    public void setFarPlane(float farPlane) {
-        this.farPlane = farPlane;
-        projectionUniform.set(new Vector2f(farPlane / (farPlane - nearPlane), (-farPlane * nearPlane) / (farPlane - nearPlane)));
-    }
-
-    public Vector2f getProjection() {
-        return projectionUniform.get();
-    }
-
-    public Vector2Uniform getProjectionUniform() {
-        return projectionUniform;
     }
 
     public Context getContext() {
@@ -227,7 +153,7 @@ public class RenderGraph extends Creatable {
     }
 
     private Program loadProgram(String name) {
-        final String shaderPath = shaderSrcDir + "/" + name;
+        final String shaderPath = shaderSrcDir + '/' + name;
         final Shader vertex = context.newShader();
         vertex.create();
         vertex.setSource(new ShaderSource(FlowRenderer.class.getResourceAsStream(shaderPath + ".vert")));
