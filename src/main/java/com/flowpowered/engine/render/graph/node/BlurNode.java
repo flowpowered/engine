@@ -21,11 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.flowpowered.engine.render.graph.node;
 
 import java.util.Arrays;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
 import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
 
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.Pipeline;
@@ -45,8 +48,7 @@ import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
-
-import com.flowpowered.engine.render.graph.RenderGraph;
+import org.spout.renderer.api.util.Rectangle;
 
 /**
  *
@@ -65,14 +67,14 @@ public class BlurNode extends GraphNode {
             return 1;
         }
     };
-    private final Material horizontalMaterial;
-    private final Material verticalMaterial;
     private final FrameBuffer horizontalFrameBuffer;
     private final FrameBuffer verticalFrameBuffer;
     private final Texture intermediateTexture;
     private final Texture colorsOutput;
-    private Texture colorsInput;
-    private Pipeline pipeline;
+    private final Material horizontalMaterial;
+    private final Pipeline pipeline;
+    private final Rectangle inputSize = new Rectangle();
+    private final Rectangle outputSize = new Rectangle();
     private final IntUniform halfKernelSizeUniform = new IntUniform("kernelSize", 0);
     private final FloatArrayUniform kernelUniform = new FloatArrayUniform("kernel", new float[]{});
     private final FloatArrayUniform offsetsUniform = new FloatArrayUniform("offsets", new float[]{});
@@ -82,34 +84,19 @@ public class BlurNode extends GraphNode {
     public BlurNode(RenderGraph graph, String name) {
         super(graph, name);
         final Program blurProgram = graph.getProgram("blur");
-        horizontalMaterial = new Material(blurProgram);
-        verticalMaterial = new Material(blurProgram);
         final Context context = graph.getContext();
-        horizontalFrameBuffer = context.newFrameBuffer();
-        verticalFrameBuffer = context.newFrameBuffer();
-        intermediateTexture = context.newTexture();
-        colorsOutput = context.newTexture();
-    }
-
-    @Override
-    public void create() {
-        checkNotCreated();
-        final Format format = colorsInput.getFormat();
-        final InternalFormat internalFormat = colorsInput.getInternalFormat();
-        // Create the colors texture
-        colorsOutput.create();
-        colorsOutput.setFormat(format, internalFormat);
-        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
-        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the intermediate texture
+        intermediateTexture = context.newTexture();
         intermediateTexture.create();
-        intermediateTexture.setFormat(format, internalFormat);
         intermediateTexture.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        intermediateTexture.setImageData(null, colorsInput.getWidth(), colorsInput.getHeight());
         intermediateTexture.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
+        // Create the colors texture
+        colorsOutput = context.newTexture();
+        colorsOutput.create();
+        colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
+        colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the horizontal material
-        horizontalMaterial.addTexture(0, colorsInput);
+        horizontalMaterial = new Material(blurProgram);
         UniformHolder uniforms = horizontalMaterial.getUniforms();
         uniforms.add(offsetsUniform);
         uniforms.add(halfKernelSizeUniform);
@@ -117,6 +104,7 @@ public class BlurNode extends GraphNode {
         uniforms.add(resolutionUniform);
         uniforms.add(new BooleanUniform("direction", false));
         // Create the vertical material
+        final Material verticalMaterial = new Material(blurProgram);
         verticalMaterial.addTexture(0, intermediateTexture);
         uniforms = verticalMaterial.getUniforms();
         uniforms.add(offsetsUniform);
@@ -129,31 +117,30 @@ public class BlurNode extends GraphNode {
         // Create the vertical screen model
         final Model verticalModel = new Model(graph.getScreen(), verticalMaterial);
         // Create the frame buffer
+        horizontalFrameBuffer = context.newFrameBuffer();
         horizontalFrameBuffer.create();
         horizontalFrameBuffer.attach(AttachmentPoint.COLOR0, intermediateTexture);
         // Create the vertical frame buffer
+        verticalFrameBuffer = context.newFrameBuffer();
         verticalFrameBuffer.create();
         verticalFrameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         // Create the pipeline
-        pipeline = new PipelineBuilder().bindFrameBuffer(horizontalFrameBuffer).renderModels(Arrays.asList(horizontalModel)).bindFrameBuffer(verticalFrameBuffer)
-                .renderModels(Arrays.asList(verticalModel)).unbindFrameBuffer(verticalFrameBuffer).build();
-        // Update state to created
-        super.create();
+        pipeline = new PipelineBuilder()
+                .useViewPort(inputSize).bindFrameBuffer(horizontalFrameBuffer).renderModels(Arrays.asList(horizontalModel))
+                .useViewPort(outputSize).bindFrameBuffer(verticalFrameBuffer).renderModels(Arrays.asList(verticalModel))
+                .unbindFrameBuffer(verticalFrameBuffer).build();
     }
 
     @Override
     public void destroy() {
-        checkCreated();
         horizontalFrameBuffer.destroy();
         verticalFrameBuffer.destroy();
         intermediateTexture.destroy();
         colorsOutput.destroy();
-        super.destroy();
     }
 
     @Override
     public void render() {
-        checkCreated();
         pipeline.run(graph.getContext());
     }
 
@@ -199,13 +186,37 @@ public class BlurNode extends GraphNode {
     @Input("colors")
     public void setColorsInput(Texture texture) {
         texture.checkCreated();
-        colorsInput = texture;
-        resolutionUniform.set(new Vector2f(texture.getWidth(), texture.getHeight()));
+        horizontalMaterial.addTexture(0, texture);
+        // Update the resolution uniform
+        final Vector2i size = texture.getSize();
+        inputSize.setSize(size);
+        resolutionUniform.set(size.toFloat());
+        // Get the format
+        final Format format = texture.getFormat();
+        final InternalFormat internalFormat = texture.getInternalFormat();
+        // Update the format if different
+        final boolean formatDifferent = format != colorsOutput.getFormat() || internalFormat != colorsOutput.getInternalFormat();
+        if (formatDifferent) {
+            colorsOutput.setFormat(format, internalFormat);
+            intermediateTexture.setFormat(format, internalFormat);
+            // Update the intermidiate texture data for the new format
+            intermediateTexture.setImageData(null, size.getX(), size.getY());
+            // The update for the output texture is done in setColorSize, which should be called after this
+        } else if (!intermediateTexture.getSize().equals(size)) {
+            // Update the intermediate texture size
+            intermediateTexture.setImageData(null, size.getX(), size.getY());
+        }
     }
 
     @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
+    }
+
+    @Setting
+    public void setColorsSize(Vector2i size) {
+        colorsOutput.setImageData(null, size.getX(), size.getY());
+        outputSize.setSize(size);
     }
 
     public static interface KernelGenerator {

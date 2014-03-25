@@ -21,11 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.flowpowered.engine.render.graph.node;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.flowpowered.engine.render.graph.RenderGraph;
+import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
+
+import org.spout.renderer.api.Action.SetCameraAction;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.Pipeline;
 import org.spout.renderer.api.Pipeline.PipelineBuilder;
@@ -35,12 +41,10 @@ import org.spout.renderer.api.gl.FrameBuffer;
 import org.spout.renderer.api.gl.FrameBuffer.AttachmentPoint;
 import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.FilterMode;
-import org.spout.renderer.api.gl.Texture.Format;
 import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.Texture.WrapMode;
 import org.spout.renderer.api.model.Model;
-
-import com.flowpowered.engine.render.graph.RenderGraph;
+import org.spout.renderer.api.util.Rectangle;
 
 /**
  *
@@ -53,52 +57,44 @@ public class RenderModelsNode extends GraphNode {
     private final Texture vertexNormalsOutput;
     private final Texture materialsOutput;
     private final List<Model> models = new ArrayList<>();
-    private final Camera camera;
-    private Pipeline pipeline;
+    private final SetCameraAction setCamera = new SetCameraAction(null);
+    private final Rectangle outputSize = new Rectangle();
+    private final Pipeline pipeline;
+    private float fieldOfView = 60;
+    private Vector2f planes = Vector2f.ZERO;
 
     public RenderModelsNode(RenderGraph graph, String name) {
         super(graph, name);
         final Context context = graph.getContext();
-        colorsOutput = context.newTexture();
-        normalsOutput = context.newTexture();
-        depthsOutput = context.newTexture();
-        vertexNormalsOutput = context.newTexture();
-        materialsOutput = context.newTexture();
-        frameBuffer = context.newFrameBuffer();
-        camera = Camera.createPerspective(graph.getFieldOfView(), graph.getWindowWidth(), graph.getWindowHeight(), graph.getNearPlane(), graph.getFarPlane());
-    }
-
-    @Override
-    public void create() {
-        checkNotCreated();
         // Create the colors texture
+        colorsOutput = context.newTexture();
         colorsOutput.create();
-        colorsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        colorsOutput.setFormat(InternalFormat.RGBA8);
         colorsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        colorsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         colorsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the normals texture
+        normalsOutput = context.newTexture();
         normalsOutput.create();
-        normalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        normalsOutput.setFormat(InternalFormat.RGBA8);
         normalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        normalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the depths texture
+        depthsOutput = context.newTexture();
         depthsOutput.create();
-        depthsOutput.setFormat(Format.DEPTH, InternalFormat.DEPTH_COMPONENT32);
+        depthsOutput.setFormat(InternalFormat.DEPTH_COMPONENT32);
         depthsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        depthsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         depthsOutput.setWraps(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
         // Create the vertex normals texture
+        vertexNormalsOutput = context.newTexture();
         vertexNormalsOutput.create();
-        vertexNormalsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        vertexNormalsOutput.setFormat(InternalFormat.RGBA8);
         vertexNormalsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        vertexNormalsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the materials texture
+        materialsOutput = context.newTexture();
         materialsOutput.create();
-        materialsOutput.setFormat(Format.RGBA, InternalFormat.RGBA8);
+        materialsOutput.setFormat(InternalFormat.RGBA8);
         materialsOutput.setFilters(FilterMode.LINEAR, FilterMode.LINEAR);
-        materialsOutput.setImageData(null, graph.getWindowWidth(), graph.getWindowHeight());
         // Create the frame buffer
+        frameBuffer = context.newFrameBuffer();
         frameBuffer.create();
         frameBuffer.attach(AttachmentPoint.COLOR0, colorsOutput);
         frameBuffer.attach(AttachmentPoint.COLOR1, normalsOutput);
@@ -106,32 +102,40 @@ public class RenderModelsNode extends GraphNode {
         frameBuffer.attach(AttachmentPoint.COLOR3, materialsOutput);
         frameBuffer.attach(AttachmentPoint.DEPTH, depthsOutput);
         // Create the pipeline
-        pipeline = new PipelineBuilder().useCamera(camera).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
-        // Update the state to created
-        super.create();
+        pipeline = new PipelineBuilder().doAction(setCamera).useViewPort(outputSize).bindFrameBuffer(frameBuffer).clearBuffer().renderModels(models).unbindFrameBuffer(frameBuffer).build();
     }
 
     @Override
     public void destroy() {
-        checkCreated();
         frameBuffer.destroy();
         colorsOutput.destroy();
         normalsOutput.destroy();
         depthsOutput.destroy();
         vertexNormalsOutput.destroy();
         materialsOutput.destroy();
-        super.destroy();
     }
 
     @Override
     public void render() {
-        checkCreated();
         pipeline.run(graph.getContext());
     }
 
     @Output("colors")
     public Texture getColorsOutput() {
         return colorsOutput;
+    }
+
+    @Setting
+    public void setOutputSize(Vector2i size) {
+        outputSize.setSize(size);
+        final int width = size.getX();
+        final int height = size.getY();
+        colorsOutput.setImageData(null, width, height);
+        normalsOutput.setImageData(null, width, height);
+        depthsOutput.setImageData(null, width, height);
+        vertexNormalsOutput.setImageData(null, size.getX(), height);
+        materialsOutput.setImageData(null, width, height);
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, width, height, planes.getX(), planes.getY()));
     }
 
     @Output("normals")
@@ -155,7 +159,19 @@ public class RenderModelsNode extends GraphNode {
     }
 
     public Camera getCamera() {
-        return camera;
+        return setCamera.getCamera();
+    }
+
+    @Setting
+    public void setFieldOfView(float fieldOfView) {
+        this.fieldOfView = fieldOfView;
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, outputSize.getWidth(), outputSize.getHeight(), planes.getX(), planes.getY()));
+    }
+
+    @Setting
+    public void setPlanes(Vector2f planes) {
+        this.planes = planes;
+        setCamera.setCamera(Camera.createPerspective(fieldOfView, outputSize.getWidth(), outputSize.getHeight(), planes.getX(), planes.getY()));
     }
 
     /**

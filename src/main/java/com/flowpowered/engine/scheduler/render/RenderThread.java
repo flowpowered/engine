@@ -29,41 +29,36 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 
-import com.flowpowered.commons.ViewFrustum;
-import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.math.TrigMath;
-import com.flowpowered.math.imaginary.Quaternionf;
-import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.math.vector.Vector3i;
-
-import gnu.trove.map.TObjectLongMap;
-import gnu.trove.map.hash.TObjectLongHashMap;
-
-import org.lwjgl.input.Keyboard;
-
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
-import com.flowpowered.api.geo.discrete.Point;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.material.block.BlockFace;
-import com.flowpowered.api.material.block.BlockFaces;
+import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowSingleplayer;
 import com.flowpowered.engine.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.engine.geo.snapshot.RegionSnapshot;
 import com.flowpowered.engine.geo.snapshot.WorldSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
-import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.model.ChunkModel;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.engine.scheduler.input.KeyboardEvent;
+import com.flowpowered.math.TrigMath;
+import com.flowpowered.math.imaginary.Quaternionf;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector3i;
+import gnu.trove.map.TObjectLongMap;
+import gnu.trove.map.hash.TObjectLongHashMap;
+import org.lwjgl.input.Keyboard;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned;
+import org.spout.renderer.api.GLVersioned.GLVersion;
 
 public class RenderThread extends TickingElement {
     public static final int FPS = 60;
+    public static final GLVersion DEFAULT_VERSION = GLVersion.GL32;
     private final Client client;
     private final FlowScheduler scheduler;
     private final FlowRenderer renderer;
@@ -87,7 +82,7 @@ public class RenderThread extends TickingElement {
 
     @Override
     public void onStart() {
-        renderer.setGLVersion(GLVersioned.GLVersion.GL32);
+        renderer.setGLVersion(DEFAULT_VERSION);
         renderer.init(((FlowScheduler) client.getScheduler()).getMainThread());
 
         input.subscribeToKeyboard();
@@ -277,7 +272,7 @@ public class RenderThread extends TickingElement {
                         mouseGrabbed ^= true;
                         break;
                     case Keyboard.KEY_F2:
-                        renderer.saveScreenshot(new File(""));
+                        renderer.saveScreenshot(null);
                 }
             }
         }
@@ -319,7 +314,7 @@ public class RenderThread extends TickingElement {
             lightAngle = dayAngle - PI;
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
-        final Vector3f direction = new Vector3f(0, -Math.sin(lightAngle), -Math.cos(lightAngle));
+        final Vector3f direction = new Vector3f(0, -TrigMath.sin(lightAngle), -TrigMath.cos(lightAngle));
         renderer.updateLight(direction, frustum);
         // TODO: lower light intensity at night
     }
