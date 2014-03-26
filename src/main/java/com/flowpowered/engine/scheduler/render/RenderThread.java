@@ -43,12 +43,12 @@ import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
 import com.flowpowered.engine.render.model.ChunkModel;
+import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
-
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 import org.lwjgl.input.Keyboard;
@@ -59,7 +59,6 @@ public class RenderThread extends TickingElement {
     public static final int FPS = 60;
     public static final GLVersion DEFAULT_VERSION = GLVersion.GL32;
     private final FlowClient client;
-    private final FlowScheduler scheduler;
     private final FlowRenderer renderer;
     private final ViewFrustum frustum;
     private final InputThread input;
@@ -72,7 +71,6 @@ public class RenderThread extends TickingElement {
     public RenderThread(FlowClient client) {
         super("RenderThread", FPS);
         this.client = client;
-        this.scheduler = scheduler;
         this.renderer = new FlowRenderer();
         this.frustum = new ViewFrustum();
         this.input = client.getScheduler().getInputThread();
