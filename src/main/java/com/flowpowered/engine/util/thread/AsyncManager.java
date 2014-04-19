@@ -37,15 +37,5 @@ public interface AsyncManager {
      */
     public boolean checkSequence(TickStage stage, int sequence);
 
-    /**
-     * Gets the execution thread associated with this manager
-     */
-    public Thread getExecutionThread();
-
-    /**
-     * Sets the execution thread associated with this manager
-     */
-    public void setExecutionThread(Thread t);
-
     public ShortBitMask getTickStages();
 }

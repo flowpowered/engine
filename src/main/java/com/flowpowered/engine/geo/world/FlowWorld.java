@@ -451,15 +451,6 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
         return sequence == -1;
     }
 
-    @Override
-    public Thread getExecutionThread() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setExecutionThread(Thread t) {
-    }
-
     private static ShortBitMask STAGES = TickStage.allOf(TickStage.STAGE1, TickStage.SNAPSHOT);
     @Override
     public ShortBitMask getTickStages() {

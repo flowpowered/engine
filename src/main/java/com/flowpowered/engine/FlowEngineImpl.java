@@ -147,15 +147,6 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
         return true;
     }
 
-    @Override
-    public Thread getExecutionThread() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setExecutionThread(Thread t) {
-    }
-
     private final ShortBitMask STAGES = TickStage.SNAPSHOT;
     @Override
     public ShortBitMask getTickStages() {
