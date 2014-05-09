@@ -23,18 +23,20 @@
  */
 package com.flowpowered.api.geo;
 
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 
 public interface AreaBlockSource {
+
 	/**
 	 * Gets the material for the block at (x, y, z)
 	 *
 	 * @param x coordinate of the block
 	 * @param y coordinate of the block
 	 * @param z coordinate of the block
+	 *
 	 * @return the block's material from the snapshot
 	 */
-	public BlockMaterial getBlockMaterial(int x, int y, int z);
+	public BlockBaseMaterial getBlockMaterial(int x, int y, int z);
 
 	/**
 	 * Gets the packed BlockFullData for the block at (x, y, z). Handler methods are provided by the BlockFullState class.
@@ -42,6 +44,7 @@ public interface AreaBlockSource {
 	 * @param x coordinate of the block
 	 * @param y coordinate of the block
 	 * @param z coordinate of the block
+	 *
 	 * @return the block's full state from the snapshot
 	 */
 	public int getBlockFullState(int x, int y, int z);
@@ -52,6 +55,7 @@ public interface AreaBlockSource {
 	 * @param x coordinate of the block
 	 * @param y coordinate of the block
 	 * @param z coordinate of the block
+	 *
 	 * @return the block's data from the snapshot
 	 */
 	public short getBlockData(int x, int y, int z);

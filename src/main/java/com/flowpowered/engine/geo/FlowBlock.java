@@ -23,33 +23,33 @@
  */
 package com.flowpowered.engine.geo;
 
-import com.flowpowered.engine.geo.chunk.FlowChunk;
-import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.geo.region.FlowRegion;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 
-import com.flowpowered.commons.StringUtil;
-import com.flowpowered.commons.datatable.ManagedMap;
-import com.flowpowered.events.Cause;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import com.flowpowered.api.Platform;
 import com.flowpowered.api.Flow;
+import com.flowpowered.api.Platform;
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.cuboid.reference.ChunkReference;
 import com.flowpowered.api.geo.discrete.Point;
-import com.flowpowered.api.material.BlockMaterial;
-import com.flowpowered.api.material.Material;
+import com.flowpowered.api.material.BaseMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.api.material.block.BlockFace;
+import com.flowpowered.commons.StringUtil;
+import com.flowpowered.commons.datatable.ManagedMap;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.events.Cause;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 public class FlowBlock implements Block {
+
 	private final int x, y, z;
 	private final WeakReference<? extends FlowWorld> world;
 	private final ChunkReference chunk;
@@ -58,8 +58,8 @@ public class FlowBlock implements Block {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-        this.world = new WeakReference<>(world);
-        this.chunk = new ChunkReference(new Point(getWorld(), this.x, this.y, this.z));
+		this.world = new WeakReference<>(world);
+		this.chunk = new ChunkReference(new Point(getWorld(), this.x, this.y, this.z));
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class FlowBlock implements Block {
 
 	@Override
 	public FlowChunk getChunk() {
-        return (FlowChunk) this.chunk.refresh(LoadOption.LOAD_GEN);
+		return (FlowChunk) this.chunk.refresh(LoadOption.LOAD_GEN);
 	}
 
 	@Override
@@ -147,7 +147,7 @@ public class FlowBlock implements Block {
 	}
 
 	@Override
-	public boolean setMaterial(BlockMaterial material, int data, Cause<?> cause) {
+	public boolean setMaterial(BlockBaseMaterial material, int data, Cause<?> cause) {
 		// TODO once stable, remove this
 		if (Flow.getPlatform() != Platform.SERVER) {
 			throw new UnsupportedOperationException("Temporary lockdown of setMaterial. Server only!");
@@ -156,12 +156,12 @@ public class FlowBlock implements Block {
 	}
 
 	@Override
-	public boolean setMaterial(BlockMaterial material, int data) {
+	public boolean setMaterial(BlockBaseMaterial material, int data) {
 		return setMaterial(material, data, null);
 	}
 
 	@Override
-	public FlowBlock setData(BlockMaterial data) {
+	public FlowBlock setData(BlockBaseMaterial data) {
 		return this.setData(data.getData());
 	}
 
@@ -222,23 +222,23 @@ public class FlowBlock implements Block {
 	}
 
 	@Override
-	public BlockMaterial getMaterial() {
+	public BlockBaseMaterial getMaterial() {
 		return this.getChunk().getBlockMaterial(this.x, this.y, this.z);
 	}
 
 	@Override
-	public boolean setMaterial(BlockMaterial material) {
+	public boolean setMaterial(BlockBaseMaterial material) {
 		return this.setMaterial(material, material.getData());
 	}
 
 	@Override
-	public boolean setMaterial(BlockMaterial material, Cause<?> cause) {
+	public boolean setMaterial(BlockBaseMaterial material, Cause<?> cause) {
 		return this.setMaterial(material, material.getData(), cause);
 	}
 
 	@Override
-	public boolean isMaterial(Material... materials) {
-		return getMaterial().isMaterial(materials);
+	public boolean isMaterial(BaseMaterial... baseMaterials) {
+		return getMaterial().isMaterial(baseMaterials);
 	}
 
 	@Override

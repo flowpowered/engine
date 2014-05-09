@@ -31,80 +31,77 @@ import com.flowpowered.api.Platform;
 import com.flowpowered.api.Singleplayer;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.Player;
+import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.generator.FlatWorldGenerator;
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.engine.entity.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
-
 import com.flowpowered.math.vector.Vector3f;
 
 public class FlowSingleplayer extends FlowServer implements Singleplayer {
-    private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
-    private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
 
-    // TEST CODE
-    private Entity testEntity;
+	private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
+	private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
+	// TEST CODE
+	private Entity testEntity;
 
-    public FlowSingleplayer(FlowApplication args) {
-        super(args);
-    }
+	public FlowSingleplayer(FlowApplication args) {
+		super(args);
+	}
 
-    @Override
-    public void init() {
-        try {
-            DeployNatives.deploy();
-        } catch (Exception ex) {
-            Logger.getLogger(FlowSingleplayer.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
-        super.init();
-        FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
-        activeWorld.set(loadedWorld);
-        FlowPlayer player = new FlowPlayer("Flowy");
-        this.player.set(player);
-        players.put(player.getName(), player);
-        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
-        this.testEntity = entity;
-    }
+	@Override
+	public void init() {
+		try {
+			DeployNatives.deploy();
+		} catch (Exception ex) {
+			Logger.getLogger(FlowSingleplayer.class.getName()).log(Level.SEVERE, null, ex);
+			return;
+		}
+		super.init();
+		FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockBaseMaterial.SOLID_BLUE));
+		activeWorld.set(loadedWorld);
+		FlowPlayer player = new FlowPlayer("Flowy");
+		this.player.set(player);
+		players.put(player.getName(), player);
+		Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+		this.testEntity = entity;
+	}
 
-    public Entity getTestEntity() {
-        return testEntity;
-    }
+	public Entity getTestEntity() {
+		return testEntity;
+	}
 
-    @Override
-    public void start() {
-        getScheduler().startClientThreads();
-        super.start();
-    }
+	@Override
+	public void start() {
+		getScheduler().startClientThreads();
+		super.start();
+	}
 
-    @Override
-    public boolean stop() {
-        return super.stop();
-        
-    }
+	@Override
+	public boolean stop() {
+		return super.stop();
+	}
 
-    @Override
-    public Platform getPlatform() {
-        return Platform.SINGLEPLAYER;
-    }
+	@Override
+	public Platform getPlatform() {
+		return Platform.SINGLEPLAYER;
+	}
 
-    @Override
-    public Player getPlayer() {
-        return player.get();
-    }
+	@Override
+	public Player getPlayer() {
+		return player.get();
+	}
 
-    @Override
-    public World getWorld() {
-        return activeWorld.get();
-    }
+	@Override
+	public World getWorld() {
+		return activeWorld.get();
+	}
 
-    @Override
-    public FlowRenderer getRenderer() {
-        return getScheduler().getRenderThread().getRenderer();
-    }
-
+	@Override
+	public FlowRenderer getRenderer() {
+		return getScheduler().getRenderThread().getRenderer();
+	}
 }

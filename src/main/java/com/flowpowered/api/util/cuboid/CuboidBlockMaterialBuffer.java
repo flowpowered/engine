@@ -25,10 +25,11 @@ package com.flowpowered.api.util.cuboid;
 
 import java.util.Arrays;
 
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.math.vector.Vector3f;
 
 public class CuboidBlockMaterialBuffer extends ImmutableCuboidBlockMaterialBuffer {
+
 	private CuboidBlockMaterialBuffer source;
 	private final ImmutableCuboidBlockMaterialBuffer backBuffer;
 
@@ -118,21 +119,21 @@ public class CuboidBlockMaterialBuffer extends ImmutableCuboidBlockMaterialBuffe
 	/**
 	 * Sets a horizontal layer of blocks to a given material
 	 *
-	 * @param y - coordinate of the start of the layer
-	 * @param height of the layer
+	 * @param y        - coordinate of the start of the layer
+	 * @param height   of the layer
 	 * @param material to set to
 	 */
-	public void setHorizontalLayer(int y, int height, BlockMaterial material) {
+	public void setHorizontalLayer(int y, int height, BlockBaseMaterial material) {
 		setHorizontalLayer(y, height, material.getId(), material.getData());
 	}
 
 	/**
 	 * Sets a horizontal layer of blocks to a given material id and data
 	 *
-	 * @param y - coordinate of the start of the layer
+	 * @param y      - coordinate of the start of the layer
 	 * @param height of the layer
-	 * @param id of the material to set to
-	 * @param data to set to
+	 * @param id     of the material to set to
+	 * @param data   to set to
 	 */
 	public void setHorizontalLayer(int y, int height, short id, short data) {
 		final int startIndex = getIndex(this.baseX, y, this.baseZ);
@@ -147,12 +148,12 @@ public class CuboidBlockMaterialBuffer extends ImmutableCuboidBlockMaterialBuffe
 	/**
 	 * Sets a single block material
 	 *
-	 * @param x - coordinate of the block
-	 * @param y - coordinate of the block
-	 * @param z - coordinate of the block
+	 * @param x        - coordinate of the block
+	 * @param y        - coordinate of the block
+	 * @param z        - coordinate of the block
 	 * @param material to set to
 	 */
-	public void set(int x, int y, int z, BlockMaterial material) {
+	public void set(int x, int y, int z, BlockBaseMaterial material) {
 		int index = getIndex(x, y, z);
 		if (index < 0) {
 			throw new IllegalArgumentException("Coordinate (" + x + ", " + y + ", " + z + ") is outside the buffer");
@@ -165,10 +166,10 @@ public class CuboidBlockMaterialBuffer extends ImmutableCuboidBlockMaterialBuffe
 	/**
 	 * Sets a single block material id and data
 	 *
-	 * @param x - coordinate of the block
-	 * @param y - coordinate of the block
-	 * @param z - coordinate of the block
-	 * @param id of the material to set to
+	 * @param x    - coordinate of the block
+	 * @param y    - coordinate of the block
+	 * @param z    - coordinate of the block
+	 * @param id   of the material to set to
 	 * @param data to set to
 	 */
 	public void set(int x, int y, int z, short id, short data) {
@@ -181,7 +182,7 @@ public class CuboidBlockMaterialBuffer extends ImmutableCuboidBlockMaterialBuffe
 		this.data[index] = data;
 	}
 
-	public void flood(BlockMaterial material) {
+	public void flood(BlockBaseMaterial material) {
 		for (int i = 0; i < id.length; i++) {
 			this.id[i] = material.getId();
 			this.data[i] = material.getData();

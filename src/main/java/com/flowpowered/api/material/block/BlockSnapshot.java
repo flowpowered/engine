@@ -25,16 +25,16 @@ package com.flowpowered.api.material.block;
 
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Block;
-import com.flowpowered.api.material.BlockMaterial;
-import com.flowpowered.api.material.Material;
-
+import com.flowpowered.api.material.BaseMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.commons.hashing.ShortPairHashed;
 
 /**
  * Represents an immutable snapshot of the state of a block
  */
 public class BlockSnapshot {
-	private final BlockMaterial material;
+
+	private final BlockBaseMaterial material;
 	private final short data;
 	private final int x, y, z;
 	private final World world;
@@ -43,11 +43,11 @@ public class BlockSnapshot {
 		this(block, block.getMaterial(), block.getBlockData());
 	}
 
-	public BlockSnapshot(Block block, BlockMaterial material, short data) {
+	public BlockSnapshot(Block block, BlockBaseMaterial material, short data) {
 		this(block.getWorld(), block.getX(), block.getY(), block.getZ(), material, data);
 	}
 
-	public BlockSnapshot(World world, int x, int y, int z, BlockMaterial material, short data) {
+	public BlockSnapshot(World world, int x, int y, int z, BlockBaseMaterial material, short data) {
 		this.material = material;
 		this.data = data;
 		this.x = x;
@@ -106,7 +106,7 @@ public class BlockSnapshot {
 	 *
 	 * @return the material
 	 */
-	public BlockMaterial getMaterial() {
+	public BlockBaseMaterial getMaterial() {
 		return this.material;
 	}
 
@@ -133,16 +133,16 @@ public class BlockSnapshot {
 		return false;
 	}
 
-	public boolean isMaterial(Material... materials) {
+	public boolean isMaterial(BaseMaterial... baseMaterials) {
 		if (this.material == null) {
-			for (Material material : materials) {
-				if (material == null) {
+			for (BaseMaterial baseMaterial : baseMaterials) {
+				if (baseMaterial == null) {
 					return true;
 				}
 			}
 			return false;
 		} else {
-			return this.material.isMaterial(materials);
+			return this.material.isMaterial(baseMaterials);
 		}
 	}
 }
