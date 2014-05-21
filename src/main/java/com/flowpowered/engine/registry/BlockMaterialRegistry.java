@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.flowpowered.api.Flow;
+import com.flowpowered.api.geo.World;
 import com.flowpowered.api.material.BlockBaseMaterial;
 
 /**
@@ -17,10 +18,11 @@ import com.flowpowered.api.material.BlockBaseMaterial;
 public class BlockMaterialRegistry {
 
 	/**
-	 * Class of the instancing game.
+	 * Class of the instancing Plugin.
 	 * This is required to make sure that only objects from the instancing game can be used as fallback objects.
 	 */
-	private Class<? extends TempGame> gameClass;
+	private Class gameClass;
+	private World world;
 	private String gameClassPath;
 	private Map<Integer, String> idNameMap = new HashMap<>(500);
 	private Map<String, Integer> nameIdMap = new HashMap<>(500);
@@ -28,9 +30,10 @@ public class BlockMaterialRegistry {
 	private Integer numberOfMaterials = 0;
 	private boolean initialized = false;
 
-	public BlockMaterialRegistry(TempGame game) {
+	public BlockMaterialRegistry(TempGame game, World world) {
 		gameClass = game.getClass();
 		gameClassPath = gameClass.getPackage().getName();
+		this.world = world;
 	}
 
 	public BlockMaterial addBlockMaterial(BlockBaseMaterial blockBaseMaterial) {
@@ -39,7 +42,7 @@ public class BlockMaterialRegistry {
 
 	public BlockMaterial addBlockMaterial(BlockBaseMaterial blockBaseMaterial, BlockBaseMaterial customBlockBaseMaterial) {
 		if (!blockBaseMaterial.getClass().getName().contains(gameClassPath)) {
-			throw new IllegalArgumentException("BlockBaseMaterial must be from classes of the Game!");
+			throw new IllegalArgumentException("BlockBaseMaterial must be from classes of the registering plugin: " + gameClass.getName() + " !");
 		}
 		String blockMaterialName = blockBaseMaterial.getName();
 		BlockMaterial blockMaterial;
