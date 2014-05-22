@@ -26,7 +26,6 @@ package com.flowpowered.engine.render;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -36,26 +35,8 @@ import java.util.Calendar;
 
 import javax.imageio.ImageIO;
 
-import com.flowpowered.api.render.Renderer;
-import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.commons.ViewFrustum;
-import com.flowpowered.engine.render.graph.RenderGraph;
-import com.flowpowered.engine.render.graph.node.BlurNode;
-import com.flowpowered.engine.render.graph.node.CascadedShadowMappingNode;
-import com.flowpowered.engine.render.graph.node.LightingNode;
-import com.flowpowered.engine.render.graph.node.RenderGUINode;
-import com.flowpowered.engine.render.graph.node.RenderModelsNode;
-import com.flowpowered.engine.render.graph.node.RenderTransparentModelsNode;
-import com.flowpowered.engine.render.graph.node.SSAONode;
-import com.flowpowered.engine.render.graph.node.ShadowMappingNode;
-import com.flowpowered.engine.scheduler.FlowScheduler;
-import com.flowpowered.engine.scheduler.render.RenderThread;
-import com.flowpowered.math.matrix.Matrix4f;
-import com.flowpowered.math.vector.Vector2f;
-import com.flowpowered.math.vector.Vector2i;
-import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.math.vector.Vector4f;
 import org.lwjgl.opengl.GLContext;
+
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLImplementation;
 import org.spout.renderer.api.GLVersioned.GLVersion;
@@ -76,6 +57,26 @@ import org.spout.renderer.api.util.CausticUtil;
 import org.spout.renderer.api.util.MeshGenerator;
 import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
+
+import com.flowpowered.api.render.Renderer;
+import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.engine.render.graph.RenderGraph;
+import com.flowpowered.engine.render.graph.node.BlurNode;
+import com.flowpowered.engine.render.graph.node.CascadedShadowMappingNode;
+import com.flowpowered.engine.render.graph.node.LightingNode;
+import com.flowpowered.engine.render.graph.node.RenderGUINode;
+import com.flowpowered.engine.render.graph.node.RenderModelsNode;
+import com.flowpowered.engine.render.graph.node.RenderTransparentModelsNode;
+import com.flowpowered.engine.render.graph.node.SSAONode;
+import com.flowpowered.engine.render.graph.node.ShadowMappingNode;
+import com.flowpowered.engine.scheduler.FlowScheduler;
+import com.flowpowered.engine.scheduler.render.RenderThread;
+import com.flowpowered.math.matrix.Matrix4f;
+import com.flowpowered.math.vector.Vector2f;
+import com.flowpowered.math.vector.Vector2i;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector4f;
 
 /**
  */
@@ -151,7 +152,7 @@ public class FlowRenderer implements Renderer {
         final Vector2f planes = new Vector2f(0.1f, 200);
         final int blurSize = 2;
         // Create the graph
-        graph = new RenderGraph(context, "/shaders/gl" + context.getGLVersion().getMajor() + "0");
+        graph = new RenderGraph(context, "/shaders/glsl" + (context.getGLVersion().getGLSLFull() >= 150 ? 330 : 120));
         graph.create();
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");

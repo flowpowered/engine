@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
 
+import org.spout.renderer.lwjgl.LWJGLUtil;
+
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
@@ -35,7 +37,6 @@ import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.FlowSingleplayerSession;
-import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
 
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
@@ -50,7 +51,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     @Override
     public void init() {
         try {
-            DeployNatives.deploy();
+            LWJGLUtil.deployNatives(null);
         } catch (Exception ex) {
             LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
             return;
@@ -63,8 +64,8 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
         FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(this, true));
         this.player.set(player);
         session.setPlayer(player);
-        
-        
+
+
     }
 
     @Override
@@ -76,7 +77,7 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     @Override
     public boolean stop() {
         return super.stop();
-        
+
     }
 
     @Override

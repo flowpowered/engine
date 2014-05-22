@@ -26,17 +26,17 @@ package com.flowpowered.engine;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.logging.log4j.LogManager;
+
+import org.spout.renderer.lwjgl.LWJGLUtil;
+
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.network.FlowNetworkClient;
 import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.render.DeployNatives;
 import com.flowpowered.engine.render.FlowRenderer;
-import io.netty.util.ResourceLeakDetector;
-
-import org.apache.logging.log4j.LogManager;
 
 public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
@@ -53,7 +53,7 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     @Override
     public void init() {
         try {
-            DeployNatives.deploy();
+            LWJGLUtil.deployNatives(null);
         } catch (Exception ex) {
             LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
             return;
