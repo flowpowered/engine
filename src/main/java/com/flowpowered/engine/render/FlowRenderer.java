@@ -252,7 +252,7 @@ public class FlowRenderer implements Renderer {
 
         final VertexArray shape = context.newVertexArray();
         shape.create();
-        shape.setData(MeshGenerator.generateCylinder(null, 2.5f, 5));
+        shape.setData(MeshGenerator.generateCylinder(2.5f, 5));
         final Model model1 = new Model(shape, transparencyMaterial);
         model1.setPosition(new Vector3f(0, 22, -6));
         model1.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(1, 1, 0, 0.3)));
@@ -338,7 +338,8 @@ public class FlowRenderer implements Renderer {
 
     private void setPreviousModelMatrices() {
         for (Model model : renderModelsNode.getModels()) {
-            model.getUniforms().getMatrix4("previousModelMatrix").set(model.getMatrix());
+            Matrix4Uniform uniform = model.getUniforms().get("previousModelMatrix");
+            uniform.set(model.getMatrix());
         }
     }
 

@@ -35,7 +35,7 @@ import gnu.trove.list.array.TIntArrayList;
 import org.spout.renderer.api.data.VertexAttribute;
 import org.spout.renderer.api.data.VertexAttribute.DataType;
 import org.spout.renderer.api.data.VertexData;
-import org.spout.renderer.api.util.CausticUtil;
+import org.spout.renderer.api.util.MeshGenerator;
 
 /**
  * Represents a standard mesh, with various attributes (positions, normals, texture coordinates and/or tangents). This mesh can be converted into {@link VertexData for
@@ -123,12 +123,13 @@ public class Mesh {
     }
 
     /**
-     * Builds the mesh into a {@link VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated 
+     * Builds the mesh into a {@link VertexData} to be ready for rendering. If an attribute has no data, but can be automatically generated
      * (@see MeshAttribute#generateDataIfMissing()), it will be generated for the build. The generated data will be stored in the attribute float list.
      *
      * @return The vertex data for the built mesh
      */
     public VertexData build() {
+        // TODO: Use MeshGenerator.buildMesh() ?
         final VertexData vertexData = new VertexData();
         int i = 0;
         for (Entry<MeshAttribute, TFloatList> entry : attributes.entrySet()) {
@@ -138,10 +139,10 @@ public class Mesh {
             if (data.isEmpty() && attribute.generateDataIfMissing()) {
                 switch (attribute) {
                     case NORMALS:
-                        CausticUtil.generateNormals(attributes.get(MeshAttribute.POSITIONS), indices, data);
+                        MeshGenerator.generateNormals(attributes.get(MeshAttribute.POSITIONS), indices, data);
                         break;
                     case TANGENTS:
-                        CausticUtil.generateTangents(attributes.get(MeshAttribute.POSITIONS), attributes.get(MeshAttribute.NORMALS), attributes.get(MeshAttribute.TEXTURE_COORDS), indices, data);
+                        MeshGenerator.generateTangents(attributes.get(MeshAttribute.POSITIONS), attributes.get(MeshAttribute.NORMALS), attributes.get(MeshAttribute.TEXTURE_COORDS), indices, data);
                 }
             }
             vertexAttribute.setData(data);

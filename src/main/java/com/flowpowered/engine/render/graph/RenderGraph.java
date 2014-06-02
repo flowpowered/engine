@@ -32,20 +32,17 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.flowpowered.engine.render.FlowRenderer;
-import com.flowpowered.engine.render.graph.node.GraphNode;
-import com.flowpowered.math.vector.Vector2f;
-import com.flowpowered.math.vector.Vector2i;
-
 import org.spout.renderer.api.Creatable;
 import org.spout.renderer.api.data.ShaderSource;
-import org.spout.renderer.api.data.Uniform.FloatUniform;
-import org.spout.renderer.api.data.Uniform.Vector2Uniform;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Program;
 import org.spout.renderer.api.gl.Shader;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.util.MeshGenerator;
+
+import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.engine.render.graph.node.GraphNode;
+import com.flowpowered.math.vector.Vector2f;
 
 /**
  *
@@ -71,7 +68,7 @@ public class RenderGraph extends Creatable {
         }
         // Create the full screen quad
         screen.create();
-        screen.setData(MeshGenerator.generateTexturedPlane(null, new Vector2f(2, 2)));
+        screen.setData(MeshGenerator.generatePlane(new Vector2f(2, 2)));
         // Update the state to created
         super.create();
     }
