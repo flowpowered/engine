@@ -7,6 +7,7 @@ import java.io.InputStream;
 import com.flowpowered.api.Engine;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.commons.Named;
+import com.flowpowered.engine.registry.BlockMaterialRegistry;
 
 import net.java.games.util.plugins.PluginLoader;
 import org.slf4j.Logger;
@@ -115,4 +116,19 @@ public interface TempPlugin extends Named {
 	 * @return the plugins dictionary
 	 */
 	// public PluginDictionary getDictionary();
+
+	/**
+	 * @return the plugins BlockMaterialRegistry
+	 */
+	public BlockMaterialRegistry getBlockMaterialRegistry();
+
+	/**
+	 * @return the plugins ItemMaterialRegistry
+	 */
+	//public ItemMaterialRegistry getItemMaterialRegistry();
+
+	/**
+	 * @return the plugins EntitiyMaterialRegistry
+	 */
+	//public EntityMaterialRegistry getEntityMaterialRegistry();
 }

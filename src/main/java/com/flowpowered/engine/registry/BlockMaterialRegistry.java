@@ -4,12 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.flowpowered.api.Flow;
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.material.BlockBaseMaterial;
+import com.flowpowered.api.material.block.TempPlugin;
 
 /**
  * Registry Class which handles everything concerning BlockMaterial interaction.
- * TODO: add world support
  * TODO: create abstract base class to support Item and Entity Registry
  *
  * @author $Author: dredhorse$
@@ -22,18 +21,18 @@ public class BlockMaterialRegistry {
 	 * This is required to make sure that only objects from the instancing game can be used as fallback objects.
 	 */
 	private Class gameClass;
-	private World world;
+	private TempPlugin plugin;
 	private String gameClassPath;
 	private Map<Integer, String> idNameMap = new HashMap<>(500);
 	private Map<String, Integer> nameIdMap = new HashMap<>(500);
-	private Map<Integer, GenericRegistryObject> idRegistryMap = new HashMap<>(500);
+	private Map<Integer, BlockMaterial> idRegistryMap = new HashMap<>(500);
 	private Integer numberOfMaterials = 0;
 	private boolean initialized = false;
 
-	public BlockMaterialRegistry(TempGame game, World world) {
+	public BlockMaterialRegistry(TempPlugin game) {
 		gameClass = game.getClass();
 		gameClassPath = gameClass.getPackage().getName();
-		this.world = world;
+		this.plugin = game;
 	}
 
 	public BlockMaterial addBlockMaterial(BlockBaseMaterial blockBaseMaterial) {
@@ -49,7 +48,7 @@ public class BlockMaterialRegistry {
 		if (nameIdMap.containsKey(blockMaterialName)) {
 			Integer id = nameIdMap.get(blockMaterialName);
 			if (idRegistryMap.containsKey(id)) {
-				blockMaterial = ((BlockMaterial) idRegistryMap.get(id));
+				blockMaterial = idRegistryMap.get(id);
 				Flow.log("BlockMaterial with the Name " + blockMaterialName + " already exists!");
 				Flow.fine("Returning original BlockMaterial");
 				if (blockMaterial.getCustomBlockBaseMaterial().equals(customBlockBaseMaterial) || (customBlockBaseMaterial.getClass().getName().contains(gameClassPath))) {
@@ -74,7 +73,7 @@ public class BlockMaterialRegistry {
 
 	public boolean addCustomBlockBaseMaterial(Integer id, BlockBaseMaterial customBlockBaseMaterial) {
 		checkIfBlockMaterialIdExists(id);
-		BlockMaterial blockMaterial = (BlockMaterial) idRegistryMap.get(id);
+		BlockMaterial blockMaterial = idRegistryMap.get(id);
 		return blockMaterial.addCustomBlockBaseMaterial(customBlockBaseMaterial);
 	}
 
@@ -91,7 +90,7 @@ public class BlockMaterialRegistry {
 
 	public boolean removeCustomBlockBaseMaterial(Integer id, BlockBaseMaterial customBlockBaseMaterial) {
 		checkIfBlockMaterialIdExists(id);
-		BlockMaterial blockMaterial = (BlockMaterial) idRegistryMap.get(id);
+		BlockMaterial blockMaterial = idRegistryMap.get(id);
 		return blockMaterial.removeCustomBlockBaseMaterial(customBlockBaseMaterial);
 	}
 
@@ -114,12 +113,12 @@ public class BlockMaterialRegistry {
 
 	public BlockMaterial getBlockMaterialByID(Integer id) {
 		checkIfBlockMaterialIdExists(id);
-		return (BlockMaterial) idRegistryMap.get(id);
+		return idRegistryMap.get(id);
 	}
 
 	public boolean revertToLastCustomBlockBaseMaterial(Integer id) {
 		checkIfBlockMaterialIdExists(id);
-		BlockMaterial blockMaterial = (BlockMaterial) idRegistryMap.get(id);
+		BlockMaterial blockMaterial = idRegistryMap.get(id);
 		return blockMaterial.revertToLastCustomBlockBaseMaterial();
 	}
 

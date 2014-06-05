@@ -4,6 +4,11 @@ import java.util.LinkedList;
 
 import com.flowpowered.api.material.BlockBaseMaterial;
 
+import static com.flowpowered.engine.registry.BlockAttributes.BASE_MATERIAL;
+import static com.flowpowered.engine.registry.BlockAttributes.CUSTOM_MATERIAL;
+import static com.flowpowered.engine.registry.BlockAttributes.ID;
+import static com.flowpowered.engine.registry.BlockAttributes.NAME;
+
 /**
  * BlockMaterial which contains the default game based {@link BlockBaseMaterial} and any other custom {@link BlockBaseMaterial}
  * TODO: add logging for FINE
@@ -11,7 +16,7 @@ import com.flowpowered.api.material.BlockBaseMaterial;
  * @author $Author: dredhorse$
  * @version $FullVersion$*
  */
-public class BlockMaterial extends GenericRegistryObject {
+public class BlockMaterial extends GenericRegistryObject<BlockAttributes> {
 
 	BlockMaterial(final Class attributeGroup) {
 		super(BlockAttributes.class);
@@ -36,30 +41,30 @@ public class BlockMaterial extends GenericRegistryObject {
 		BlockMaterial blockMaterial = new BlockMaterial(BlockAttributes.class);
 		LinkedList<BlockBaseMaterial> customBlockBaseMaterialList = new LinkedList<>();
 		customBlockBaseMaterialList.add(customBlockBaseMaterial);
-		blockMaterial.set(BlockAttributes.ID, -1);
-		blockMaterial.set(BlockAttributes.CUSTOM_MATERIAL, customBlockBaseMaterialList);
-		blockMaterial.set(BlockAttributes.BASE_MATERIAL, blockBaseMaterial);
-		blockMaterial.set(BlockAttributes.NAME, blockBaseMaterial.getName());
+		blockMaterial.set(ID, -1);
+		blockMaterial.set(CUSTOM_MATERIAL, customBlockBaseMaterialList);
+		blockMaterial.set(BASE_MATERIAL, blockBaseMaterial);
+		blockMaterial.set(NAME, blockBaseMaterial.getName());
 		return blockMaterial;
 	}
 
 	public BlockBaseMaterial getBlockBaseMaterial() {
-		return (BlockBaseMaterial) this.get(BlockAttributes.BASE_MATERIAL);
+		return this.get(BASE_MATERIAL);
 	}
 
 	public BlockBaseMaterial getCustomBlockBaseMaterial() {
-		return ((LinkedList<BlockBaseMaterial>) this.get(BlockAttributes.CUSTOM_MATERIAL)).getLast();
+		return this.get(CUSTOM_MATERIAL).getLast();
 	}
 
 	public LinkedList<BlockBaseMaterial> getCustomBlockBaseMaterials() {
-		return (LinkedList<BlockBaseMaterial>) this.get(BlockAttributes.CUSTOM_MATERIAL);
+		return this.get(CUSTOM_MATERIAL);
 	}
 
 	public boolean addCustomBlockBaseMaterial(BlockBaseMaterial blockBaseMaterial) {
 		LinkedList<BlockBaseMaterial> customBlockBaseMaterialList = this.getCustomBlockBaseMaterials();
 		Boolean success = customBlockBaseMaterialList.add(blockBaseMaterial);
 		if (success) {
-			this.set(BlockAttributes.CUSTOM_MATERIAL, customBlockBaseMaterialList);
+			this.set(CUSTOM_MATERIAL, customBlockBaseMaterialList);
 		}
 		return success;
 	}
@@ -70,7 +75,7 @@ public class BlockMaterial extends GenericRegistryObject {
 			LinkedList<BlockBaseMaterial> customBlockBaseMaterialList = this.getCustomBlockBaseMaterials();
 			success = customBlockBaseMaterialList.remove(blockBaseMaterial);
 			if (success) {
-				this.set(BlockAttributes.CUSTOM_MATERIAL, customBlockBaseMaterialList);
+				this.set(CUSTOM_MATERIAL, customBlockBaseMaterialList);
 			}
 		}
 		return success;
@@ -80,20 +85,20 @@ public class BlockMaterial extends GenericRegistryObject {
 		LinkedList<BlockBaseMaterial> customBlockBaseMaterialList = this.getCustomBlockBaseMaterials();
 		Boolean success = (customBlockBaseMaterialList.removeLast() != null);
 		if (success) {
-			this.set(BlockAttributes.CUSTOM_MATERIAL, customBlockBaseMaterialList);
+			this.set(CUSTOM_MATERIAL, customBlockBaseMaterialList);
 		}
 		return success;
 	}
 
 	Integer getID() {
-		return (Integer) this.get(BlockAttributes.ID);
+		return this.get(ID);
 	}
 
 	void setID(Integer id) {
-		this.set(BlockAttributes.ID, id);
+		this.set(ID, id);
 	}
 
 	public String getName() {
-		return (String) this.get(BlockAttributes.NAME);
+		return this.get(NAME);
 	}
 }
