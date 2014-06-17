@@ -40,6 +40,7 @@ public class BlockMaterialRegistry {
 	}
 
 	public BlockMaterial addBlockMaterial(BlockBaseMaterial blockBaseMaterial, BlockBaseMaterial customBlockBaseMaterial) {
+		checkIfRegistryIsInitialized();
 		if (!blockBaseMaterial.getClass().getName().contains(gameClassPath)) {
 			throw new IllegalArgumentException("BlockBaseMaterial must be from classes of the registering plugin: " + gameClass.getName() + " !");
 		}
@@ -66,18 +67,29 @@ public class BlockMaterialRegistry {
 		return blockMaterial;
 	}
 
+	private void checkIfRegistryIsInitialized() {
+		if (!initialized) {
+			if (!initializeRegistry()) {
+				throw new RegistryNotInitializedException("BlockRegistry");
+			}
+		}
+	}
+
 	public boolean addCustomBlockBaseMaterial(String blockMaterialName, BlockBaseMaterial customBlockBaseMaterial) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
 		return addCustomBlockBaseMaterial(nameIdMap.get(blockMaterialName), customBlockBaseMaterial);
 	}
 
 	public boolean addCustomBlockBaseMaterial(Integer id, BlockBaseMaterial customBlockBaseMaterial) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialIdExists(id);
 		BlockMaterial blockMaterial = idRegistryMap.get(id);
 		return blockMaterial.addCustomBlockBaseMaterial(customBlockBaseMaterial);
 	}
 
 	public boolean removeCustomBlockBaseMaterial(String blockMaterialName, BlockBaseMaterial customBlockBaseMaterial) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
 		return removeCustomBlockBaseMaterial(nameIdMap.get(blockMaterialName), customBlockBaseMaterial);
 	}
@@ -89,6 +101,7 @@ public class BlockMaterialRegistry {
 	}
 
 	public boolean removeCustomBlockBaseMaterial(Integer id, BlockBaseMaterial customBlockBaseMaterial) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialIdExists(id);
 		BlockMaterial blockMaterial = idRegistryMap.get(id);
 		return blockMaterial.removeCustomBlockBaseMaterial(customBlockBaseMaterial);
@@ -101,28 +114,33 @@ public class BlockMaterialRegistry {
 	}
 
 	public boolean revertToLastCustomBlockBaseMaterial(String blockMaterialName) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
 		return revertToLastCustomBlockBaseMaterial(nameIdMap.get(blockMaterialName));
 	}
 
 	public BlockMaterial getBlockMaterialByName(String blockMaterialName) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
 		Integer id = nameIdMap.get(blockMaterialName);
 		return getBlockMaterialByID(id);
 	}
 
 	public BlockMaterial getBlockMaterialByID(Integer id) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialIdExists(id);
 		return idRegistryMap.get(id);
 	}
 
 	public boolean revertToLastCustomBlockBaseMaterial(Integer id) {
+		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialIdExists(id);
 		BlockMaterial blockMaterial = idRegistryMap.get(id);
 		return blockMaterial.revertToLastCustomBlockBaseMaterial();
 	}
 
 	private BlockMaterial addBlockMaterialToRegistry(Integer id, BlockBaseMaterial blockBaseMaterial, BlockBaseMaterial customBlockBaseMaterial) {
+		checkIfRegistryIsInitialized();
 		String blockMaterialName = blockBaseMaterial.getName();
 		idNameMap.put(id, blockMaterialName);
 		nameIdMap.put(blockMaterialName, id);
@@ -133,16 +151,22 @@ public class BlockMaterialRegistry {
 	}
 
 	private boolean initializeRegistry() {
+		if (initialized) {
+			Flow.severe("This blockregistry is already initialized, doing nothing!");
+			return true;
+		}
 		// TODO: add reading of initial registry if saved file found
 		return false;
 	}
 
 	public boolean loadRegistry() {
+		checkIfRegistryIsInitialized();
 		// TODO: add loading of registry from file
 		return false;
 	}
 
 	public boolean saveRegistry() {
+		checkIfRegistryIsInitialized();
 		// TODO: add saving of registry to file
 		return false;
 	}
