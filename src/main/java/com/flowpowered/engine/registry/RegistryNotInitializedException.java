@@ -31,7 +31,7 @@ public class RegistryNotInitializedException extends RuntimeException {
 		exception = ex;
 		Flow.severe("The " + registryName + " is not initialized yet!");
 		Flow.severe("The following Exception was thrown:", exception);
-		Flow.getLogger().severe("This is a major error and you should notify the developer!");
+		Flow.severe("This is a major error and you should notify the developer!");
 	}
 
 	public String getMessage() {

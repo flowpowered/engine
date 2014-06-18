@@ -23,8 +23,8 @@ public class BlockMaterialRegistry {
 	private Class gameClass;
 	private TempPlugin plugin;
 	private String gameClassPath;
-	private Map<Integer, String> idNameMap = new HashMap<>(500);
-	private Map<String, Integer> nameIdMap = new HashMap<>(500);
+	String blockRegistryFileName = plugin.getDataFolder() + "blockregistry";
+	private YamlRegistry yamlRegistry = new YamlRegistry(500);
 	private Map<Integer, BlockMaterial> idRegistryMap = new HashMap<>(500);
 	private Integer numberOfMaterials = 0;
 	private boolean initialized = false;
@@ -46,8 +46,8 @@ public class BlockMaterialRegistry {
 		}
 		String blockMaterialName = blockBaseMaterial.getName();
 		BlockMaterial blockMaterial;
-		if (nameIdMap.containsKey(blockMaterialName)) {
-			Integer id = nameIdMap.get(blockMaterialName);
+		if (yamlRegistry.containsKeyName(blockMaterialName)) {
+			Integer id = yamlRegistry.getIdByName(blockMaterialName);
 			if (idRegistryMap.containsKey(id)) {
 				blockMaterial = idRegistryMap.get(id);
 				Flow.log("BlockMaterial with the Name " + blockMaterialName + " already exists!");
@@ -78,7 +78,7 @@ public class BlockMaterialRegistry {
 	public boolean addCustomBlockBaseMaterial(String blockMaterialName, BlockBaseMaterial customBlockBaseMaterial) {
 		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
-		return addCustomBlockBaseMaterial(nameIdMap.get(blockMaterialName), customBlockBaseMaterial);
+		return addCustomBlockBaseMaterial(yamlRegistry.getIdByName(blockMaterialName), customBlockBaseMaterial);
 	}
 
 	public boolean addCustomBlockBaseMaterial(Integer id, BlockBaseMaterial customBlockBaseMaterial) {
@@ -91,11 +91,11 @@ public class BlockMaterialRegistry {
 	public boolean removeCustomBlockBaseMaterial(String blockMaterialName, BlockBaseMaterial customBlockBaseMaterial) {
 		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
-		return removeCustomBlockBaseMaterial(nameIdMap.get(blockMaterialName), customBlockBaseMaterial);
+		return removeCustomBlockBaseMaterial(yamlRegistry.getIdByName(blockMaterialName), customBlockBaseMaterial);
 	}
 
 	private void checkIfBlockMaterialNameExists(final String blockMaterialName) {
-		if (!nameIdMap.containsKey(blockMaterialName)) {
+		if (!yamlRegistry.containsKeyName(blockMaterialName)) {
 			throw new IllegalArgumentException("The BlockMaterial with the name " + blockMaterialName + " doesn't exist!");
 		}
 	}
@@ -116,13 +116,13 @@ public class BlockMaterialRegistry {
 	public boolean revertToLastCustomBlockBaseMaterial(String blockMaterialName) {
 		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
-		return revertToLastCustomBlockBaseMaterial(nameIdMap.get(blockMaterialName));
+		return revertToLastCustomBlockBaseMaterial(yamlRegistry.getIdByName(blockMaterialName));
 	}
 
 	public BlockMaterial getBlockMaterialByName(String blockMaterialName) {
 		checkIfRegistryIsInitialized();
 		checkIfBlockMaterialNameExists(blockMaterialName);
-		Integer id = nameIdMap.get(blockMaterialName);
+		Integer id = yamlRegistry.getIdByName(blockMaterialName);
 		return getBlockMaterialByID(id);
 	}
 
@@ -142,8 +142,7 @@ public class BlockMaterialRegistry {
 	private BlockMaterial addBlockMaterialToRegistry(Integer id, BlockBaseMaterial blockBaseMaterial, BlockBaseMaterial customBlockBaseMaterial) {
 		checkIfRegistryIsInitialized();
 		String blockMaterialName = blockBaseMaterial.getName();
-		idNameMap.put(id, blockMaterialName);
-		nameIdMap.put(blockMaterialName, id);
+		yamlRegistry.addIdName(id, blockMaterialName);
 		BlockMaterial blockMaterial = BlockMaterial.createBlockMaterial(blockBaseMaterial, customBlockBaseMaterial);
 		idRegistryMap.put(id, blockMaterial);
 		blockMaterial.setID(id);
@@ -152,22 +151,34 @@ public class BlockMaterialRegistry {
 
 	private boolean initializeRegistry() {
 		if (initialized) {
-			Flow.severe("This blockregistry is already initialized, doing nothing!");
+			Flow.fine("This BlockRegistry is already initialized, doing nothing!");
 			return true;
 		}
-		// TODO: add reading of initial registry if saved file found
-		return false;
+		if (Flow.getPlatform().isServer()) {
+			if (yamlRegistry.checkIfRegistryStorageExists(blockRegistryFileName)) {
+				if (!loadRegistry()) {
+					throw new RegistryIOException("BlockRegistry", "loaded");
+				}
+			}
+		}
+		initialized = true;
+		return initialized;
 	}
 
 	public boolean loadRegistry() {
-		checkIfRegistryIsInitialized();
-		// TODO: add loading of registry from file
-		return false;
+		if (Flow.getPlatform().isClient()) {
+			Flow.debug("Won't be loading registry on client platform!");
+			return true;
+		}
+		return yamlRegistry.load(blockRegistryFileName);
 	}
 
 	public boolean saveRegistry() {
+		if (Flow.getPlatform().isClient()) {
+			Flow.debug("Won't be saving registry on client platform!");
+			return true;
+		}
 		checkIfRegistryIsInitialized();
-		// TODO: add saving of registry to file
-		return false;
+		return yamlRegistry.save(blockRegistryFileName);
 	}
 }
