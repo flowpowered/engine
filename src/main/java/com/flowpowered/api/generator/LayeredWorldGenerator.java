@@ -24,19 +24,18 @@
 package com.flowpowered.api.generator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.geo.cuboid.Chunk;
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 
 /**
  * A world generator that generates using previously-specified layers of blocks
  */
 public class LayeredWorldGenerator implements WorldGenerator {
+
 	private List<Layer> layers = new ArrayList<>();
 	private int minimum = Integer.MAX_VALUE;
 	private int height = Integer.MIN_VALUE;
@@ -94,14 +93,14 @@ public class LayeredWorldGenerator implements WorldGenerator {
 	 *
 	 * @param material of the layer
 	 */
-	protected void setFloorLayer(BlockMaterial material) {
+	protected void setFloorLayer(BlockBaseMaterial material) {
 		this.setFloorLayer(material.getId(), material.getData());
 	}
 
 	/**
 	 * Sets the floor layer material, the material for below the lowest layer<br> By default this layer is full of empty material (air)
 	 *
-	 * @param id of the material of the layer
+	 * @param id   of the material of the layer
 	 * @param data of the layer
 	 */
 	protected void setFloorLayer(short id, short data) {
@@ -112,10 +111,10 @@ public class LayeredWorldGenerator implements WorldGenerator {
 	/**
 	 * Stacks a new layer on top of a previous one<br> At least one layer added using addLayer should be defined before calling this method<br> Otherwise the y-coordinate of this layer will be incorrect
 	 *
-	 * @param height of the new layer
+	 * @param height   of the new layer
 	 * @param material of the layer
 	 */
-	protected void stackLayer(int height, BlockMaterial material) {
+	protected void stackLayer(int height, BlockBaseMaterial material) {
 		this.addLayer(this.height, height, material);
 	}
 
@@ -123,8 +122,8 @@ public class LayeredWorldGenerator implements WorldGenerator {
 	 * Stacks a new layer on top of a previous one<br> At least one layer added using addLayer should be defined before calling this method<br> Otherwise the y-coordinate of this layer will be incorrect
 	 *
 	 * @param height of the new layer
-	 * @param id of the material of the layer
-	 * @param data of the layer
+	 * @param id     of the material of the layer
+	 * @param data   of the layer
 	 */
 	protected void stackLayer(int height, short id, short data) {
 		this.addLayer(this.height, height, id, data);
@@ -133,21 +132,21 @@ public class LayeredWorldGenerator implements WorldGenerator {
 	/**
 	 * Adds a single layer
 	 *
-	 * @param y - coordinate of the start of the layer
-	 * @param height of the layer
+	 * @param y        - coordinate of the start of the layer
+	 * @param height   of the layer
 	 * @param material of the layer
 	 */
-	protected void addLayer(int y, int height, BlockMaterial material) {
+	protected void addLayer(int y, int height, BlockBaseMaterial material) {
 		this.addLayer(y, height, material.getId(), material.getData());
 	}
 
 	/**
 	 * Adds a single layer
 	 *
-	 * @param y - coordinate of the start of the layer
+	 * @param y      - coordinate of the start of the layer
 	 * @param height of the layer
-	 * @param id of the material of the layer
-	 * @param data of the layer
+	 * @param id     of the material of the layer
+	 * @param data   of the layer
 	 */
 	protected void addLayer(int y, int height, short id, short data) {
 		final Layer layer = new Layer(y, height, id, data);
@@ -157,6 +156,7 @@ public class LayeredWorldGenerator implements WorldGenerator {
 	}
 
 	public static class Layer {
+
 		private final short id, data;
 		private final int y, height, topy;
 

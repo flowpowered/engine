@@ -23,16 +23,16 @@
  */
 package com.flowpowered.api.material.block;
 
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.commons.StringUtil;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import com.flowpowered.api.material.BlockMaterial;
 
 /**
  * Represents a {@link Block}'s ID and Data values, but contains no location-specific information.
  */
 public class BlockFullState implements Cloneable {
+
 	private final short id;
 	private final short data;
 
@@ -76,8 +76,9 @@ public class BlockFullState implements Cloneable {
 	/**
 	 * Returns an Integer representation of the merged ID and data.<br/> The id will be contained in the upper 16-bits. The data will be contained in the lower 16-bits.<br/>
 	 *
-	 * @param id to pack.
+	 * @param id   to pack.
 	 * @param data to pack.
+	 *
 	 * @return integer representation of ID and Data.
 	 */
 	public static int getPacked(short id, short data) {
@@ -85,16 +86,18 @@ public class BlockFullState implements Cloneable {
 	}
 
 	/**
-	 * Returns an Integer representation of the ID and Data from a {@link BlockMaterial}.<br/> The id will be contained in the upper 16-bits. The data will be contained in the lower 16-bits.<br/>
+	 * Returns an Integer representation of the ID and Data from a {@link com.flowpowered.api.material.BlockBaseMaterial}.<br/> The id will be contained in the upper 16-bits. The data will be contained
+	 * in the lower 16-bits.<br/>
 	 */
-	public static int getPacked(BlockMaterial m) {
+	public static int getPacked(BlockBaseMaterial m) {
 		return getPacked(m.getId(), m.getData());
 	}
 
 	/**
-	 * Unpacks the ID of a Material or Block from a packed integer.<br/> The integer being passed in must have the ID of the Material or Block contained in the upper 16-bits.<br/>
+	 * Unpacks the ID of a BaseMaterial or Block from a packed integer.<br/> The integer being passed in must have the ID of the BaseMaterial or Block contained in the upper 16-bits.<br/>
 	 *
 	 * @param packed integer
+	 *
 	 * @return id of the material or block
 	 */
 	public static short getId(int packed) {
@@ -102,9 +105,10 @@ public class BlockFullState implements Cloneable {
 	}
 
 	/**
-	 * Unpacks the Data of a material or block from a packed integer.<br/> The integer being passed in must have the data of the Material or Block contained in the lower 16-bits.<br/>
+	 * Unpacks the Data of a material or block from a packed integer.<br/> The integer being passed in must have the data of the BaseMaterial or Block contained in the lower 16-bits.<br/>
 	 *
 	 * @param packed integer
+	 *
 	 * @return data of the material or block.
 	 */
 	public static short getData(int packed) {
@@ -112,17 +116,18 @@ public class BlockFullState implements Cloneable {
 	}
 
 	/**
-	 * Looks up the BlockMaterial from a packed integer.<br/> If the material does not exist in the {@link BlockMaterialRegistry} then {@link BasicAir} will be returned. If the material does exist, and
-	 * it contains data, the Sub-Material will be returned.
+	 * Looks up the BlockBaseMaterial from a packed integer.<br/> If the material does not exist in the {@link BlockMaterialRegistry} then {@link BasicAir} will be returned. If the material does exist,
+	 * and
+	 * it contains data, the Sub-BaseMaterial will be returned.
 	 *
 	 * @return the material found.
 	 */
-	public static BlockMaterial getMaterial(int packed) {
+	public static BlockBaseMaterial getMaterial(int packed) {
 		short id = getId(packed);
 		short data = getData(packed);
-		BlockMaterial mat = BlockMaterial.get(id);
+		BlockBaseMaterial mat = BlockBaseMaterial.get(id);
 		if (mat == null) {
-			return BlockMaterial.AIR;
+			return BlockBaseMaterial.AIR;
 		}
 		return mat.getSubMaterial(data);
 	}

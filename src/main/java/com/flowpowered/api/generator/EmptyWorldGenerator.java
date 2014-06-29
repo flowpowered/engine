@@ -24,17 +24,17 @@
 package com.flowpowered.api.generator;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.geo.cuboid.Chunk;
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 
 /**
  * Generates an empty world using air blocks
  */
 public class EmptyWorldGenerator implements WorldGenerator {
+
 	@Override
 	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-		blockData.flood(BlockMaterial.AIR);
+		blockData.flood(BlockBaseMaterial.AIR);
 	}
 
 	@Override

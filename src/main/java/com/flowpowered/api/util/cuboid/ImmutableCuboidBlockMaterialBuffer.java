@@ -23,11 +23,12 @@
  */
 package com.flowpowered.api.util.cuboid;
 
-import com.flowpowered.api.material.BlockMaterial;
-import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.api.util.cuboid.procedure.CuboidBlockMaterialProcedure;
+import com.flowpowered.math.vector.Vector3f;
 
 public class ImmutableCuboidBlockMaterialBuffer extends CuboidBuffer {
+
 	protected final short[] id;
 	protected final short[] data;
 
@@ -66,13 +67,13 @@ public class ImmutableCuboidBlockMaterialBuffer extends CuboidBuffer {
 	public void setSource(CuboidBuffer source) {
 	}
 
-	public BlockMaterial get(int x, int y, int z) {
+	public BlockBaseMaterial get(int x, int y, int z) {
 		int index = getIndex(x, y, z);
 		if (index < 0) {
 			throw new IllegalArgumentException("Coordinate (" + x + ", " + y + ", " + z + ") is outside the buffer");
 		}
 
-		return BlockMaterial.get(id[index], data[index]);
+		return BlockBaseMaterial.get(id[index], data[index]);
 	}
 
 	public short getId(int x, int y, int z) {

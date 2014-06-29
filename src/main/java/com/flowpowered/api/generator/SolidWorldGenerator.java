@@ -24,26 +24,27 @@
 package com.flowpowered.api.generator;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 
 /**
  * Generates a solid world of a material
  */
 public class SolidWorldGenerator implements WorldGenerator {
-	private final BlockMaterial material;
+
+	private final BlockBaseMaterial material;
 
 	public SolidWorldGenerator() {
-		material = BlockMaterial.SOLID_BLUE;
+		material = BlockBaseMaterial.SOLID_BLUE;
 	}
 
-	public SolidWorldGenerator(BlockMaterial material) {
+	public SolidWorldGenerator(BlockBaseMaterial material) {
 		this.material = material;
 	}
 
 	@Override
 	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-        blockData.flood(material);
+		blockData.flood(material);
 	}
 
 	@Override
@@ -54,5 +55,5 @@ public class SolidWorldGenerator implements WorldGenerator {
 	@Override
 	public String getName() {
 		return "SolidWorld";
-    }
+	}
 }

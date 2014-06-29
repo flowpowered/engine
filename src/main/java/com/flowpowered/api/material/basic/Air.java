@@ -23,16 +23,17 @@
  */
 package com.flowpowered.api.material.basic;
 
-import com.flowpowered.events.Cause;
 import com.flowpowered.api.geo.cuboid.Block;
+import com.flowpowered.api.material.BlockBaseMaterial;
+import com.flowpowered.events.Cause;
 
-import com.flowpowered.api.material.BlockMaterial;
+public final class Air extends BlockBaseMaterial {
 
-public final class Air extends BlockMaterial {
-	@SuppressWarnings ("unchecked")
+	@SuppressWarnings("unchecked")
 	public Air() {
 		super("Air", (short) 0, null);
-		this.setTransparent().setInvisible();
+		setTransparent().setInvisible();
+		setMaterialState(MATERIAL_STATE.GAS);
 	}
 
 	@Override

@@ -23,12 +23,12 @@
  */
 package com.flowpowered.api.event.cause;
 
+import com.flowpowered.api.geo.cuboid.Block;
+import com.flowpowered.api.material.BaseMaterial;
 import com.flowpowered.events.Cause;
 
-import com.flowpowered.api.geo.cuboid.Block;
-import com.flowpowered.api.material.Material;
+public class MaterialCause<T extends BaseMaterial> extends Cause<T> {
 
-public class MaterialCause<T extends Material> extends Cause<T> {
 	private final T material;
 	private final Block block;
 

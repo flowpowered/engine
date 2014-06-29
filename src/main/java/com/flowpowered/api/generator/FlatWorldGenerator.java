@@ -24,32 +24,33 @@
 package com.flowpowered.api.generator;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 
 /**
  * Generates a flat world of a material
  */
 public class FlatWorldGenerator implements WorldGenerator {
-	private final BlockMaterial material;
+
+	private final BlockBaseMaterial material;
 
 	public FlatWorldGenerator() {
-		material = BlockMaterial.SOLID_BLUE;
+		material = BlockBaseMaterial.SOLID_BLUE;
 	}
 
-	public FlatWorldGenerator(BlockMaterial material) {
+	public FlatWorldGenerator(BlockBaseMaterial material) {
 		this.material = material;
 	}
 
 	@Override
 	public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-        int flooredY = blockData.getBase().getFloorY();
+		int flooredY = blockData.getBase().getFloorY();
 		if (flooredY < 0) {
-            blockData.setHorizontalLayer(flooredY, (blockData.getSize().getFloorY() / 2), material);
+			blockData.setHorizontalLayer(flooredY, (blockData.getSize().getFloorY() / 2), material);
 			blockData.flood(material);
 		} else {
-            blockData.flood(BlockMaterial.AIR);
-        }
+			blockData.flood(BlockBaseMaterial.AIR);
+		}
 	}
 
 	@Override
@@ -60,5 +61,5 @@ public class FlatWorldGenerator implements WorldGenerator {
 	@Override
 	public String getName() {
 		return "FlatWorld";
-    }
+	}
 }

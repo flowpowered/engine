@@ -23,14 +23,16 @@
  */
 package com.flowpowered.api.material.basic;
 
-import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.material.BlockBaseMaterial;
 
 import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.math.Vector3;
 
-public class Solid extends BlockMaterial {
+public class Solid extends BlockBaseMaterial {
+
 	public Solid(String name) {
 		super((short) 0, name, new BoxShape(new Vector3(1f, 1f, 1f)));
 		setHardness(100);
+		setMaterialState(MATERIAL_STATE.SOLID);
 	}
 }
