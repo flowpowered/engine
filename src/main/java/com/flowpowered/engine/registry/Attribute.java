@@ -18,7 +18,7 @@ public class Attribute<G extends AttributeGroup, T> {
 		this.name = name;
 	}
 
-	public static <F extends AttributeGroup, S> Attribute<F, S> getInstance(
+	public static <F extends AttributeGroup, S> Attribute<F, S> get(
 			String name) {
 		return new Attribute<F, S>(name);
 	}

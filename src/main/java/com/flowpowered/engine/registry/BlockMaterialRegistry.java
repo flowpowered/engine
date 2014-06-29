@@ -23,7 +23,7 @@ public class BlockMaterialRegistry {
 	private Class gameClass;
 	private TempPlugin plugin;
 	private String gameClassPath;
-	String blockRegistryFileName = plugin.getDataFolder() + "blockregistry";
+	String blockRegistryFileName;
 	private YamlRegistry yamlRegistry = new YamlRegistry(500);
 	private Map<Integer, BlockMaterial> idRegistryMap = new HashMap<>(500);
 	private Integer numberOfMaterials = 0;
@@ -33,6 +33,21 @@ public class BlockMaterialRegistry {
 		gameClass = game.getClass();
 		gameClassPath = gameClass.getPackage().getName();
 		this.plugin = game;
+		blockRegistryFileName = plugin.getDataFolder() + "blockregistry";
+	}
+
+	public BlockMaterialRegistry(TempPlugin game, String blockRegistryFileName) {
+		gameClass = game.getClass();
+		gameClassPath = gameClass.getPackage().getName();
+		this.plugin = game;
+		blockRegistryFileName = plugin.getDataFolder() + blockRegistryFileName;
+	}
+
+	public BlockMaterialRegistry(TempPlugin game, String pathToBlockRegistry, String blockRegistryFileName) {
+		gameClass = game.getClass();
+		gameClassPath = gameClass.getPackage().getName();
+		this.plugin = game;
+		blockRegistryFileName = pathToBlockRegistry + blockRegistryFileName;
 	}
 
 	public BlockMaterial addBlockMaterial(BlockBaseMaterial blockBaseMaterial) {
@@ -61,8 +76,8 @@ public class BlockMaterialRegistry {
 				blockMaterial = addBlockMaterialToRegistry(id, blockBaseMaterial, customBlockBaseMaterial);
 			}
 		} else {
-			numberOfMaterials++;
 			blockMaterial = addBlockMaterialToRegistry(numberOfMaterials, blockBaseMaterial, customBlockBaseMaterial);
+			numberOfMaterials++;
 		}
 		return blockMaterial;
 	}
@@ -166,19 +181,24 @@ public class BlockMaterialRegistry {
 	}
 
 	public boolean loadRegistry() {
-		if (Flow.getPlatform().isClient()) {
+		Boolean loaded = true;
+		if (Flow.getPlatform().isServer()) {
+			loaded = yamlRegistry.load(blockRegistryFileName);
+		} else {
 			Flow.debug("Won't be loading registry on client platform!");
-			return true;
 		}
-		return yamlRegistry.load(blockRegistryFileName);
+		return loaded;
 	}
 
 	public boolean saveRegistry() {
-		if (Flow.getPlatform().isClient()) {
+		Boolean saved = true;
+		if (Flow.getPlatform().isServer()) {
+			checkIfRegistryIsInitialized();
+			saved = yamlRegistry.save(blockRegistryFileName);
+		} else {
 			Flow.debug("Won't be saving registry on client platform!");
-			return true;
 		}
-		checkIfRegistryIsInitialized();
-		return yamlRegistry.save(blockRegistryFileName);
+
+		return saved;
 	}
 }

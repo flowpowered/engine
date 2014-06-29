@@ -8,6 +8,6 @@ package com.flowpowered.engine.registry;
  */
 public interface EntityAttributes extends AttributeGroup {
 
-	public static final Attribute<EntityAttributes, String> NAME = Attribute.getInstance("NAME");
-	public static final Attribute<EntityAttributes, TempEntityType> ENTITY_TYPE = Attribute.getInstance("ENTITY_TYPE");
+	public static final Attribute<EntityAttributes, String> NAME = Attribute.get("NAME");
+	public static final Attribute<EntityAttributes, TempEntityType> ENTITY_TYPE = Attribute.get("ENTITY_TYPE");
 }
