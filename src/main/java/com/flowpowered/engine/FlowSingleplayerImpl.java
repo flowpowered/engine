@@ -38,6 +38,7 @@ import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.FlowSingleplayerSession;
 import com.flowpowered.engine.render.FlowRenderer;
+import org.spout.renderer.lwjgl.LWJGLUtil;
 
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();

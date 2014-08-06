@@ -338,8 +338,7 @@ public class FlowRenderer implements Renderer {
 
     private void setPreviousModelMatrices() {
         for (Model model : renderModelsNode.getModels()) {
-            Matrix4Uniform uniform = model.getUniforms().get("previousModelMatrix");
-            uniform.set(model.getMatrix());
+            model.getUniforms().<Matrix4Uniform>get("previousModelMatrix").set(model.getMatrix());
         }
     }
 

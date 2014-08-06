@@ -25,9 +25,8 @@ package com.flowpowered.engine.entity;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.flowpowered.api.entity.Physics;
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.geo.World;
+import com.flowpowered.api.entity.Physics;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.reference.WorldReference;
@@ -35,11 +34,9 @@ import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
-
-import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
-import org.spout.physics.body.RigidBodyMaterial;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.engine.Material;
 
 /**
  * The Flow implementation of {@link Physics}. <p/> //TODO: Physics rotation setters
@@ -50,7 +47,7 @@ public class FlowPhysics extends Physics {
     private AtomicReference<Transform> live = new AtomicReference<>(Transform.INVALID);
     //React
     private RigidBody body;
-    private final RigidBodyMaterial material = new RigidBodyMaterial();
+    private final Material material = new Material();
     //Used in handling crossovers
     private CollisionShape shape;
     private float mass = 0;
@@ -86,7 +83,6 @@ public class FlowPhysics extends Physics {
     public void activate(final FlowRegion region) {
         body = region.addBody(live.get(), mass, shape, isGhost, isMobile);
         body.setMaterial(material);
-        body.setUserPointer(entity);
     }
 
     @Override
@@ -275,21 +271,12 @@ public class FlowPhysics extends Physics {
     }
 
     @Override
-    public FlowPhysics force(Vector3f force, boolean ignoreGravity) {
+    public FlowPhysics force(Vector3f force) {
         if (body == null) {
             throw new IllegalStateException("Cannot force a null body. If the entity is activated, make sure it is spawned as well");
         }
-        if (ignoreGravity) {
-            body.setExternalForce(ReactConverter.toReactVector3(force));
-        } else {
-            body.getExternalForce().add(ReactConverter.toReactVector3(force));
-        }
+        body.applyForceToCenter(ReactConverter.toReactVector3(force));
         return this;
-    }
-
-    @Override
-    public FlowPhysics force(Vector3f force) {
-        return force(force, false);
     }
 
     @Override
@@ -297,7 +284,7 @@ public class FlowPhysics extends Physics {
         if (body == null) {
             throw new IllegalStateException("Cannot torque a null body. If the entity is activated, make sure it is spawned as well");
         }
-        body.setExternalTorque(ReactConverter.toReactVector3(torque));
+        body.applyTorque(ReactConverter.toReactVector3(torque));
         return this;
     }
 
@@ -326,20 +313,20 @@ public class FlowPhysics extends Physics {
         if (!isActivated()) {
             throw new IllegalStateException("Entities cannot have mass until they are activated");
         }
-        if (!(body instanceof MobileRigidBody)) {
+        if (!body.isMotionEnabled()) {
             throw new IllegalStateException("Only mobile entities can change mass");
         }
         if (mass < 0f) {
             throw new IllegalArgumentException("Cannot set a mass less than 0f");
         }
         this.mass = mass;
-        ((MobileRigidBody) body).setMass(mass);
+        body.setMass(mass);
         return this;
     }
 
     @Override
     public float getFriction() {
-        return material.getFriction();
+        return material.getFrictionCoefficient();
     }
 
     @Override
@@ -347,13 +334,13 @@ public class FlowPhysics extends Physics {
         if (friction < 0f || friction > 1f) {
             throw new IllegalArgumentException("Friction must be between 0f and 1f (inclusive)");
         }
-        material.setFriction(friction);
+        material.setFrictionCoefficient(friction);
         return this;
     }
 
     @Override
     public float getRestitution() {
-        return material.getRestitution();
+        return material.getBounciness();
     }
 
     @Override
@@ -361,7 +348,7 @@ public class FlowPhysics extends Physics {
         if (restitution < 0f || restitution > 1f) {
             throw new IllegalArgumentException("Restitution must be between 0f and 1f (inclusive)");
         }
-        material.setRestitution(restitution);
+        material.setBounciness(restitution);
         return this;
     }
 
@@ -378,10 +365,10 @@ public class FlowPhysics extends Physics {
         if (body == null) {
             throw new IllegalStateException("Cannot set velocity of a null body. If the entity is activated, make sure it is spawned as well");
         }
-        if (!(body instanceof MobileRigidBody)) {
+        if (!body.isMotionEnabled()) {
             throw new UnsupportedOperationException("Bodies which are not instances of MobileRigidBody cannot set their movement velocity");
         }
-        ((MobileRigidBody) body).setLinearVelocity(ReactConverter.toReactVector3(velocity));
+        body.setLinearVelocity(ReactConverter.toReactVector3(velocity));
         return this;
     }
 
@@ -398,10 +385,10 @@ public class FlowPhysics extends Physics {
         if (body == null) {
             throw new IllegalStateException("Cannot set rotation velocity of a null body. If the entity is activated, make sure it is spawned as well");
         }
-        if (!(body instanceof MobileRigidBody)) {
+        if (!body.isMotionEnabled()) {
             throw new UnsupportedOperationException("Bodies which are not instances of MobileRigidBody cannot set their rotation velocity");
         }
-        ((MobileRigidBody) body).setAngularVelocity(ReactConverter.toReactVector3(velocity));
+        body.setAngularVelocity(ReactConverter.toReactVector3(velocity));
         return this;
     }
 

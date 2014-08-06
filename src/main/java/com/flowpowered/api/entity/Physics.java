@@ -255,16 +255,6 @@ public abstract class Physics implements TransformProvider {
 
     /**
      * Force is, as it sounds, an instant force to the Entity. A few rules apply. <p/> - The entity must be mobile (mass > 0) - Entities of higher masses need greater forces to move <p/> Can't get
-     * movement to occur? Lower the mass or increase the force.
-     *
-     * @param force The Vector3 force to apply.
-     * @param ignoreGravity True to force without gravity, false to have gravity affect the force
-     * @return This component, so you can chain.
-     */
-    public abstract Physics force(Vector3f force, boolean ignoreGravity);
-
-    /**
-     * Force is, as it sounds, an instant force to the Entity. A few rules apply. <p/> - The entity must be mobile (mass > 0) - Entities of higher masses need greater forces to move <p/> Can't get
      * movement to occur? Lower the mass or increase the force. Lastly, this method forces with gravity (it doesn't ignore it).
      *
      * @param force The Vector3 force to apply.
