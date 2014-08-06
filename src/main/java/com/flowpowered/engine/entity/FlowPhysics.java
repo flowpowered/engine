@@ -37,6 +37,7 @@ import com.flowpowered.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.engine.Material;
+import org.spout.physics.math.Quaternion;
 
 /**
  * The Flow implementation of {@link Physics}. <p/> //TODO: Physics rotation setters
@@ -47,13 +48,7 @@ public class FlowPhysics extends Physics {
     private AtomicReference<Transform> live = new AtomicReference<>(Transform.INVALID);
     //React
     private RigidBody body;
-    private final Material material = new Material();
-    //Used in handling crossovers
-    private CollisionShape shape;
-    private float mass = 0;
     private boolean activated = false;
-    private boolean isMobile = true;
-    private boolean isGhost = false;
 
     public FlowPhysics(Entity entity) {
         super(entity);
@@ -67,35 +62,41 @@ public class FlowPhysics extends Physics {
         if (shape == null) {
             throw new IllegalArgumentException("Cannot activate physics with a null shape");
         }
-        if (body != null) {
-            ((FlowRegion) entity.getRegion()).removeBody(body);
-        }
-        this.isGhost = isGhost;
-        this.isMobile = isMobile;
-        this.mass = mass;
-        this.shape = shape;
+        deactivate();
+        FlowRegion to = (FlowRegion) entity.getRegion();
+        Transform transform = live.get();
+        body = to.getDynamicsWorld().createRigidBody(new org.spout.physics.math.Transform(ReactConverter.toReactVector3(transform.getPosition().getVector()), new Quaternion(0, 0, 0, 1)), mass, shape);
+        body.enableMotion(isMobile);
+        body.enableCollision(!isGhost);
+        body.setMaterial(new Material());
         activated = true;
-        activate((FlowRegion) entity.getRegion());
-
         return this;
     }
 
-    public void activate(final FlowRegion region) {
-        body = region.addBody(live.get(), mass, shape, isGhost, isMobile);
-        body.setMaterial(material);
+    public void crossInto(final FlowRegion to) {
+        if (entity != null && entity.getRegion() != null && body != null) {
+            ((FlowRegion) entity.getRegion()).getDynamicsWorld().destroyRigidBody(body);
+            to.getDynamicsWorld().addRigidBody(body);
+        }
     }
 
     @Override
     public void deactivate() {
         if (entity != null && entity.getRegion() != null && body != null) {
-            ((FlowRegion) entity.getRegion()).removeBody(body);
+            ((FlowRegion) entity.getRegion()).getDynamicsWorld().destroyRigidBody(body);
         }
+        body = null;
         activated = false;
     }
 
     @Override
     public boolean isActivated() {
         return activated;
+    }
+
+    @Override
+    public RigidBody getBody() {
+        return body;
     }
 
     @Override
@@ -258,153 +259,6 @@ public class FlowPhysics extends Physics {
         } while (!live.compareAndSet(oldTransform, newTransform));
         sync();
         return this;
-    }
-
-    @Override
-    public FlowPhysics impulse(Vector3f impulse, Vector3f offset) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public FlowPhysics impulse(Vector3f impulse) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public FlowPhysics force(Vector3f force) {
-        if (body == null) {
-            throw new IllegalStateException("Cannot force a null body. If the entity is activated, make sure it is spawned as well");
-        }
-        body.applyForceToCenter(ReactConverter.toReactVector3(force));
-        return this;
-    }
-
-    @Override
-    public FlowPhysics torque(Vector3f torque) {
-        if (body == null) {
-            throw new IllegalStateException("Cannot torque a null body. If the entity is activated, make sure it is spawned as well");
-        }
-        body.applyTorque(ReactConverter.toReactVector3(torque));
-        return this;
-    }
-
-    @Override
-    public FlowPhysics impulseTorque(Vector3f torque) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public FlowPhysics dampenMovement(float damp) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public FlowPhysics dampenRotation(float damp) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public float getMass() {
-        return mass;
-    }
-
-    @Override
-    public FlowPhysics setMass(float mass) {
-        if (!isActivated()) {
-            throw new IllegalStateException("Entities cannot have mass until they are activated");
-        }
-        if (!body.isMotionEnabled()) {
-            throw new IllegalStateException("Only mobile entities can change mass");
-        }
-        if (mass < 0f) {
-            throw new IllegalArgumentException("Cannot set a mass less than 0f");
-        }
-        this.mass = mass;
-        body.setMass(mass);
-        return this;
-    }
-
-    @Override
-    public float getFriction() {
-        return material.getFrictionCoefficient();
-    }
-
-    @Override
-    public FlowPhysics setFriction(float friction) {
-        if (friction < 0f || friction > 1f) {
-            throw new IllegalArgumentException("Friction must be between 0f and 1f (inclusive)");
-        }
-        material.setFrictionCoefficient(friction);
-        return this;
-    }
-
-    @Override
-    public float getRestitution() {
-        return material.getBounciness();
-    }
-
-    @Override
-    public FlowPhysics setRestitution(float restitution) {
-        if (restitution < 0f || restitution > 1f) {
-            throw new IllegalArgumentException("Restitution must be between 0f and 1f (inclusive)");
-        }
-        material.setBounciness(restitution);
-        return this;
-    }
-
-    @Override
-    public Vector3f getMovementVelocity() {
-        if (body == null) {
-            throw new IllegalStateException("Cannot get velocity of a null body. If the entity is activated, make sure it is spawned as well");
-        }
-        return ReactConverter.toFlowVector3(body.getLinearVelocity());
-    }
-
-    @Override
-    public FlowPhysics setMovementVelocity(Vector3f velocity) {
-        if (body == null) {
-            throw new IllegalStateException("Cannot set velocity of a null body. If the entity is activated, make sure it is spawned as well");
-        }
-        if (!body.isMotionEnabled()) {
-            throw new UnsupportedOperationException("Bodies which are not instances of MobileRigidBody cannot set their movement velocity");
-        }
-        body.setLinearVelocity(ReactConverter.toReactVector3(velocity));
-        return this;
-    }
-
-    @Override
-    public Vector3f getRotationVelocity() {
-        if (body == null) {
-            throw new IllegalStateException("Cannot get rotation velocity of a null body. If the entity is activated, make sure it is spawned as well");
-        }
-        return ReactConverter.toFlowVector3(body.getAngularVelocity());
-    }
-
-    @Override
-    public FlowPhysics setRotationVelocity(Vector3f velocity) {
-        if (body == null) {
-            throw new IllegalStateException("Cannot set rotation velocity of a null body. If the entity is activated, make sure it is spawned as well");
-        }
-        if (!body.isMotionEnabled()) {
-            throw new UnsupportedOperationException("Bodies which are not instances of MobileRigidBody cannot set their rotation velocity");
-        }
-        body.setAngularVelocity(ReactConverter.toReactVector3(velocity));
-        return this;
-    }
-
-    @Override
-    public CollisionShape getShape() {
-        return shape;
-    }
-
-    @Override
-    public boolean isMobile() {
-        return isMobile;
-    }
-
-    @Override
-    public boolean isGhost() {
-        return isGhost;
     }
 
     @Override

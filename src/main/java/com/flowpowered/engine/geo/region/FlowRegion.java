@@ -34,7 +34,6 @@ import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
-import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.block.BlockFace;
@@ -54,15 +53,14 @@ import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.FlowRegionSnapshot;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.scheduler.render.RenderThread;
+import com.flowpowered.engine.physics.FlowLinkedWorldInfo;
+import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.engine.util.thread.CompleteAsyncManager;
 import com.flowpowered.events.Cause;
 import com.flowpowered.math.vector.Vector3f;
-
 import org.apache.logging.log4j.Level;
-
-import org.spout.physics.body.RigidBody;
-import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.engine.DynamicsWorld;
+import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 
 public class FlowRegion extends Region implements CompleteAsyncManager {
     private final RegionGenerator generator;
@@ -85,16 +83,17 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
      */
     protected final AtomicReference<FlowChunk[]> live = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
     private final FlowRegionSnapshot snapshot;
-    private final RenderThread render;
+    private final LinkedDynamicsWorld simulation;
 
-    public FlowRegion(FlowEngine engine, FlowWorld world, int x, int y, int z, BAAWrapper chunkStore, RenderThread render) {
+    public FlowRegion(FlowEngine engine, FlowWorld world, int x, int y, int z, BAAWrapper chunkStore) {
         super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
         this.engine = engine;
         this.generator = world instanceof FlowServerWorld ? new RegionGenerator(this, 4) : null;
         this.chunkStore = chunkStore;
-        this.render = render;
         this.snapshot = new FlowRegionSnapshot(world.getSnapshot(), getPosition().toInt());
-
+        simulation = new LinkedDynamicsWorld(ReactConverter.toReactVector3(0f, -9.81f, -0f), new FlowLinkedWorldInfo(this));
+        //simulation.addListener(new FlowCollisionListener());
+        simulation.start();
     }
 
     @Override
@@ -539,14 +538,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return ALL_STAGES;
     }
 
-    public void removeBody(RigidBody body) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public RigidBody addBody(Transform live, float mass, CollisionShape shape, boolean ghost, boolean mobile) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     protected static int getChunkIndex(int x, int y, int z) {
         return (CHUNKS.AREA * x) + (CHUNKS.SIZE * y) + z;
     }
@@ -574,5 +565,10 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
                 break;
             }
         }
+    }
+
+    @Override
+    public DynamicsWorld getDynamicsWorld() {
+        return simulation;
     }
 }

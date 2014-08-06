@@ -119,15 +119,10 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
         FlowRegion regionSnapshot = (FlowRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN, getEngine().getWorldManager());
         //Move entity from Region A to Region B
         if (regionSnapshot != regionLive) {
-            boolean activated = physics.isActivated();
-            physics.deactivate();
             regionSnapshot.getEntityManager().removeEntity(this);
-
             //Add entity to Region B
             regionLive.getEntityManager().addEntity(this);
-            if (activated) {
-                physics.activate(regionLive);
-            }
+            physics.crossInto(regionLive);
         }
 
         observer.finalizeRun(physics.getTransform());

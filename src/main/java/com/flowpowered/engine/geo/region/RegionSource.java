@@ -123,7 +123,7 @@ public class RegionSource implements Iterable<Region> {
         }
 
         // TEST CODE separate server/client logic
-        region = new FlowRegion(engine, world, x, y, z, world instanceof FlowServerWorld ? ((FlowServerWorld) world).getRegionFile(x, y, z) : null, engine.getPlatform().isClient() ? engine.getScheduler().getRenderThread() : null);
+        region = new FlowRegion(engine, world, x, y, z, world instanceof FlowServerWorld ? ((FlowServerWorld) world).getRegionFile(x, y, z) : null);
         FlowRegion current = loadedRegions.putIfAbsent(x, y, z, region);
 
         if (current != null) {
