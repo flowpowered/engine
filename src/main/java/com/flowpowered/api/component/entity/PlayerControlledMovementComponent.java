@@ -28,6 +28,7 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 
 import com.flowpowered.api.input.InputSnapshot;
+import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.api.input.MouseEvent;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.math.imaginary.Quaternionf;
@@ -77,6 +78,11 @@ public class PlayerControlledMovementComponent extends EntityComponent {
                 getOwner().getPhysics().translate(translation);
             }
             handleMouseEvents(snapshot, dt);
+            for (KeyboardEvent e : snapshot.getKeyEvents()) {
+                if (e.getKey() == com.flowpowered.api.input.Keyboard.KEY_N && e.wasPressedDown()) {
+                    getOwner().getPhysics().translate(new Vector3f(10, 0, 10));
+                }
+            }
         }
     }
 

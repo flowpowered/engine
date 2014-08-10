@@ -61,6 +61,7 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 import com.flowpowered.api.render.Renderer;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.ViewFrustum;
+import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.render.graph.RenderGraph;
 import com.flowpowered.engine.render.graph.node.BlurNode;
 import com.flowpowered.engine.render.graph.node.CascadedShadowMappingNode;
@@ -110,6 +111,7 @@ public class FlowRenderer implements Renderer {
     private StringModel tpsMonitorModel;
     private StringModel itpsMonitorModel;
     private StringModel positionModel;
+    private StringModel genCountModel;
     private boolean fpsMonitorStarted = false;
 
     private FlowScheduler scheduler;
@@ -271,31 +273,36 @@ public class FlowRenderer implements Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789-: ", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789.-: GenCount", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, .97 * aspect, -0.1));
         sandboxModel.setString("Flow Engine - WIP");
         renderGUINode.addModel(sandboxModel);
+
         final StringModel fpsModel = sandboxModel.getInstance();
         final StringModel tpsModel = sandboxModel.getInstance();
         final StringModel itpsModel = sandboxModel.getInstance();
         fpsModel.setPosition(new Vector3f(0.005, .94 * aspect, -0.1));
         tpsModel.setPosition(new Vector3f(0.005, .91 * aspect, -0.1));
         itpsModel.setPosition(new Vector3f(0.005, .88 * aspect, -0.1));
-        fpsModel.setString("FPS: " + fpsMonitor.getTPS());
-        tpsModel.setString("TPS: " + scheduler.getMainThread().getTPS());
-        itpsModel.setString("Input TPS: " + scheduler.getInputThread().getTPS());
         renderGUINode.addModel(fpsModel);
         renderGUINode.addModel(tpsModel);
         renderGUINode.addModel(itpsModel);
         fpsMonitorModel = fpsModel;
         tpsMonitorModel = tpsModel;
         itpsMonitorModel = itpsModel;
+
         final StringModel posModel = sandboxModel.getInstance();
         posModel.setPosition(new Vector3f(0.005, .85 * aspect, -0.1));
-        posModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
         renderGUINode.addModel(posModel);
         positionModel = posModel;
+
+        final StringModel genCoModel = sandboxModel.getInstance();
+        genCoModel.setPosition(new Vector3f(0.005, .82 * aspect, -0.1));
+        renderGUINode.addModel(genCoModel);
+        genCountModel = genCoModel;
+
+        updateHUD();
     }
 
     /**
@@ -349,6 +356,8 @@ public class FlowRenderer implements Renderer {
         itpsMonitorModel.setString("Input TPS: " + scheduler.getInputThread().getTPS());
 
         positionModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
+
+        genCountModel.setString("GenCount: " + FlowRegion.getGenCount());
     }
 
     /**

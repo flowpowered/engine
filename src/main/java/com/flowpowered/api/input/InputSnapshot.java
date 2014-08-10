@@ -42,7 +42,7 @@ public class InputSnapshot {
 
     @SuppressWarnings("unchecked")
     public InputSnapshot() {
-        this(0f, new boolean[Keyboard.getKeyCount()], false, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+        this(0f, new boolean[Keyboard.KEYBOARD_SIZE], false, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
     }
 
     public InputSnapshot(float dt, boolean[] keys, boolean mouseGrabbed, List<KeyboardEvent> keyEvents, List<MouseEvent> mouseEvents) {

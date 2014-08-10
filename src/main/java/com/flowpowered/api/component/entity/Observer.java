@@ -23,7 +23,6 @@
  */
 package com.flowpowered.api.component.entity;
 
-import com.flowpowered.engine.util.OutwardIterator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -42,13 +41,15 @@ import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
+
+import com.flowpowered.engine.util.OutwardIterator;
+
 import com.flowpowered.math.vector.Vector3i;
 
 /**
- * The networking behind {@link com.flowpowered.api.entity.Entity}s.
+ * This class "observes" chunks and loads/gens them if necessary.
  */
 public class Observer {
-    public static final LoadOption LOAD_GEN_NOWAIT = new LoadOption(true, true, false);
     //TODO: Move all observer code to Observer
     public final DefaultedKey<Boolean> IS_OBSERVER = new DefaultedKeyImpl<>("IS_OBSERVER", false);
     /**
@@ -183,7 +184,7 @@ public class Observer {
         }
         //Entity changed chunks as observer OR observer status changed so update
         WrappedSerizableIterator old = entity.getData().get(OBSERVER_ITERATOR);
-        Chunk snapChunk = entity.getPhysics().getPosition().getChunk(LoadOption.NO_LOAD, entity.getEngine().getWorldManager());
+        Chunk snapChunk = entity.getPhysics().getSnapshottedTransform().getPosition().getChunk(LoadOption.NO_LOAD, entity.getEngine().getWorldManager());
         Chunk liveChunk = live.getPosition().getChunk(LoadOption.NO_LOAD, entity.getEngine().getWorldManager());
         if (isObserver() && 
             ((snapChunk == null ? liveChunk != null : !snapChunk.equals(liveChunk))
@@ -222,7 +223,7 @@ public class Observer {
         int cx = p.getChunkX();
         int cy = p.getChunkY();
         int cz = p.getChunkZ();
-        Chunk center = p.getChunk(LOAD_GEN_NOWAIT, entity.getEngine().getWorldManager());
+        Chunk center = p.getChunk(LoadOption.LOAD_GEN_NOWAIT, entity.getEngine().getWorldManager());
 
         HashSet<Chunk> observing = new HashSet<>((syncDistance * syncDistance * syncDistance * 3) / 2);
         Iterator<Vector3i> itr = liveObserverIterator.get();
@@ -232,7 +233,7 @@ public class Observer {
         observeChunksFailed = false;
         while (itr.hasNext()) {
             Vector3i v = itr.next();
-            Chunk chunk = center == null ? w.getChunk(v.getX(), v.getY(), v.getZ(), LOAD_GEN_NOWAIT) : center.getRelative(v.getX() - cx, v.getY() - cy, v.getZ() - cz, LOAD_GEN_NOWAIT);
+            Chunk chunk = center == null ? w.getChunk(v.getX(), v.getY(), v.getZ(), LoadOption.LOAD_GEN_NOWAIT) : center.getRelative(v.getX() - cx, v.getY() - cy, v.getZ() - cz, LoadOption.LOAD_GEN_NOWAIT);
             if (chunk != null) {
                 chunk.refreshObserver(entity);
                 observing.add(chunk);
