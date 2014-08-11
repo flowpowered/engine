@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import com.flowpowered.commons.StringUtil;
-
 import com.flowpowered.api.Platform;
 import com.flowpowered.api.component.entity.PlayerControlledMovementComponent;
 import com.flowpowered.api.entity.Entity;
@@ -37,13 +35,15 @@ import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.player.Player;
-import com.flowpowered.engine.player.FlowPlayer;
+import com.flowpowered.commons.StringUtil;
 import com.flowpowered.engine.geo.world.FlowServerWorldManager;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowNetworkServer;
 import com.flowpowered.engine.network.FlowSession;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 import com.flowpowered.math.vector.Vector3f;
+import org.spout.physics.collision.shape.BoxShape;
 
 public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
@@ -66,10 +66,18 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
 
         // TEST CODE
         FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
+        BoxShape shape = new BoxShape(5, 5, 5) {
+            @Override
+            public int getNbSimilarCreatedShapes() {
+                return 1;
+            }
+        };
         @SuppressWarnings("unchecked")
         Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        entity.getPhysics().activate(50, shape);
         @SuppressWarnings("unchecked")
         Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        entity2.getPhysics().activate(50, shape);
         this.testEntity = entity;
         this.testEntity2 = entity2;
     }

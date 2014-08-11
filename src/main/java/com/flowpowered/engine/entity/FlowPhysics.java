@@ -55,7 +55,7 @@ public class FlowPhysics extends Physics {
     }
 
     @Override
-    public FlowPhysics activate(final float mass, final CollisionShape shape, final boolean isGhost, final boolean isMobile) {
+    public FlowPhysics activate(final float mass, final CollisionShape shape) {
         if (mass < 1f) {
             throw new IllegalArgumentException("Cannot activate physics with mass less than 1f");
         }
@@ -66,8 +66,6 @@ public class FlowPhysics extends Physics {
         FlowRegion to = (FlowRegion) entity.getRegion();
         Transform transform = live.get();
         body = to.getDynamicsWorld().createRigidBody(new org.spout.physics.math.Transform(ReactConverter.toReactVector3(transform.getPosition().getVector()), new Quaternion(0, 0, 0, 1)), mass, shape);
-        body.enableMotion(isMobile);
-        body.enableCollision(!isGhost);
         body.setMaterial(new Material());
         activated = true;
         return this;
@@ -76,7 +74,7 @@ public class FlowPhysics extends Physics {
     public void crossInto(final FlowRegion to) {
         if (entity != null && entity.getRegion() != null && body != null) {
             ((FlowRegion) entity.getRegion()).getDynamicsWorld().destroyRigidBody(body);
-            to.getDynamicsWorld().addRigidBody(body);
+            body = to.getDynamicsWorld().createRigidBody(body.getTransform(), body.getMass(), body.getCollisionShape());
         }
     }
 

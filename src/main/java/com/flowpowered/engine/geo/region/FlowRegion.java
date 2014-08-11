@@ -47,8 +47,10 @@ import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
 import com.flowpowered.engine.entity.FlowEntity;
 import com.flowpowered.engine.entity.FlowEntitySnapshot;
+import com.flowpowered.engine.entity.FlowPhysics;
 import com.flowpowered.engine.filesystem.ChunkDataForRegion;
 import com.flowpowered.engine.filesystem.ChunkFiles;
+import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.FlowRegionSnapshot;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
@@ -57,6 +59,7 @@ import com.flowpowered.engine.physics.FlowLinkedWorldInfo;
 import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.engine.util.thread.CompleteAsyncManager;
 import com.flowpowered.events.Cause;
+import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
 import org.apache.logging.log4j.Level;
 import org.spout.physics.engine.DynamicsWorld;
@@ -91,7 +94,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         this.generator = world instanceof FlowServerWorld ? new RegionGenerator(this, 4) : null;
         this.chunkStore = chunkStore;
         this.snapshot = new FlowRegionSnapshot(world.getSnapshot(), getPosition().toInt());
-        simulation = new LinkedDynamicsWorld(ReactConverter.toReactVector3(0f, -9.81f, -0f), new FlowLinkedWorldInfo(this));
+        simulation = new LinkedDynamicsWorld(ReactConverter.toReactVector3(0f, -9.81f, -0f), 1f / 20, new FlowLinkedWorldInfo(this));
         //simulation.addListener(new FlowCollisionListener());
         simulation.start();
     }
@@ -375,12 +378,12 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 
     @Override
     public Block getBlock(float x, float y, float z) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new FlowBlock(getFlowWorld(), GenericMath.floor(x), GenericMath.floor(y), GenericMath.floor(z));
     }
 
     @Override
     public Block getBlock(Vector3f position) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new FlowBlock(getFlowWorld(), position.getFloorX(), position.getFloorY(), position.getFloorZ());
     }
 
     @Override
@@ -493,6 +496,8 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     public void startTickRun(int stage, long delta) {
         if (stage == 0) {
             updateEntities(delta);
+        } else if (stage == 1) {
+            updateDynamics(delta);
         }
     }
 
@@ -504,6 +509,19 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
 			} catch (Exception e) {
 				engine.getLogger().log(Level.ERROR, "Unhandled exception during tick for " + ent.toString(), e);
 			}
+		}
+	}
+
+	/**
+	 * Updates physics in this region Steps simulation forward and finally alerts the API in components.
+	 */
+	private void updateDynamics(float dt) {
+		for (final Entity entity : entityManager.getAll()) {
+			((FlowPhysics) entity.getPhysics()).onPrePhysicsTick();
+		}
+        simulation.update();
+		for (final Entity entity : entityManager.getAll()) {
+			((FlowPhysics) entity.getPhysics()).onPostPhysicsTick(dt);
 		}
 	}
 

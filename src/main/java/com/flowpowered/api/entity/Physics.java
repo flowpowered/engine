@@ -50,12 +50,10 @@ public abstract class Physics implements TransformProvider {
      *
      * @param mass The mass of the entity
      * @param shape The collidable shape of the entity
-     * @param isGhost Is this entity a detector "ghost" object
-     * @param isMobile Is this entity mobile (will it ever move)
      * @return This component, for chaining
      * @throws IllegalArgumentException If mass is < 0f or shape is null
      */
-    public abstract Physics activate(final float mass, final CollisionShape shape, final boolean isGhost, final boolean isMobile);
+    public abstract Physics activate(final float mass, final CollisionShape shape);
 
     /**
      * Deactivates this {@link com.flowpowered.api.entity.Entity}, removing it from the physics space
