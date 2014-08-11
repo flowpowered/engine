@@ -31,9 +31,30 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.imageio.ImageIO;
+
+import com.flowpowered.api.render.Renderer;
+import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.scheduler.FlowScheduler;
+import com.flowpowered.engine.scheduler.render.RenderThread;
+import com.flowpowered.math.matrix.Matrix4f;
+import com.flowpowered.math.vector.Vector2i;
+import com.flowpowered.math.vector.Vector3f;
+import com.flowpowered.math.vector.Vector4f;
+import com.flowpowered.render.RenderGraph;
+import com.flowpowered.render.impl.BlurNode;
+import com.flowpowered.render.impl.CascadedShadowMappingNode;
+import com.flowpowered.render.impl.LightingNode;
+import com.flowpowered.render.impl.RenderGUINode;
+import com.flowpowered.render.impl.RenderModelsNode;
+import com.flowpowered.render.impl.RenderTransparentModelsNode;
+import com.flowpowered.render.impl.SSAONode;
+import com.flowpowered.render.impl.ShadowMappingNode;
 
 import org.lwjgl.opengl.GLContext;
 
@@ -48,8 +69,8 @@ import org.spout.renderer.api.data.Uniform.Vector4Uniform;
 import org.spout.renderer.api.data.UniformHolder;
 import org.spout.renderer.api.gl.Context;
 import org.spout.renderer.api.gl.Context.Capability;
-import org.spout.renderer.api.gl.Texture;
 import org.spout.renderer.api.gl.Texture.Format;
+import org.spout.renderer.api.gl.Texture.InternalFormat;
 import org.spout.renderer.api.gl.VertexArray;
 import org.spout.renderer.api.model.Model;
 import org.spout.renderer.api.model.StringModel;
@@ -58,29 +79,6 @@ import org.spout.renderer.api.util.MeshGenerator;
 import org.spout.renderer.api.util.Rectangle;
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
-import com.flowpowered.api.render.Renderer;
-import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.commons.ViewFrustum;
-import com.flowpowered.engine.geo.region.FlowRegion;
-import com.flowpowered.engine.render.graph.RenderGraph;
-import com.flowpowered.engine.render.graph.node.BlurNode;
-import com.flowpowered.engine.render.graph.node.CascadedShadowMappingNode;
-import com.flowpowered.engine.render.graph.node.LightingNode;
-import com.flowpowered.engine.render.graph.node.RenderGUINode;
-import com.flowpowered.engine.render.graph.node.RenderModelsNode;
-import com.flowpowered.engine.render.graph.node.RenderTransparentModelsNode;
-import com.flowpowered.engine.render.graph.node.SSAONode;
-import com.flowpowered.engine.render.graph.node.ShadowMappingNode;
-import com.flowpowered.engine.scheduler.FlowScheduler;
-import com.flowpowered.engine.scheduler.render.RenderThread;
-import com.flowpowered.math.matrix.Matrix4f;
-import com.flowpowered.math.vector.Vector2f;
-import com.flowpowered.math.vector.Vector2i;
-import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.math.vector.Vector4f;
-
-/**
- */
 public class FlowRenderer implements Renderer {
     private static final String WINDOW_TITLE = "Flow Engine";
     private static final DateFormat SCREENSHOT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
@@ -91,7 +89,6 @@ public class FlowRenderer implements Renderer {
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
     private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
     private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
-    private final FloatUniform blurStrengthUniform = new FloatUniform("blurStrength", 1);
     // OpenGL version and context
     private Context context;
     // Included materials
@@ -105,6 +102,10 @@ public class FlowRenderer implements Renderer {
     private LightingNode lightingNode;
     private RenderTransparentModelsNode renderTransparentModelsNode;
     private RenderGUINode renderGUINode;
+    // Models
+    private final List<Model> models = new ArrayList<>();
+    private final List<Model> guiModels = new ArrayList<>();
+    private final List<Model> transparentModels = new ArrayList<>();
     // FPS, TPS, and position monitor and models
     private final TPSMonitor fpsMonitor = new TPSMonitor();
     private StringModel fpsMonitorModel;
@@ -117,6 +118,7 @@ public class FlowRenderer implements Renderer {
     private FlowScheduler scheduler;
 
     public FlowRenderer() {
+        // Set the default OpenGL version to GL30
         setGLVersion(RenderThread.DEFAULT_VERSION);
     }
 
@@ -150,58 +152,50 @@ public class FlowRenderer implements Renderer {
     }
 
     private void initGraph() {
-        final float fov = 60;
-        final Vector2f planes = new Vector2f(0.1f, 200);
         final int blurSize = 2;
         // Create the graph
-        graph = new RenderGraph(context, "/shaders/glsl" + (context.getGLVersion().getGLSLFull() >= 150 ? 330 : 120));
+        graph = new RenderGraph(context, "/shaders/glsl" + (context.getGLVersion().getMajor() == 2 ? 120 : 330));
         graph.create();
+        graph.setAttribute("camera", Camera.createPerspective(60, windowSize.getX(), windowSize.getY(), 0.1f, 200));
+        graph.setAttribute("outputSize", windowSize);
+        graph.setAttribute("lightDirection", Vector3f.UP.negate());
+        graph.setAttribute("models", models);
         // Render models
         renderModelsNode = new RenderModelsNode(graph, "models");
-        renderModelsNode.setOutputSize(windowSize);
-        renderModelsNode.setFieldOfView(fov);
-        renderModelsNode.setPlanes(planes);
         graph.addNode(renderModelsNode);
         // Shadows
         shadowMappingNode = new CascadedShadowMappingNode(graph, "shadows");
         shadowMappingNode.connect("normals", "vertexNormals", renderModelsNode);
         shadowMappingNode.connect("depths", "depths", renderModelsNode);
-        shadowMappingNode.setFieldOfView(fov);
-        shadowMappingNode.setPlanes(planes);
-        shadowMappingNode.setShadowsSize(windowSize);
-        shadowMappingNode.setShadowMapSize(new Vector2i(1048, 1048));
-        shadowMappingNode.setRenderModelsNode(renderModelsNode);
-        shadowMappingNode.setKernelSize(8);
-        shadowMappingNode.setNoiseSize(blurSize);
-        shadowMappingNode.setBias(0.001f);
-        shadowMappingNode.setRadius(0.05f);
+        shadowMappingNode.setAttribute("shadowMapSize", new Vector2i(1048, 1048));
+        shadowMappingNode.setAttribute("renderModelsNode", renderModelsNode);
+        shadowMappingNode.setAttribute("kernelSize", 8);
+        shadowMappingNode.setAttribute("noiseSize", blurSize);
+        shadowMappingNode.setAttribute("bias", 0.01f);
+        shadowMappingNode.setAttribute("radius", 0.05f);
         graph.addNode(shadowMappingNode);
         // Blur shadows
         final BlurNode blurShadowsNode = new BlurNode(graph, "blurShadows");
         blurShadowsNode.connect("colors", "shadows", shadowMappingNode);
-        blurShadowsNode.setColorsSize(windowSize);
-        blurShadowsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
-        blurShadowsNode.setKernelSize(blurSize + 1);
+        blurShadowsNode.setAttribute("kernelGenerator", BlurNode.BOX_KERNEL);
+        blurShadowsNode.setAttribute("kernelSize", blurSize + 1);
         graph.addNode(blurShadowsNode);
         // SSAO
         final SSAONode ssaoNode = new SSAONode(graph, "ssao");
         ssaoNode.connect("normals", "normals", renderModelsNode);
         ssaoNode.connect("depths", "depths", renderModelsNode);
-        ssaoNode.setFieldOfView(fov);
-        ssaoNode.setPlanes(planes);
-        ssaoNode.setOcclusionsSize(windowSize);
-        ssaoNode.setKernelSize(8);
-        ssaoNode.setThreshold(0.15f);
-        ssaoNode.setNoiseSize(blurSize);
-        ssaoNode.setRadius(0.5f);
-        ssaoNode.setPower(2);
+        ssaoNode.setAttribute("kernelSize", 8);
+        ssaoNode.setAttribute("threshold", 0.15f);
+        ssaoNode.setAttribute("noiseSize", blurSize);
+        ssaoNode.setAttribute("radius", 0.5f);
+        ssaoNode.setAttribute("power", 2f);
         graph.addNode(ssaoNode);
         // Blur occlusions
         final BlurNode blurOcclusionsNode = new BlurNode(graph, "blurOcclusions");
         blurOcclusionsNode.connect("colors", "occlusions", ssaoNode);
-        blurOcclusionsNode.setColorsSize(windowSize);
-        blurOcclusionsNode.setKernelGenerator(BlurNode.BOX_KERNEL);
-        blurOcclusionsNode.setKernelSize(blurSize + 1);
+        blurOcclusionsNode.setAttribute("kernelGenerator", BlurNode.BOX_KERNEL);
+        blurOcclusionsNode.setAttribute("kernelSize", blurSize + 1);
+        blurOcclusionsNode.setAttribute("outputFormat", InternalFormat.R8);
         graph.addNode(blurOcclusionsNode);
         // Lighting
         lightingNode = new LightingNode(graph, "lighting");
@@ -211,23 +205,30 @@ public class FlowRenderer implements Renderer {
         lightingNode.connect("materials", "materials", renderModelsNode);
         lightingNode.connect("occlusions", "colors", blurOcclusionsNode);
         lightingNode.connect("shadows", "colors", blurShadowsNode);
-        lightingNode.setColorsSize(windowSize);
-        lightingNode.setFieldOfView(fov);
         graph.addNode(lightingNode);
         // Transparent models
         renderTransparentModelsNode = new RenderTransparentModelsNode(graph, "transparency");
         renderTransparentModelsNode.connect("depths", "depths", renderModelsNode);
         renderTransparentModelsNode.connect("colors", "colors", lightingNode);
-        renderTransparentModelsNode.setFieldOfView(fov);
-        renderTransparentModelsNode.setPlanes(planes);
+        renderTransparentModelsNode.setAttribute("transparentModels", transparentModels);
         graph.addNode(renderTransparentModelsNode);
         // Render GUI
         renderGUINode = new RenderGUINode(graph, "gui");
         renderGUINode.connect("colors", "colors", renderTransparentModelsNode);
-        renderGUINode.setPlanes(planes);
+        renderGUINode.setAttribute("guiModels", guiModels);
         graph.addNode(renderGUINode);
+
+        renderModelsNode.update();
+        shadowMappingNode.update();
+        blurShadowsNode.update();
+        ssaoNode.update();
+        blurOcclusionsNode.update();
+        lightingNode.update();
+        renderTransparentModelsNode.update();
+        renderGUINode.update();
+
         // Build graph
-        graph.rebuild();
+        graph.build();
     }
 
     private void initMaterials() {
@@ -239,7 +240,7 @@ public class FlowRenderer implements Renderer {
         uniforms.add(new FloatUniform("specularIntensity", 0.5f));
         uniforms.add(new FloatUniform("ambientIntensity", 0.2f));
         uniforms.add(new FloatUniform("shininess", 0.15f));
-        // Transparency
+        // Transparency material
         transparencyMaterial = new Material(graph.getProgram("weightedSum"));
         uniforms = transparencyMaterial.getUniforms();
         uniforms.add(lightDirectionUniform);
@@ -277,7 +278,7 @@ public class FlowRenderer implements Renderer {
         final float aspect = getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, .97 * aspect, -0.1));
         sandboxModel.setString("Flow Engine - WIP");
-        renderGUINode.addModel(sandboxModel);
+        guiModels.add(sandboxModel);
 
         final StringModel fpsModel = sandboxModel.getInstance();
         final StringModel tpsModel = sandboxModel.getInstance();
@@ -285,21 +286,21 @@ public class FlowRenderer implements Renderer {
         fpsModel.setPosition(new Vector3f(0.005, .94 * aspect, -0.1));
         tpsModel.setPosition(new Vector3f(0.005, .91 * aspect, -0.1));
         itpsModel.setPosition(new Vector3f(0.005, .88 * aspect, -0.1));
-        renderGUINode.addModel(fpsModel);
-        renderGUINode.addModel(tpsModel);
-        renderGUINode.addModel(itpsModel);
+        guiModels.add(fpsModel);
+        guiModels.add(tpsModel);
+        guiModels.add(itpsModel);
         fpsMonitorModel = fpsModel;
         tpsMonitorModel = tpsModel;
         itpsMonitorModel = itpsModel;
 
         final StringModel posModel = sandboxModel.getInstance();
         posModel.setPosition(new Vector3f(0.005, .85 * aspect, -0.1));
-        renderGUINode.addModel(posModel);
+        guiModels.add(posModel);
         positionModel = posModel;
 
         final StringModel genCoModel = sandboxModel.getInstance();
         genCoModel.setPosition(new Vector3f(0.005, .82 * aspect, -0.1));
-        renderGUINode.addModel(genCoModel);
+        guiModels.add(genCoModel);
         genCountModel = genCoModel;
 
         updateHUD();
@@ -330,23 +331,13 @@ public class FlowRenderer implements Renderer {
             fpsMonitor.start();
             fpsMonitorStarted = true;
         }
-        // Update the current frame uniforms
-        final Camera camera = renderModelsNode.getCamera();
-        blurStrengthUniform.set((float) fpsMonitor.getTPS() / RenderThread.FPS);
         // Render
         graph.render();
-        // Update the previous frame uniforms
-        setPreviousModelMatrices();
+        final Camera camera = renderModelsNode.getAttribute("camera");
         previousViewMatrixUniform.set(camera.getViewMatrix());
         previousProjectionMatrixUniform.set(camera.getProjectionMatrix());
         // Update the HUD
         updateHUD();
-    }
-
-    private void setPreviousModelMatrices() {
-        for (Model model : renderModelsNode.getModels()) {
-            model.getUniforms().<Matrix4Uniform>get("previousModelMatrix").set(model.getMatrix());
-        }
     }
 
     private void updateHUD() {
@@ -355,7 +346,8 @@ public class FlowRenderer implements Renderer {
         tpsMonitorModel.setString("TPS: " + scheduler.getMainThread().getTPS());
         itpsMonitorModel.setString("Input TPS: " + scheduler.getInputThread().getTPS());
 
-        positionModel.setString("Position: " + renderModelsNode.getCamera().getPosition().toInt().toString() + " Rotation: " + renderModelsNode.getCamera().getRotation().toString());
+        Camera camera = renderModelsNode.getAttribute("camera");
+        positionModel.setString("Position: " + camera.getPosition().toInt().toString() + " Rotation: " + camera.getRotation().toString());
 
         genCountModel.setString("GenCount: " + FlowRegion.getGenCount());
     }
@@ -421,11 +413,10 @@ public class FlowRenderer implements Renderer {
      * @param direction The light direction
      * @param frustum The frustum in which to cast shadows
      */
-    public void updateLight(Vector3f direction, ViewFrustum frustum) {
+    public void updateLight(Vector3f direction) {
         direction = direction.normalize();
         lightDirectionUniform.set(direction);
-        shadowMappingNode.updateLight(direction, frustum);
-        lightingNode.setLightDirection(direction);
+        graph.setAttribute("lightDirection", direction);
     }
 
     /**
@@ -436,7 +427,7 @@ public class FlowRenderer implements Renderer {
     public void addSolidModel(Model model) {
         model.setMaterial(solidMaterial);
         model.getUniforms().add(new Vector4Uniform("modelColor", new Vector4f(Math.random(), Math.random(), Math.random(), 1)));
-        renderModelsNode.addModel(model);
+        models.add(model);
     }
 
     /**
@@ -446,7 +437,7 @@ public class FlowRenderer implements Renderer {
      */
     public void addTransparentModel(Model model) {
         model.setMaterial(transparencyMaterial);
-        renderTransparentModelsNode.addModel(model);
+        transparentModels.add(model);
     }
 
     /**
@@ -456,7 +447,7 @@ public class FlowRenderer implements Renderer {
      */
     public void saveScreenshot(File outputDir) {
         final Rectangle size = new Rectangle(Vector2i.ZERO, windowSize);
-        final ByteBuffer buffer = context.readFrame(size, Texture.InternalFormat.RGB8);
+        final ByteBuffer buffer = context.readFrame(size, InternalFormat.RGB8);
         final BufferedImage image = CausticUtil.getImage(buffer, Format.RGB, size);
         try {
             ImageIO.write(image, "PNG", new File(outputDir, SCREENSHOT_DATE_FORMAT.format(Calendar.getInstance().getTime()) + ".png"));
@@ -468,7 +459,7 @@ public class FlowRenderer implements Renderer {
     @Override
     public Vector2i getResolution() {
         return windowSize;
-    }
+}
 
     @Override
     public float getAspectRatio() {

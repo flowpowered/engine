@@ -23,12 +23,14 @@
  */
 package com.flowpowered.engine.scheduler.render;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 
-import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
@@ -43,7 +45,6 @@ import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
 import com.flowpowered.engine.render.mesher.StandardChunkMesher;
 import com.flowpowered.engine.render.model.ChunkModel;
-import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.input.InputThread;
 import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaternionf;
@@ -54,6 +55,7 @@ import gnu.trove.map.hash.TObjectLongHashMap;
 import org.lwjgl.input.Keyboard;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned.GLVersion;
+import org.spout.renderer.api.model.Model;
 
 public class RenderThread extends TickingElement {
     public static final int FPS = 60;
@@ -184,8 +186,8 @@ public class RenderThread extends TickingElement {
         // Update the world update number
         worldLastUpdateNumber = update;
         // Safety precautions
-        if (renderer.getRenderModelsNode().getModels().size() > chunkModels.size()) {
-            System.out.println("There are more models in the renderer (" + renderer.getRenderModelsNode().getModels().size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
+        if (renderer.getRenderModelsNode().getAttribute("models", Collections.EMPTY_LIST).size() > chunkModels.size()) {
+            System.out.println("There are more models in the renderer (" + renderer.getRenderModelsNode().getAttribute("models", Collections.EMPTY_LIST).size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
         }
     }
 
@@ -202,7 +204,7 @@ public class RenderThread extends TickingElement {
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.getRenderModelsNode().removeModel(model);
+        renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models", new ArrayList<Model>()).remove(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();
@@ -227,7 +229,7 @@ public class RenderThread extends TickingElement {
     }
 
     private void updateCameraAndFrustrum() {
-        final Camera camera = renderer.getRenderModelsNode().getCamera();
+        final Camera camera = renderer.getRenderModelsNode().getAttribute("camera");
         // Update camera to match client player's position
         Transform transform = client.getTransform();
         camera.setPosition(transform.getPosition().getVector());
@@ -252,7 +254,7 @@ public class RenderThread extends TickingElement {
         }
         lightAngle = lightAngle / PI * (PI - 2 * LIGHT_ANGLE_LIMIT) + LIGHT_ANGLE_LIMIT;
         final Vector3f direction = new Vector3f(0, -TrigMath.sin(lightAngle), -TrigMath.cos(lightAngle));
-        renderer.updateLight(direction, frustum);
+        renderer.updateLight(direction);
         // TODO: lower light intensity at night
     }
 
