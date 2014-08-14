@@ -71,9 +71,9 @@ public class FlowPhysics extends Physics {
         return this;
     }
 
-    public void crossInto(final FlowRegion to) {
-        if (entity != null && entity.getRegion() != null && body != null) {
-            ((FlowRegion) entity.getRegion()).getDynamicsWorld().destroyRigidBody(body);
+    public void crossInto(final FlowRegion from, final FlowRegion to) {
+        if (entity != null && from != null && body != null) {
+            from.getDynamicsWorld().destroyRigidBody(body);
             body = to.getDynamicsWorld().createRigidBody(body.getTransform(), body.getMass(), body.getCollisionShape());
         }
     }
@@ -279,6 +279,9 @@ public class FlowPhysics extends Physics {
      * Called after the simulation was polled for an update. <p> This updates Flow's live with the transform of the body. The render transform is updated with interpolation from the body </p>
      */
     public void onPostPhysicsTick(float dt) {
+        if (body == null) {
+            return;
+        }
         Transform oldLive;
         Transform newLive;
         do {

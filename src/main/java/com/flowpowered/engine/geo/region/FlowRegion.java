@@ -94,7 +94,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         this.generator = world instanceof FlowServerWorld ? new RegionGenerator(this, 4) : null;
         this.chunkStore = chunkStore;
         this.snapshot = new FlowRegionSnapshot(world.getSnapshot(), getPosition().toInt());
-        simulation = new LinkedDynamicsWorld(ReactConverter.toReactVector3(0f, -9.81f, -0f), 1f / 20, new FlowLinkedWorldInfo(this));
+        simulation = new LinkedDynamicsWorld(ReactConverter.toReactVector3(0f, -9.81f, -0f), 1/20f, new FlowLinkedWorldInfo(this));
         //simulation.addListener(new FlowCollisionListener());
         simulation.start();
     }

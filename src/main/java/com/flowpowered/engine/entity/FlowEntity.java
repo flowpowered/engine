@@ -122,7 +122,7 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
             regionSnapshot.getEntityManager().removeEntity(this);
             //Add entity to Region B
             regionLive.getEntityManager().addEntity(this);
-            physics.crossInto(regionLive);
+            physics.crossInto(regionSnapshot, regionLive);
         }
 
         observer.finalizeRun(physics.getTransform());

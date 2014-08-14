@@ -73,11 +73,10 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
             }
         };
         @SuppressWarnings("unchecked")
-        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
+        Entity entity = loadedWorld.spawnEntity(Vector3f.ZERO.add(0, 10, 0), LoadOption.LOAD_GEN);
         entity.getPhysics().activate(50, shape);
         @SuppressWarnings("unchecked")
         Entity entity2 = loadedWorld.spawnEntity(Vector3f.ZERO, LoadOption.LOAD_GEN);
-        entity2.getPhysics().activate(50, shape);
         this.testEntity = entity;
         this.testEntity2 = entity2;
     }

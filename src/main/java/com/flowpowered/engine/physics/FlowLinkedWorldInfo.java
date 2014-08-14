@@ -43,6 +43,8 @@ public final class FlowLinkedWorldInfo implements LinkedWorldInfo {
 
     @Override
     public RigidBody getBody(int x, int y, int z) {
+        // TODO: fix this
+        if (true) return null;
         final Block block = region.getBlock(x - 0.5f, y - 0.5f, z - 0.5f);
         final BlockMaterial material = block.getMaterial();
         final CollisionShape shape = material.getShape();
@@ -57,7 +59,7 @@ public final class FlowLinkedWorldInfo implements LinkedWorldInfo {
                 new Transform(ReactConverter.toReactVector3(x + 0.5f, y + 0.5f, z + 0.5f), ReactConverter.toReactQuaternion(0, 0, 0, 1)),
                 mass,
                 inertiaTensorLocal,
-                shape, -1);
+                shape, region.getDynamicsWorld().getNextFreeID());
         body.enableMotion(false);
         body.enableCollision(!material.isGhost());
         body.setMaterial(new Material(material.getRestitution(), material.getFriction()));
