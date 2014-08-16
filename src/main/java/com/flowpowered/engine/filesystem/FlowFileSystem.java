@@ -31,4 +31,5 @@ import com.flowpowered.filesystem.SimpleFileSystem;
 public class FlowFileSystem extends SimpleFileSystem {
     public static final Path PLAYERS_DIRECTORY = Paths.get("players");
     public static final Path WORLDS_DIRECTORY = Paths.get("worlds");
+    public static final Path PLUGINS_DIRECTORY = Paths.get("plugins");
 }

@@ -30,6 +30,7 @@ import com.flowpowered.events.EventManager;
 import com.flowpowered.filesystem.FileSystem;
 import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.scheduler.Scheduler;
+import com.flowpowered.plugins.PluginManager;
 
 /**
  * Represents the core of an implementation of an engine (powers a game).
@@ -87,4 +88,6 @@ public interface Engine extends Named {
     EventManager getEventManager();
 
     WorldManager getWorldManager();
+
+    PluginManager getPluginManager();
 }
