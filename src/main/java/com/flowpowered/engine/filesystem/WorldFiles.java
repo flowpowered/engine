@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -62,7 +63,7 @@ public class WorldFiles {
 
         Path worldDir = FlowFileSystem.WORLDS_DIRECTORY.resolve(worldName);
         try {
-            Files.createDirectory(worldDir);
+            Files.createDirectories(worldDir);
         } catch (IOException ex) {
             logger.error("Could not create world directory.", ex);
             return null;
@@ -105,7 +106,12 @@ public class WorldFiles {
             }
             logger.info("Loading world [{}]", worldName);
             world = loadWorldImpl(engine, worldName, map, generator, itemMap);
-        } catch (IOException ioe) {
+        } catch (NoSuchFileException nsfe) {
+            logger.info("Creating new world named [{}]", worldName);
+
+            world = new FlowServerWorld(engine, worldName, generator);
+            world.save();
+         } catch (IOException ioe) {
             logger.error("Error reading file for world " + worldName, ioe);
         }
         return world;
@@ -160,7 +166,7 @@ public class WorldFiles {
 
         Path worldDir = FlowFileSystem.WORLDS_DIRECTORY.resolve(world.getName());
         try {
-            Files.createDirectory(worldDir);
+            Files.createDirectories(worldDir);
         } catch (IOException ex) {
             world.getEngine().getLogger().error("Could not create world directory.", ex);
             return;

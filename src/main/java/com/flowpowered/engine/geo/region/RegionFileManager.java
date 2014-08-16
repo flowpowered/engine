@@ -56,7 +56,7 @@ public class RegionFileManager {
         this.logger = logger;
         regionDirectory = worldDirectory.resolve(prefix);
         try {
-            Files.createDirectory(regionDirectory);
+            Files.createDirectories(regionDirectory);
         } catch (IOException ex) {
             throw new RuntimeException("Cannot create region directory", ex);
         }
