@@ -26,11 +26,11 @@ package com.flowpowered.api.io.regionfile;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +47,7 @@ public class SimpleRegionFile implements ByteArrayArray {
     private static final int VERSION = 1;
     private static final int DEFAULT_TIMEOUT = 120000; // timeout delay
     public static final int FILE_CLOSED = -1;
-    private final File filePath;
+    private final Path filePath;
     private final Object fileSyncObject = new Object();
     private MappedRandomAccessFile file;
     @SuppressWarnings ("unused")
@@ -72,7 +72,7 @@ public class SimpleRegionFile implements ByteArrayArray {
      * @param entries the number of blocks (sub-files) in the RegionFile
      * @throws IOException on error
      */
-    public SimpleRegionFile(File filePath, int desiredSegmentSize, int entries) throws IOException {
+    public SimpleRegionFile(Path filePath, int desiredSegmentSize, int entries) throws IOException {
         this(filePath, desiredSegmentSize, entries, DEFAULT_TIMEOUT);
     }
 
@@ -85,7 +85,7 @@ public class SimpleRegionFile implements ByteArrayArray {
      * @param timeout the time in ms until the file times out for auto-closing
      * @throws IOException on error
      */
-    public SimpleRegionFile(File filePath, int desiredSegmentSize, int entries, int timeout) throws IOException {
+    public SimpleRegionFile(Path filePath, int desiredSegmentSize, int entries, int timeout) throws IOException {
 
         this.filePath = filePath;
 
@@ -153,7 +153,7 @@ public class SimpleRegionFile implements ByteArrayArray {
             }
         }
 
-        Boolean old = openMap.putIfAbsent(filePath.getCanonicalPath().toLowerCase(), Boolean.TRUE);
+        Boolean old = openMap.putIfAbsent(filePath.toRealPath().toString().toLowerCase(), Boolean.TRUE);
 
         if (old != null) {
             throw new SRFException("Attempt made to open a second region file with the same filename");
@@ -315,7 +315,7 @@ public class SimpleRegionFile implements ByteArrayArray {
                     file = null;
                 }
             } finally {
-                Boolean old = openMap.remove(filePath.getCanonicalPath().toLowerCase());
+                Boolean old = openMap.remove(filePath.toRealPath().toString().toLowerCase());
                 if (old == null) {
                     throw new SRFException("Filename was not in the open file list when closing");
                 }

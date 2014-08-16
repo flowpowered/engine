@@ -23,8 +23,9 @@
  */
 package com.flowpowered.api.geo;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
+
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.util.UnloadSavable;
@@ -73,7 +74,7 @@ public interface ServerWorld extends World, UnloadSavable {
     @Override
     void save();
 
-    File getDirectory();
+    Path getDirectory();
 
     /**
      * Queues a list of chunks for generation.  The Vector3 values are in chunk coords.

@@ -23,23 +23,23 @@
  */
 package com.flowpowered.engine.geo.world;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
-import com.flowpowered.commons.StringUtil;
-
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
 
 import com.flowpowered.api.generator.EmptyWorldGenerator;
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.ServerWorldManager;
+import com.flowpowered.commons.StringUtil;
 import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.filesystem.WorldFiles;
+import com.google.common.collect.Lists;
 
 
 public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> implements ServerWorldManager {
@@ -50,8 +50,18 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
     }
 
     @Override
-    public Collection<File> matchWorldFolder(String worldName) {
-        return StringUtil.matchFile(getWorldFolders(), worldName);
+    public Collection<Path> matchWorldFolder(final String worldName) {
+        try {
+            return Lists.newArrayList(Files.newDirectoryStream(getWorldFolder(), new DirectoryStream.Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) throws IOException {
+                    return Files.isDirectory(entry) && Files.exists(entry.resolve("world.dat")) && StringUtil.startsWithIgnoreCase(entry.getFileName().toString(), worldName);
+                }
+            }));
+        } catch (IOException ex) {
+            engine.getLogger().error("Exception when matching world folder", ex);
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -86,23 +96,24 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
     }
 
     @Override
-    public List<File> getWorldFolders() {
-        File[] folders = this.getWorldFolder().listFiles((FilenameFilter) DirectoryFileFilter.INSTANCE);
-        if (folders == null || folders.length == 0) {
-            return new ArrayList<>();
+    public List<Path> getWorldFolders() {
+        DirectoryStream<Path> stream;
+        try {
+            stream = Files.newDirectoryStream(getWorldFolder(), new DirectoryStream.Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) throws IOException {
+                    return Files.isDirectory(entry) && Files.exists(entry.resolve("world.dat"));
+                }
+            });
+        } catch (IOException ex) {
+            engine.getLogger().error("Error when listing world folders.", ex);
+            return Collections.emptyList();
         }
-        List<File> worlds = new ArrayList<>(folders.length);
-        // Are they really world folders?
-        for (File world : folders) {
-            if (new File(world, "world.dat").exists()) {
-                worlds.add(world);
-            }
-        }
-        return worlds;
+        return Lists.newArrayList(stream);
     }
 
     @Override
-    public File getWorldFolder() {
+    public Path getWorldFolder() {
         return FlowFileSystem.WORLDS_DIRECTORY;
     }
 

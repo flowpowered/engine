@@ -23,7 +23,7 @@
  */
 package com.flowpowered.engine.geo.world;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -36,11 +36,11 @@ import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.engine.FlowEngine;
+import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.filesystem.WorldFiles;
 import com.flowpowered.engine.geo.region.RegionFileManager;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
-import com.flowpowered.engine.filesystem.FlowFileSystem;
 
 public class FlowServerWorld extends FlowWorld implements ServerWorld {
     private final WorldGenerator generator;
@@ -59,7 +59,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
         this.spawnLocation.set(new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE));
         this.generator = generator;
         this.seed = seed;
-        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name), engine.getLogger());
+        this.regionFileManager = new RegionFileManager(FlowFileSystem.WORLDS_DIRECTORY.resolve(name), engine.getLogger());
     }
 
     public FlowServerWorld(FlowEngine engine, String name, WorldGenerator generator) {
@@ -67,7 +67,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
         this.spawnLocation.set(new Transform(new Point(this, 0, 0, 0), Quaternionf.IDENTITY, Vector3f.ONE));
         this.generator = generator;
         this.seed = new Random().nextLong();
-        this.regionFileManager = new RegionFileManager(new File(FlowFileSystem.WORLDS_DIRECTORY, name), engine.getLogger());
+        this.regionFileManager = new RegionFileManager(FlowFileSystem.WORLDS_DIRECTORY.resolve(name), engine.getLogger());
     }
 
     @Override
@@ -105,7 +105,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
     }
 
     @Override
-    public File getDirectory() {
+    public Path getDirectory() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

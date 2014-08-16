@@ -23,17 +23,21 @@
  */
 package com.flowpowered.api.io.regionfile;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
+/**
+ * @deprecated need to recreate using {@link java.nio.channels.SeekableByteChannel}
+ */
+@Deprecated
 public class MappedRandomAccessFile {
-    private final File filePath;
+    private final Path filePath;
     private final String permissions;
     private long pos = 0;
     private final ArrayList<MappedByteBuffer> pages = new ArrayList<>();
@@ -42,12 +46,12 @@ public class MappedRandomAccessFile {
     private final long PAGE_MASK;
     private RandomAccessFile file;
 
-    public MappedRandomAccessFile(File filePath, String permissions) throws FileNotFoundException {
+    public MappedRandomAccessFile(Path filePath, String permissions) throws FileNotFoundException {
         this(filePath, permissions, 17);
     }
 
-    public MappedRandomAccessFile(File filePath, String permissions, int pageShift) throws FileNotFoundException {
-        this.file = new RandomAccessFile(filePath, permissions);
+    public MappedRandomAccessFile(Path filePath, String permissions, int pageShift) throws FileNotFoundException {
+        this.file = new RandomAccessFile(filePath.toFile(), permissions);
         this.PAGE_SHIFT = pageShift;
         PAGE_SIZE = (1 << PAGE_SHIFT);
         PAGE_MASK = PAGE_SIZE - 1;
@@ -104,7 +108,7 @@ public class MappedRandomAccessFile {
                         page = file.getChannel().map(FileChannel.MapMode.READ_WRITE, pagePosition, PAGE_SIZE);
                         success = true;
                     } catch (ClosedByInterruptException e) {
-                        file = new RandomAccessFile(filePath, permissions);
+                        file = new RandomAccessFile(filePath.toFile(), permissions);
                     } catch (IOException e) {
                         throw new IOException("Unable to refresh RandomAccessFile after interrupt, " + filePath, e);
                     }

@@ -23,10 +23,10 @@
  */
 package com.flowpowered.api.io.bytearrayarray;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.api.io.regionfile.SimpleRegionFile;
@@ -34,13 +34,13 @@ import com.flowpowered.api.io.regionfile.SimpleRegionFile;
 public class BAAWrapper {
     private final static ByteArrayArray openInProgress = BAAOpenInProgress.getInstance();
     private AtomicReference<ByteArrayArray> baaRef = new AtomicReference<>(null);
-    private final File file;
+    private final Path path;
     private final int segmentSize;
     private final int entries;
     private final int timeout;
 
-    public BAAWrapper(File file, int segmentSize, int entries, int timeout) {
-        this.file = file;
+    public BAAWrapper(Path path, int segmentSize, int entries, int timeout) {
+        this.path = path;
         this.segmentSize = segmentSize;
         this.entries = entries;
         this.timeout = timeout;
@@ -189,7 +189,7 @@ public class BAAWrapper {
      * @return the filename
      */
     public String getFilename() {
-        return file.getPath();
+        return path.getFileName().toString();
     }
 
     private ByteArrayArray getByteArrayArray() {
@@ -212,7 +212,7 @@ public class BAAWrapper {
                 baa = null; // not needed - already null
                 try {
                     try {
-                        baa = new SimpleRegionFile(file, segmentSize, entries, timeout);
+                        baa = new SimpleRegionFile(path, segmentSize, entries, timeout);
                     } catch (IOException e) {
                         e.printStackTrace();
                         baa = null; // not needed - already null. The assignment above comes after the potential IOException. 

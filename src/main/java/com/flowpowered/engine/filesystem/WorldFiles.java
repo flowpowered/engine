@@ -23,26 +23,12 @@
  */
 package com.flowpowered.engine.filesystem;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
-
-import org.apache.logging.log4j.Logger;
-
-import org.spout.nbt.ByteArrayTag;
-import org.spout.nbt.ByteTag;
-import org.spout.nbt.CompoundMap;
-import org.spout.nbt.CompoundTag;
-import org.spout.nbt.LongTag;
-import org.spout.nbt.StringTag;
-import org.spout.nbt.stream.NBTInputStream;
-import org.spout.nbt.stream.NBTOutputStream;
-import org.spout.nbt.util.NBTMapper;
 
 import com.flowpowered.api.generator.WorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
@@ -56,21 +42,38 @@ import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 
+import org.apache.logging.log4j.Logger;
+
+import org.spout.nbt.ByteArrayTag;
+import org.spout.nbt.ByteTag;
+import org.spout.nbt.CompoundMap;
+import org.spout.nbt.CompoundTag;
+import org.spout.nbt.LongTag;
+import org.spout.nbt.StringTag;
+import org.spout.nbt.stream.NBTInputStream;
+import org.spout.nbt.stream.NBTOutputStream;
+import org.spout.nbt.util.NBTMapper;
+
 public class WorldFiles {
     public static final byte WORLD_VERSION = 1;
 
     public static FlowServerWorld loadWorld(FlowServer engine, WorldGenerator generator, String worldName) {
         final Logger logger = engine.getLogger();
 
-        File worldDir = new File(FlowFileSystem.WORLDS_DIRECTORY, worldName);
-        worldDir.mkdirs();
-        File worldFile = new File(worldDir, "world.dat");
+        Path worldDir = FlowFileSystem.WORLDS_DIRECTORY.resolve(worldName);
+        try {
+            Files.createDirectory(worldDir);
+        } catch (IOException ex) {
+            logger.error("Could not create world directory.", ex);
+            return null;
+        }
+        Path worldFile = worldDir.resolve("world.dat");
 
         FlowServerWorld world = null;
 
-        File itemMapFile = new File(worldDir, "materials.dat");
+        Path itemMapFile = worldDir.resolve("materials.dat");
         BinaryFileStore itemStore = new BinaryFileStore(itemMapFile);
-        if (itemMapFile.exists()) {
+        if (Files.exists(itemMapFile)) {
             itemStore.load();
         }
 
@@ -87,7 +90,7 @@ public class WorldFiles {
          */
 
         try {
-            InputStream is = new FileInputStream(worldFile);
+            InputStream is = Files.newInputStream(worldFile);
             NBTInputStream ns = new NBTInputStream(is, false);
             CompoundMap map;
             try {
@@ -102,11 +105,6 @@ public class WorldFiles {
             }
             logger.info("Loading world [{}]", worldName);
             world = loadWorldImpl(engine, worldName, map, generator, itemMap);
-        } catch (FileNotFoundException ioe) {
-            logger.info("Creating new world named [{}]", worldName);
-
-            world = new FlowServerWorld(engine, worldName, generator);
-            world.save();
         } catch (IOException ioe) {
             logger.error("Error reading file for world " + worldName, ioe);
         }
@@ -160,11 +158,14 @@ public class WorldFiles {
 
     public static void saveWorld(FlowServerWorld world) {
 
-        File worldDir = new File(FlowFileSystem.WORLDS_DIRECTORY, world.getName());
-
-        worldDir.mkdirs();
-
-        File worldFile = new File(worldDir, "world.dat");
+        Path worldDir = FlowFileSystem.WORLDS_DIRECTORY.resolve(world.getName());
+        try {
+            Files.createDirectory(worldDir);
+        } catch (IOException ex) {
+            world.getEngine().getLogger().error("Could not create world directory.", ex);
+            return;
+        }
+        Path worldFile = worldDir.resolve("world.dat");
 
         //world.getItemMap().save();
 
@@ -174,7 +175,7 @@ public class WorldFiles {
 
         NBTOutputStream ns = null;
         try {
-            OutputStream is = new FileOutputStream(worldFile);
+            OutputStream is = Files.newOutputStream(worldFile);
             ns = new NBTOutputStream(is, false);
             ns.writeTag(new CompoundTag("world_" + world.getName(), map));
         } catch (IOException ioe) {

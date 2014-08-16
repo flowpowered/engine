@@ -23,7 +23,7 @@
  */
 package com.flowpowered.api.geo;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -80,19 +80,19 @@ public interface ServerWorldManager extends WorldManager {
      * @param worldName to match the world folders with
      * @return the world folders that match the world name
      */
-    public Collection<File> matchWorldFolder(String worldName);
+    public Collection<Path> matchWorldFolder(String worldName);
 
     /**
      * Gets all the individual world folders where world data is stored. <br/> <br/> This includes offline worlds.
      *
      * @return a list of available world folders
      */
-    public List<File> getWorldFolders();
+    public List<Path> getWorldFolders();
 
     /**
      * Gets the folder that contains the world save data. <br/> <br/> If the folder is unusued, the file path will be '.'
      *
      * @return world folder
      */
-    public File getWorldFolder();
+    public Path getWorldFolder();
 }

@@ -23,15 +23,16 @@
  */
 package com.flowpowered.engine.geo.region;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
 
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
 import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
+import org.apache.logging.log4j.Logger;
 
 public class RegionFileManager {
     /**
@@ -42,19 +43,23 @@ public class RegionFileManager {
      * The timeout for the chunk storage in ms. If the store isn't accessed within that time, it can be automatically shutdown
      */
     public static final int TIMEOUT = 30000;
-    private final File regionDirectory;
+    private final Path regionDirectory;
     private final ConcurrentHashMap<String, BAAWrapper> cache = new ConcurrentHashMap<>();
     private final TimeoutThread timeoutThread;
     private final Logger logger;
 
-    public RegionFileManager(File worldDirectory, Logger logger) {
+    public RegionFileManager(Path worldDirectory, Logger logger) {
         this(worldDirectory, "region", logger);
     }
 
-    public RegionFileManager(File worldDirectory, String prefix, Logger logger) {
+    public RegionFileManager(Path worldDirectory, String prefix, Logger logger) {
         this.logger = logger;
-        regionDirectory = new File(worldDirectory, prefix);
-        regionDirectory.mkdirs();
+        regionDirectory = worldDirectory.resolve(prefix);
+        try {
+            Files.createDirectory(regionDirectory);
+        } catch (IOException ex) {
+            throw new RuntimeException("Cannot create region directory", ex);
+        }
         timeoutThread = new TimeoutThread(worldDirectory);
         timeoutThread.start();
     }
@@ -65,7 +70,7 @@ public class RegionFileManager {
         if (regionFile != null) {
             return regionFile;
         }
-        File file = new File(regionDirectory, filename);
+        Path file = regionDirectory.resolve(filename);
         regionFile = new BAAWrapper(file, SEGMENT_SIZE, FlowRegion.CHUNKS.VOLUME, TIMEOUT);
         BAAWrapper oldRegionFile = cache.putIfAbsent(filename, regionFile);
         if (oldRegionFile != null) {
@@ -110,8 +115,8 @@ public class RegionFileManager {
     }
 
     private class TimeoutThread extends Thread {
-        public TimeoutThread(File worldDirectory) {
-            super("Region File Manager Timeout Thread - " + worldDirectory.getPath());
+        public TimeoutThread(Path worldDirectory) {
+            super("Region File Manager Timeout Thread - " + worldDirectory.toString());
             setDaemon(true);
         }
 

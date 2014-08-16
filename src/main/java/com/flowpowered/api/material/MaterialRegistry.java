@@ -23,7 +23,8 @@
  */
 package com.flowpowered.api.material;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -77,10 +78,10 @@ public abstract class MaterialRegistry {
     }
 
     private static void setupServer(Server server) {
-        File serverItemMap = new File(server.getWorldManager().getWorldFolder(), "materials.dat");
+        Path serverItemMap = server.getWorldManager().getWorldFolder().resolve("materials.dat");
         BinaryFileStore store = new BinaryFileStore(serverItemMap);
         materialRegistry = SyncedStringMap.create(null, store, 1, Short.MAX_VALUE, Material.class.getName());
-        if (serverItemMap.exists()) {
+        if (Files.exists(serverItemMap)) {
             store.load();
         }
     }

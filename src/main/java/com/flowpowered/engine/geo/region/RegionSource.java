@@ -23,14 +23,12 @@
  */
 package com.flowpowered.engine.geo.region;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.flowpowered.commons.concurrent.TripleIntObjectMap;
-import com.flowpowered.commons.concurrent.TripleIntObjectReferenceArrayMap;
 
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
@@ -39,6 +37,8 @@ import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
+import com.flowpowered.commons.concurrent.TripleIntObjectMap;
+import com.flowpowered.commons.concurrent.TripleIntObjectReferenceArrayMap;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
@@ -146,10 +146,10 @@ public class RegionSource implements Iterable<Region> {
         if (!world.getEngine().getPlatform().isServer()) {
             return false;
         }
-        File worldDirectory = ((ServerWorld) world).getDirectory();
-        File regionDirectory = new File(worldDirectory, "region");
-        File regionFile = new File(regionDirectory, "reg" + x + "_" + y + "_" + z + ".spr");
-        return regionFile.exists();
+        Path worldDirectory = ((ServerWorld) world).getDirectory();
+        Path regionDirectory = worldDirectory.resolve("region");
+        Path regionFile = regionDirectory.resolve("reg" + x + "_" + y + "_" + z + ".spr");
+        return Files.exists(regionFile);
     }
 
     /**
