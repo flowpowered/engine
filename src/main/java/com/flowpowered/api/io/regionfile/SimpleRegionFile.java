@@ -26,11 +26,11 @@ package com.flowpowered.api.io.regionfile;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,7 +49,7 @@ public class SimpleRegionFile implements ByteArrayArray {
     public static final int FILE_CLOSED = -1;
     private final Path filePath;
     private final Object fileSyncObject = new Object();
-    private MappedRandomAccessFile file;
+    private MappedFileChannel file;
     @SuppressWarnings ("unused")
     private final int version;
     private final int timeout;
@@ -93,11 +93,7 @@ public class SimpleRegionFile implements ByteArrayArray {
         this.lastAccess = new AtomicLong(0);
         refreshAccess();
 
-        try {
-            this.file = new MappedRandomAccessFile(this.filePath, "rw");
-        } catch (FileNotFoundException e) {
-            throw new SRFException("Unable to open region file " + this.filePath, e);
-        }
+        this.file = new MappedFileChannel(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
 
         int headerSize = getHeaderSize(entries);
 
@@ -199,7 +195,7 @@ public class SimpleRegionFile implements ByteArrayArray {
             byte[] result = new byte[actualLength];
             synchronized (fileSyncObject) {
                 if (file == null) {
-                    this.file = new MappedRandomAccessFile(this.filePath, "rw");
+                    this.file = new MappedFileChannel(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
                 }
                 file.seek(start);
                 file.readFully(result);
@@ -236,7 +232,7 @@ public class SimpleRegionFile implements ByteArrayArray {
         int start = reserveBlockSegments(i, length);
         synchronized (fileSyncObject) {
             if (file == null) {
-                this.file = new MappedRandomAccessFile(this.filePath, "rw");
+                this.file = new MappedFileChannel(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
             }
             this.writeFAT(i, start, length);
             file.seek(start << segmentSize);
@@ -263,7 +259,7 @@ public class SimpleRegionFile implements ByteArrayArray {
             int start = reserveBlockSegments(i, 0);
             synchronized (fileSyncObject) {
                 if (file == null) {
-                    this.file = new MappedRandomAccessFile(this.filePath, "rw");
+                    this.file = new MappedFileChannel(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
                 }
                 this.writeFAT(i, start, 0);
             }
@@ -480,7 +476,7 @@ public class SimpleRegionFile implements ByteArrayArray {
         int FATEntryPosition = getFATOffset() + (i << 3);
         synchronized (fileSyncObject) {
             if (file == null) {
-                this.file = new MappedRandomAccessFile(this.filePath, "rw");
+                this.file = new MappedFileChannel(filePath, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
             }
             file.seek(FATEntryPosition);
             file.writeInt(start);
