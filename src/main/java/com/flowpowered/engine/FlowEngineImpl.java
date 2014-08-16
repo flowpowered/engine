@@ -29,7 +29,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.flowpowered.api.util.LogUtil;
 import com.flowpowered.commons.LoggerOutputStream;
+import com.flowpowered.engine.plugins.FlowPluginManager;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.events.SimpleEventManager;
 import com.flowpowered.api.material.MaterialRegistry;
@@ -47,6 +49,7 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
     private final FlowApplication args;
     private final EventManager eventManager;
     private final FlowFileSystem fileSystem;
+    private final FlowPluginManager pluginManager;
     private FlowScheduler scheduler;
     protected final SnapshotManager snapshotManager = new SnapshotManager();
     private SyncedStringMap itemMap;
@@ -58,6 +61,7 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
         this.args = args;
         this.eventManager = new SimpleEventManager();
         this.fileSystem = new FlowFileSystem();
+        this.pluginManager = new FlowPluginManager(LogUtil.toSLF(logger), this);
     }
 
     @Override
@@ -88,12 +92,14 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
     public void start() {
         scheduler.startMainThread();
         scheduler.addAsyncManager(this);
+        pluginManager.enablePlugins();
         System.out.println("Engine started.");
     }
 
     @Override
     public boolean stop() {
         scheduler.stop();
+        pluginManager.disablePlugins();;
         System.out.println("Engine stopped");
         return true;
     }
@@ -121,6 +127,11 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
     @Override
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    @Override
+    public FlowPluginManager getPluginManager() {
+        return pluginManager;
     }
 
     @Override

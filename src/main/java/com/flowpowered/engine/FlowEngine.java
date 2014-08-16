@@ -27,6 +27,7 @@ import com.flowpowered.api.Engine;
 import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
+import com.flowpowered.engine.plugins.FlowPluginManager;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 
@@ -37,6 +38,9 @@ public interface FlowEngine extends Engine {
 
     @Override
 	FlowFileSystem getFileSystem();
+
+    @Override
+    FlowPluginManager getPluginManager();
 
     @Override
     FlowWorldManager<? extends FlowWorld> getWorldManager();
