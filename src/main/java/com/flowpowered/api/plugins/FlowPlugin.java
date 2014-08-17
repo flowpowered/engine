@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.filesystem;
+package com.flowpowered.api.plugins;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import com.flowpowered.api.Engine;
+import com.flowpowered.plugins.Plugin;
 
-import com.flowpowered.filesystem.SimpleFileSystem;
+public abstract class FlowPlugin extends Plugin {
+    private Engine engine;
 
-public class FlowFileSystem extends SimpleFileSystem {
-    public static final Path PLAYERS_DIRECTORY = Paths.get("players");
-    public static final Path WORLDS_DIRECTORY = Paths.get("worlds");
-    public static final Path PLUGINS_DIRECTORY = Paths.get("plugins");
+    public Engine getEngine() {
+        return engine;
+    }
 }
