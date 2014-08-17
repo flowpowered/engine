@@ -38,6 +38,7 @@ import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.plugins.ContextCreator;
 import com.flowpowered.plugins.Plugin;
 import com.flowpowered.plugins.PluginManager;
+import com.flowpowered.plugins.annotated.AnnotatedPluginLoader;
 import com.flowpowered.plugins.simple.SimplePluginLoader;
 
 import org.slf4j.Logger;
@@ -62,6 +63,7 @@ public class FlowPluginManager extends PluginManager<FlowContext> {
             }
         };
         addLoader(new SimplePluginLoader<>(cc, new URLClassLoader(getURLs(FlowFileSystem.PLUGINS_DIRECTORY, "*.jar"))));
+        addLoader(new AnnotatedPluginLoader<>(cc, FlowFileSystem.PLUGINS_DIRECTORY, getClass().getClassLoader()));
     }
 
     public void enablePlugins() {
