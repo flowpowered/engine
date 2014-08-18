@@ -31,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.io.bytearrayarray.BAAWrapper;
+import com.flowpowered.api.io.bytearrayarray.ByteArrayArray;
+import com.flowpowered.api.io.regionfile.SimpleRegionFile;
 import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
 import org.apache.logging.log4j.Logger;
 
@@ -70,8 +72,14 @@ public class RegionFileManager {
         if (regionFile != null) {
             return regionFile;
         }
-        Path file = regionDirectory.resolve(filename);
-        regionFile = new BAAWrapper(file, SEGMENT_SIZE, FlowRegion.CHUNKS.VOLUME, TIMEOUT);
+        final Path file = regionDirectory.resolve(filename);
+        BAAWrapper.BAACreator c = new BAAWrapper.BAACreator() {
+            @Override
+            public ByteArrayArray create() throws IOException {
+                return new SimpleRegionFile(file, SEGMENT_SIZE, FlowRegion.CHUNKS.VOLUME, TIMEOUT);
+            }
+        };
+        regionFile = new BAAWrapper(c);
         BAAWrapper oldRegionFile = cache.putIfAbsent(filename, regionFile);
         if (oldRegionFile != null) {
             return oldRegionFile;
@@ -105,7 +113,7 @@ public class RegionFileManager {
         }
         for (BAAWrapper regionFile : cache.values()) {
             if (!regionFile.attemptClose()) {
-                logger.info("Unable to close region file " + regionFile.getFilename());
+                logger.info("Unable to close region file.");
             }
         }
     }

@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -43,7 +42,6 @@ import java.util.zip.InflaterInputStream;
 import com.flowpowered.api.io.bytearrayarray.ByteArrayArray;
 
 public class SimpleRegionFile implements ByteArrayArray {
-    private static ConcurrentHashMap<String, Boolean> openMap = new ConcurrentHashMap<>();
     private static final int VERSION = 1;
     private static final int DEFAULT_TIMEOUT = 120000; // timeout delay
     public static final int FILE_CLOSED = -1;
@@ -61,7 +59,7 @@ public class SimpleRegionFile implements ByteArrayArray {
     private final AtomicLong lastAccess;
     private final AtomicReference<AtomicBoolean[]> inuse;
     private final int segmentSize;
-    private final int segmentMask;
+    private final int segmentSizeInBytes;
     private final int entries;
 
     /**
@@ -86,7 +84,6 @@ public class SimpleRegionFile implements ByteArrayArray {
      * @throws IOException on error
      */
     public SimpleRegionFile(Path filePath, int desiredSegmentSize, int entries, int timeout) throws IOException {
-
         this.filePath = filePath;
 
         this.timeout = timeout;
@@ -120,7 +117,7 @@ public class SimpleRegionFile implements ByteArrayArray {
             }
         }
 
-        this.segmentMask = (1 << this.segmentSize) - 1;
+        this.segmentSizeInBytes = 1 << this.segmentSize;
 
 
         inuse = new AtomicReference<>(new AtomicBoolean[0]);
@@ -142,17 +139,10 @@ public class SimpleRegionFile implements ByteArrayArray {
             blockSegmentStart[i] = new AtomicInteger(file.readInt());
             blockActualLength[i] = new AtomicInteger(file.readInt());
             blockSegmentLength[i] = new AtomicInteger(sizeToSegments(blockActualLength[i].get()));
-            //blockLock[i] = new SRFReentrantReadWriteLock(numberBlocksLocked);
             int length = reserveSegments(blockSegmentStart[i].get(), blockSegmentLength[i].get());
             if (length != blockSegmentLength[i].get()) {
-                throw new SRFException("Reserved segments for Block " + i + " overlap with another block");
+                throw new SRFException("Reserved segments for Block " + i + " overlap with another block. (Corrupt file)");
             }
-        }
-
-        Boolean old = openMap.putIfAbsent(filePath.toRealPath().toString().toLowerCase(), Boolean.TRUE);
-
-        if (old != null) {
-            throw new SRFException("Attempt made to open a second region file with the same filename");
         }
     }
 
@@ -217,7 +207,7 @@ public class SimpleRegionFile implements ByteArrayArray {
         if (this.isClosed()) {
             throw new SRFClosedException("File closed");
         }
-        return new BufferedOutputStream(new DeflaterOutputStream(new SRFOutputStream(this, i, this.segmentMask + 1, lock)));
+        return new BufferedOutputStream(new DeflaterOutputStream(new SRFOutputStream(this, i, this.segmentSizeInBytes, lock)));
     }
 
     /**
@@ -305,16 +295,9 @@ public class SimpleRegionFile implements ByteArrayArray {
 
     private boolean closeFileRaw() throws IOException {
         synchronized (fileSyncObject) {
-            try {
-                if (file != null) {
-                    file.close();
-                    file = null;
-                }
-            } finally {
-                Boolean old = openMap.remove(filePath.toRealPath().toString().toLowerCase());
-                if (old == null) {
-                    throw new SRFException("Filename was not in the open file list when closing");
-                }
+            if (file != null) {
+                file.close();
+                file = null;
             }
         }
         return true;
@@ -425,17 +408,19 @@ public class SimpleRegionFile implements ByteArrayArray {
         AtomicInteger blockLength = this.blockSegmentLength[i];
         AtomicInteger blockBytes = this.blockActualLength[i];
 
-        int oldStart = blockStart.get();
-        int oldLength = blockLength.get();
-        int oldEnd = oldStart + oldLength;
+        final int oldStart = blockStart.get();
+        final int oldLength = blockLength.get();
+        final int oldEnd = oldStart + oldLength;
 
-        int newLength = sizeToSegments(length);
-        int newEnd = oldStart + newLength;
+        final int newLength = sizeToSegments(length);
+        
 
-        if (newLength <= oldLength) { // file has shrunk
+        // Block has shrunk, so release the extra
+        if (newLength <= oldLength) {
+            int newEnd = oldStart + newLength;
             for (int j = newEnd; j < oldEnd; j++) {
                 if (!this.releaseSegment(j)) {
-                    throw new SRFException("Unable to unlock blocks due to file shrinking");
+                    throw new SRFException("Unable to unlock blocks due to file shrinking. (Segments were not in use before)");
                 }
             }
             blockLength.set(newLength);
@@ -443,6 +428,7 @@ public class SimpleRegionFile implements ByteArrayArray {
             return oldStart;
         }
 
+        // Try to reserve segments appended to the current
         int extraLength = newLength - oldLength;
         int lockedSegments = this.reserveSegments(oldEnd, extraLength);
 
@@ -453,13 +439,11 @@ public class SimpleRegionFile implements ByteArrayArray {
         }
 
         int newStart = 0;
-        lockedSegments = 0;
+        lockedSegments = -1;
 
         while (lockedSegments != newLength) {
+            newStart += lockedSegments + 1;
             lockedSegments = this.reserveSegments(newStart, newLength);
-            if (lockedSegments != newLength) {
-                newStart = newStart + lockedSegments + 1;
-            }
         }
 
         for (int j = oldStart; j < oldEnd; j++) {

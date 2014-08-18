@@ -26,7 +26,7 @@ package com.flowpowered.api.io.bytearrayarray;
 import java.io.IOException;
 
 /**
- * This exception is thrown when by a PersistentByteArrayMap.
+ * This exception is thrown when by a ByteArrayArrayMap.
  */
 public class BAAException extends IOException {
     private static final long serialVersionUID = 1L;

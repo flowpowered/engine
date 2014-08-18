@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -38,10 +39,12 @@ public class MappedFileChannel {
     private final Path filePath;
     private final OpenOption[] options;
     private final ArrayList<MappedByteBuffer> pages = new ArrayList<>();
+    private long position;
     private final int PAGE_SHIFT;
     private final int PAGE_SIZE;
     private final long PAGE_MASK;
     private FileChannel channel;
+    private FileLock lock;
 
     public MappedFileChannel(Path filePath, OpenOption... options) throws IOException {
         this(filePath, 17, options);
@@ -49,6 +52,7 @@ public class MappedFileChannel {
 
     public MappedFileChannel(Path filePath, int pageShift, OpenOption... options) throws IOException {
         this.channel = FileChannel.open(filePath, options);
+        this.lock = channel.lock();
         this.PAGE_SHIFT = pageShift;
         PAGE_SIZE = (1 << PAGE_SHIFT);
         PAGE_MASK = PAGE_SIZE - 1;
@@ -66,6 +70,7 @@ public class MappedFileChannel {
                 m.force();
             }
         }
+        lock.release();
         channel.close();
     }
 
@@ -106,6 +111,7 @@ public class MappedFileChannel {
                         success = true;
                     } catch (ClosedByInterruptException e) {
                         channel = FileChannel.open(filePath, options);
+                        channel.lock();
                     } catch (IOException e) {
                         throw new IOException("Unable to refresh RandomAccessFile after interrupt, " + filePath, e);
                     }
@@ -121,13 +127,12 @@ public class MappedFileChannel {
     }
 
     public void seek(long pos) throws IOException {
-        channel.position(pos);
+        position = pos;
     }
 
     public void readFully(byte[] b) throws IOException {
-        long pos = channel.position();
-        int pageIndex = (int) (pos >> PAGE_SHIFT);
-        int offset = (int) (pos & PAGE_MASK);
+        int pageIndex = (int) (position >> PAGE_SHIFT);
+        int offset = (int) (position & PAGE_MASK);
         int endPageOne = Math.min(b.length + offset, PAGE_SIZE);
 
         MappedByteBuffer page = getPage(pageIndex);
@@ -155,14 +160,12 @@ public class MappedFileChannel {
             j += length;
         }
 
-        pos += b.length;
-        channel.position(pos);
+        position += b.length;
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
-        long pos = channel.position();
-        int pageIndex = (int) (pos >> PAGE_SHIFT);
-        int offset = (int) (pos & PAGE_MASK);
+        int pageIndex = (int) (position >> PAGE_SHIFT);
+        int offset = (int) (position & PAGE_MASK);
         int endPageOne = Math.min(len + offset, PAGE_SIZE);
 
         MappedByteBuffer page = getPage(pageIndex);
@@ -189,7 +192,6 @@ public class MappedFileChannel {
             j += length;
         }
 
-        pos += len;
-        channel.position(pos);
+        position += len;
     }
 }

@@ -26,24 +26,19 @@ package com.flowpowered.api.io.bytearrayarray;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.flowpowered.api.io.regionfile.SimpleRegionFile;
 
+/**
+ * Provides a wrapper for a {@link ByteArrayArray} with handling of timeouts, opening, closing.
+ */
 public class BAAWrapper {
     private final static ByteArrayArray openInProgress = BAAOpenInProgress.getInstance();
-    private AtomicReference<ByteArrayArray> baaRef = new AtomicReference<>(null);
-    private final Path path;
-    private final int segmentSize;
-    private final int entries;
-    private final int timeout;
+    private final AtomicReference<ByteArrayArray> baaRef = new AtomicReference<>(null);
+    private final BAACreator creator;
 
-    public BAAWrapper(Path path, int segmentSize, int entries, int timeout) {
-        this.path = path;
-        this.segmentSize = segmentSize;
-        this.entries = entries;
-        this.timeout = timeout;
+    public BAAWrapper(BAACreator creator) {
+        this.creator = creator;
     }
 
     /**
@@ -183,15 +178,6 @@ public class BAAWrapper {
         }
     }
 
-    /**
-     * Gets the filename of the file handled by this wrapper
-     *
-     * @return the filename
-     */
-    public String getFilename() {
-        return path.getFileName().toString();
-    }
-
     private ByteArrayArray getByteArrayArray() {
         int count = 0;
         while (true) {
@@ -212,8 +198,8 @@ public class BAAWrapper {
                 baa = null; // not needed - already null
                 try {
                     try {
-                        baa = new SimpleRegionFile(path, segmentSize, entries, timeout);
-                    } catch (IOException e) {
+                        baa = creator.create();
+                    } catch (Exception e) {
                         e.printStackTrace();
                         baa = null; // not needed - already null. The assignment above comes after the potential IOException. 
                     }
@@ -238,5 +224,10 @@ public class BAAWrapper {
                 Thread.yield();
             }
         }
+    }
+
+    // TODO: remove and use Supplier in Java 8
+    public static interface BAACreator {
+        ByteArrayArray create() throws Exception;
     }
 }
