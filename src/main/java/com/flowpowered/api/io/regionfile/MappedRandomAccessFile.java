@@ -23,21 +23,24 @@
  */
 package com.flowpowered.api.io.regionfile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
- * Util class used to keep track of memory mapping and paging of a FileChannel.
+ * @deprecated need to recreate using {@link java.nio.channels.SeekableByteChannel}
  */
-public class MappedFileChannel {
+@Deprecated
+public class MappedRandomAccessFile {
     private final Path filePath;
-    private final OpenOption[] options;
+    private final String permissions;
+    private long pos = 0;
     private final ArrayList<MappedByteBuffer> pages = new ArrayList<>();
     private long position;
     private final int PAGE_SHIFT;
@@ -45,23 +48,24 @@ public class MappedFileChannel {
     private final long PAGE_MASK;
     private FileChannel channel;
     private FileLock lock;
+    private RandomAccessFile file;
 
-    public MappedFileChannel(Path filePath, OpenOption... options) throws IOException {
-        this(filePath, 17, options);
+    public MappedRandomAccessFile(Path filePath, String permissions) throws FileNotFoundException, IOException {
+        this(filePath, permissions, 17);
     }
 
-    public MappedFileChannel(Path filePath, int pageShift, OpenOption... options) throws IOException {
-        this.channel = FileChannel.open(filePath, options);
-        this.lock = channel.lock();
+    public MappedRandomAccessFile(Path filePath, String permissions, int pageShift) throws FileNotFoundException, IOException {
+        this.file = new RandomAccessFile(filePath.toFile(), permissions);
+        this.lock = file.getChannel().lock();
         this.PAGE_SHIFT = pageShift;
         PAGE_SIZE = (1 << PAGE_SHIFT);
         PAGE_MASK = PAGE_SIZE - 1;
         this.filePath = filePath;
-        this.options = options;
+        this.permissions = permissions;
     }
 
     public long length() throws IOException {
-        return channel.size();
+        return file.length();
     }
 
     public void close() throws IOException {
@@ -71,7 +75,7 @@ public class MappedFileChannel {
             }
         }
         lock.release();
-        channel.close();
+        file.close();
     }
 
     byte[] intArray = new byte[4];
@@ -107,10 +111,10 @@ public class MappedFileChannel {
                 while (!success) {
                     try {
                         interrupted |= Thread.interrupted();
-                        page = channel.map(FileChannel.MapMode.READ_WRITE, pagePosition, PAGE_SIZE);
+                        page = file.getChannel().map(FileChannel.MapMode.READ_WRITE, pagePosition, PAGE_SIZE);
                         success = true;
                     } catch (ClosedByInterruptException e) {
-                        channel = FileChannel.open(filePath, options);
+                        file = new RandomAccessFile(filePath.toFile(), permissions);
                         channel.lock();
                     } catch (IOException e) {
                         throw new IOException("Unable to refresh RandomAccessFile after interrupt, " + filePath, e);
@@ -127,12 +131,12 @@ public class MappedFileChannel {
     }
 
     public void seek(long pos) throws IOException {
-        position = pos;
+        this.pos = pos;
     }
 
     public void readFully(byte[] b) throws IOException {
-        int pageIndex = (int) (position >> PAGE_SHIFT);
-        int offset = (int) (position & PAGE_MASK);
+        int pageIndex = (int) (pos >> PAGE_SHIFT);
+        int offset = (int) (pos & PAGE_MASK);
         int endPageOne = Math.min(b.length + offset, PAGE_SIZE);
 
         MappedByteBuffer page = getPage(pageIndex);
@@ -160,12 +164,12 @@ public class MappedFileChannel {
             j += length;
         }
 
-        position += b.length;
+        pos += b.length;
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
-        int pageIndex = (int) (position >> PAGE_SHIFT);
-        int offset = (int) (position & PAGE_MASK);
+        int pageIndex = (int) (pos >> PAGE_SHIFT);
+        int offset = (int) (pos & PAGE_MASK);
         int endPageOne = Math.min(len + offset, PAGE_SIZE);
 
         MappedByteBuffer page = getPage(pageIndex);
@@ -192,6 +196,6 @@ public class MappedFileChannel {
             j += length;
         }
 
-        position += len;
+        pos += len;
     }
 }
