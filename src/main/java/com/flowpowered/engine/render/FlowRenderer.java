@@ -42,7 +42,6 @@ import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.render.RenderThread;
-import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector4f;
@@ -63,7 +62,6 @@ import org.spout.renderer.api.GLImplementation;
 import org.spout.renderer.api.GLVersioned.GLVersion;
 import org.spout.renderer.api.Material;
 import org.spout.renderer.api.data.Uniform.FloatUniform;
-import org.spout.renderer.api.data.Uniform.Matrix4Uniform;
 import org.spout.renderer.api.data.Uniform.Vector3Uniform;
 import org.spout.renderer.api.data.Uniform.Vector4Uniform;
 import org.spout.renderer.api.data.UniformHolder;
@@ -87,8 +85,6 @@ public class FlowRenderer implements Renderer {
     private boolean cullBackFaces = true;
     // Effect uniforms
     private final Vector3Uniform lightDirectionUniform = new Vector3Uniform("lightDirection", Vector3f.FORWARD);
-    private final Matrix4Uniform previousViewMatrixUniform = new Matrix4Uniform("previousViewMatrix", new Matrix4f());
-    private final Matrix4Uniform previousProjectionMatrixUniform = new Matrix4Uniform("previousProjectionMatrix", new Matrix4f());
     // OpenGL version and context
     private Context context;
     // Included materials
@@ -146,9 +142,6 @@ public class FlowRenderer implements Renderer {
         if (context.getGLVersion() == RenderThread.DEFAULT_VERSION || GLContext.getCapabilities().GL_ARB_depth_clamp) {
             context.enableCapability(Capability.DEPTH_CLAMP);
         }
-        final UniformHolder uniforms = context.getUniforms();
-        uniforms.add(previousViewMatrixUniform);
-        uniforms.add(previousProjectionMatrixUniform);
     }
 
     private void initGraph() {
@@ -326,9 +319,6 @@ public class FlowRenderer implements Renderer {
         }
         // Render
         graph.render();
-        final Camera camera = renderModelsNode.getAttribute("camera");
-        previousViewMatrixUniform.set(camera.getViewMatrix());
-        previousProjectionMatrixUniform.set(camera.getProjectionMatrix());
         // Update the HUD
         updateHUD();
     }
