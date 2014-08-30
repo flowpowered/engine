@@ -64,4 +64,9 @@ public abstract class WorldSnapshot {
 
     public abstract boolean hasRegion(int x, int y, int z);
 
+    @Override
+    public String toString() {
+        return "WorldSnapshot{" + "name=" + name + '}';
+    }
+
 }

@@ -137,9 +137,6 @@ public class CuboidBlockMaterialBuffer extends ImmutableCuboidBlockMaterialBuffe
     public void setHorizontalLayer(int y, int height, short id, short data) {
         final int startIndex = getIndex(this.baseX, y, this.baseZ);
         final int endIndex = getIndex(this.topX - 1, y + height - 1, this.topZ - 1) + 1;
-        if (startIndex < 0 || endIndex <= 0) {
-            throw new IllegalArgumentException("Layer Y-Coordinate (y=" + y + ", height=" + height + ") are outside the buffer");
-        }
         Arrays.fill(this.id, startIndex, endIndex, id);
         Arrays.fill(this.data, startIndex, endIndex, data);
     }

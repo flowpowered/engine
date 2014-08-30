@@ -43,13 +43,15 @@ public class FlatWorldGenerator implements WorldGenerator {
 
     @Override
     public void generate(CuboidBlockMaterialBuffer blockData, World world) {
-        int flooredY = blockData.getBase().getFloorY();
-        if (flooredY < 0) {
-            blockData.setHorizontalLayer(flooredY, (blockData.getSize().getFloorY() / 2), material);
-            blockData.flood(material);
-        } else {
+        final int minBlockY = blockData.getBase().getFloorY();
+        final int maxBlockY = blockData.getTop().getFloorY() - 1;
+        if (minBlockY > -1 || maxBlockY < -32) {
             blockData.flood(BlockMaterial.AIR);
+            return;
         }
+        final int bottom = Math.max(-32, minBlockY);
+        final int top = Math.min(-1, maxBlockY);
+        blockData.setHorizontalLayer(bottom, top - bottom + 1, material);
     }
 
     @Override

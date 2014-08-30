@@ -27,14 +27,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
 
-import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import com.flowpowered.api.Platform;
-import com.flowpowered.api.generator.FlatWorldGenerator;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.engine.player.FlowPlayer;
-import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.FlowSingleplayerSession;
 import com.flowpowered.engine.render.FlowRenderer;
@@ -42,7 +38,6 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
-    private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
     private final FlowSingleplayerSession session = new FlowSingleplayerSession(this, false);
 
     public FlowSingleplayerImpl(FlowApplication args) {
@@ -58,21 +53,17 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
             return;
         }
         super.init();
+    }
 
-        FlowWorld loadedWorld = getWorldManager().loadWorld("fallback", new FlatWorldGenerator(BlockMaterial.SOLID_BLUE));
-        activeWorld.set(loadedWorld);
+    @Override
+    public void start() {
+        super.start();
 
         FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(this, true));
         this.player.set(player);
         session.setPlayer(player);
 
-
-    }
-
-    @Override
-    public void start() {
         getScheduler().startClientThreads(this);
-        super.start();
     }
 
     @Override
@@ -89,11 +80,6 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
     @Override
     public FlowPlayer getPlayer() {
         return player.get();
-    }
-
-    @Override
-    public FlowWorld getWorld() {
-        return activeWorld.get();
     }
 
     @Override

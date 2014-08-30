@@ -46,7 +46,6 @@ import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.ChunkDataMessage;
 import com.flowpowered.engine.network.message.UpdateEntityMessage;
 import com.flowpowered.engine.util.OutwardIterator;
-import com.flowpowered.events.Listener;
 import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.networking.session.Session;
 
@@ -54,7 +53,7 @@ import com.flowpowered.networking.session.Session;
  * The networking behind {@link org.spout.api.entity.Player}s. This component holds the {@link Session} which is the connection the Player has to the server.
  * This class also syncs *loaded* chunks to the client. It makes no attempt to load or generate chunks.
  */
-public class PlayerNetwork implements Listener {
+public class PlayerNetwork {
     protected static final int CHUNKS_PER_TICK = 50;
     private final FlowSession session;
     private final TSyncIntHashSet synchronizedEntities = new TSyncIntHashSet();

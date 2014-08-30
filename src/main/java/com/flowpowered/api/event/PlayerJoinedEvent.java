@@ -21,22 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api;
+package com.flowpowered.api.event;
 
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.api.render.Renderer;
+import com.flowpowered.api.player.Player;
+import com.flowpowered.events.SimpleEvent;
 
-/**
- * Represents the client-specific component of the Flow platform.
- */
-public interface Client extends Engine {
+public class PlayerJoinedEvent extends SimpleEvent {
+    private final Player player;
 
-    /**
-     * Gets the renderer that the client is using.
-     *
-     * @return the renderer in use
-     */
-    Renderer getRenderer();
+    public PlayerJoinedEvent(Player player) {
+        this.player = player;
+    }
 
-    Transform getTransform();
+    public Player getPlayer() {
+        return player;
+    }
 }

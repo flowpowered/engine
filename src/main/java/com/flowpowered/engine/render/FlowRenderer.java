@@ -218,14 +218,7 @@ public class FlowRenderer implements Renderer {
         renderGUINode.setAttribute("guiModels", guiModels);
         graph.addNode(renderGUINode);
 
-        renderModelsNode.update();
-        shadowMappingNode.update();
-        blurShadowsNode.update();
-        ssaoNode.update();
-        blurOcclusionsNode.update();
-        lightingNode.update();
-        renderTransparentModelsNode.update();
-        renderGUINode.update();
+        graph.updateAll();
 
         // Build graph
         graph.build();
@@ -438,6 +431,14 @@ public class FlowRenderer implements Renderer {
     public void addTransparentModel(Model model) {
         model.setMaterial(transparencyMaterial);
         transparentModels.add(model);
+    }
+
+    public void removeModel(Model model) {
+        models.remove(model);
+    }
+
+    public void removeTransparentModels(Model model) {
+        transparentModels.remove(model);
     }
 
     /**

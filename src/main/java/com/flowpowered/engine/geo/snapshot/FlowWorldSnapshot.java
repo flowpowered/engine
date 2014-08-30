@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.geo.snapshot;
 
-import com.flowpowered.api.geo.snapshot.WorldSnapshot;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,14 +35,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
-import com.flowpowered.commons.map.TripleIntObjectMap;
-import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
-import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.geo.snapshot.RegionSnapshot;
+import com.flowpowered.api.geo.snapshot.WorldSnapshot;
+import com.flowpowered.commons.map.TripleIntObjectMap;
+import com.flowpowered.commons.map.impl.TTripleInt21ObjectHashMap;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.math.vector.Vector3i;
 
 /**
  *
@@ -163,6 +163,7 @@ public class FlowWorldSnapshot extends WorldSnapshot {
                 FlowRegionSnapshot regionSnapshot = regions.get(position.getX(), position.getY(), position.getZ());
                 if (regionSnapshot == null) {
                     regionSnapshot = region.getSnapshot();
+                    System.out.println("Adding region snapshot: " + position);
                     regions.put(position.getX(), position.getY(), position.getZ(), regionSnapshot);
                     changed = true;
                 }

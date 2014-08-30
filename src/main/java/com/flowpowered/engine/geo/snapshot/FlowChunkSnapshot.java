@@ -65,9 +65,9 @@ public class FlowChunkSnapshot extends ChunkSnapshot {
         final int otherChunkX = this.getX() + x;
         final int otherChunkY = this.getY() + y;
         final int otherChunkZ = this.getZ() + z;
-        final int otherRegionX = otherChunkX / Region.CHUNKS.SIZE;
-        final int otherRegionY = otherChunkY / Region.CHUNKS.SIZE;
-        final int otherRegionZ = otherChunkZ / Region.CHUNKS.SIZE;
+        final int otherRegionX = otherChunkX >> Region.CHUNKS.BITS;
+        final int otherRegionY = otherChunkY >> Region.CHUNKS.BITS;
+        final int otherRegionZ = otherChunkZ >> Region.CHUNKS.BITS;
         if (regionX == otherRegionX && regionZ == otherRegionZ && regionY == otherRegionY) {
             // Get the chunk from the current region
             return (FlowChunkSnapshot) getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);

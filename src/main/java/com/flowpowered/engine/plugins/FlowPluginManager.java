@@ -48,14 +48,15 @@ public class FlowPluginManager extends PluginManager<FlowContext> {
 
     public FlowPluginManager(Logger logger, final FlowEngine engine) {
         super(logger);
+        this.engine = engine;
+    }
 
+    public void loadPlugins() {
         try {
             Files.createDirectories(FlowFileSystem.PLUGINS_DIRECTORY);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        this.engine = engine;
         ContextCreator<FlowContext> cc = new ContextCreator<FlowContext>() {
             @Override
             public FlowContext createContext(Plugin<FlowContext> plugin) {

@@ -37,7 +37,6 @@ import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.scheduler.TickStage;
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
-import com.flowpowered.commons.concurrent.TripleIntObjectMap;
 import com.flowpowered.commons.concurrent.TripleIntObjectReferenceArrayMap;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
@@ -49,7 +48,7 @@ public class RegionSource implements Iterable<Region> {
     /**
      * A map of loaded regions, mapped to their x and z values.
      */
-    private final TripleIntObjectMap<FlowRegion> loadedRegions;
+    private final TripleIntObjectReferenceArrayMap<FlowRegion> loadedRegions;
     /**
      * World associated with this region source
      */

@@ -23,8 +23,6 @@
  */
 package com.flowpowered.engine.scheduler.render;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,9 +31,12 @@ import java.util.Queue;
 
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
+import com.flowpowered.api.material.block.BlockFace;
+import com.flowpowered.api.material.block.BlockFaces;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
@@ -55,7 +56,6 @@ import gnu.trove.map.hash.TObjectLongHashMap;
 import org.lwjgl.input.Keyboard;
 import org.spout.renderer.api.Camera;
 import org.spout.renderer.api.GLVersioned.GLVersion;
-import org.spout.renderer.api.model.Model;
 
 public class RenderThread extends TickingElement {
     public static final int FPS = 60;
@@ -101,7 +101,8 @@ public class RenderThread extends TickingElement {
     public void onTick(long dt) {
         handleInput();
         updateCameraAndFrustrum();
-        FlowWorld world = client.getWorld();
+        WorldReference ref = client.getSession().getPlayer().getTransformProvider().getTransform().getPosition().getWorld();
+        FlowWorld world = ref == null ? null : (FlowWorld) ref.get();
         updateChunkModels(world == null ? null : world.getSnapshot());
         updateLight(world == null ? 0 : world.getAge());
         renderer.render();
@@ -154,6 +155,7 @@ public class RenderThread extends TickingElement {
             }
         }
         final Map<Vector3i, RegionSnapshot> regions = world.getRegions();
+        int added = 0;
         for (RegionSnapshot region : regions.values()) {
             // Next go through all the chunks, and update the chunks that are out of date
             for (ChunkSnapshot chunk : region.getChunks()) {
@@ -171,18 +173,17 @@ public class RenderThread extends TickingElement {
                     //    continue;
                     //}
                     final Vector3i position = chunk.getPosition();
-                    // If we have a previous model remove it to be replaced
-                    final ChunkModel previous = chunkModels.get(position);
-                    if (previous != null) {
-                        // Don't destroy the model, we'll keep it to render until the new chunk is ready
-                        removeChunkModel(previous, false);
-                        // No need to remove from the collections, it will be replaced in the addChunkModel call
+                    for (BlockFace f : BlockFaces.NESWBTHIS) {
+                        Vector3i localPosition = position.add(f.getOffset());
+                        ChunkSnapshot local = f == BlockFace.THIS ? chunk : chunk.getRelativeChunk(localPosition);
+                        if (local == null) continue;
+                        addChunkModel(local);
                     }
-                    // Add the new model
-                    addChunkModel(chunk, previous);
+                    added++;
                 }
             }
         }
+        System.out.println("Added: " + added);
         // Update the world update number
         worldLastUpdateNumber = update;
         // Safety precautions
@@ -191,20 +192,24 @@ public class RenderThread extends TickingElement {
         }
     }
 
-    private void addChunkModel(ChunkSnapshot chunk, ChunkModel previous) {
-        final ChunkModel model = mesher.queue(chunk);
+    private void addChunkModel(ChunkSnapshot chunk) {
         final Vector3i position = chunk.getPosition();
+        // If we have a previous model remove it to be replaced
+        final ChunkModel previous = chunkModels.remove(position);
+        if (previous != null) {
+            removeChunkModel(previous, false);
+        }
+        // The previous model is kept to prevent frames with missing chunks because they're being meshed
+        final ChunkModel model = mesher.queue(chunk, previous);
         model.setPosition(position.mul(Chunk.BLOCKS.SIZE).toFloat());
         model.setRotation(Quaternionf.IDENTITY);
-        // The previous model is kept to prevent frames with missing chunks because they're being meshed
-        model.setPrevious(previous);
         renderer.addSolidModel(model);
         chunkModels.put(position, model);
         chunkLastUpdateNumbers.put(position, chunk.getUpdateNumber());
     }
 
     private void removeChunkModel(ChunkModel model, boolean destroy) {
-        renderer.getRenderModelsNode().<Collection<Model>>getAttribute("models", new ArrayList<Model>()).remove(model);
+        renderer.removeModel(model);
         if (destroy) {
             // TODO: recycle the vertex array?
             model.destroy();

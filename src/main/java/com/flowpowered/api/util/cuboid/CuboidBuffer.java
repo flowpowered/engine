@@ -196,7 +196,7 @@ public abstract class CuboidBuffer {
 
     protected static int getIndex(CuboidBuffer source, int x, int y, int z) {
         if (x < source.baseX || x >= source.topX || y < source.baseY || y >= source.topY || z < source.baseZ || z >= source.topZ) {
-            return -1;
+            throw new IllegalArgumentException("(" + x + ", " + y + ", " + z + ") is not within the bounds of bottom: " + source.base + " top: " + source.top);
         }
 
         return (y - source.baseY) * source.Yinc + (z - source.baseZ) * source.Zinc + (x - source.baseX) * source.Xinc;

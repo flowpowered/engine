@@ -24,14 +24,12 @@
 package com.flowpowered.engine.render.mesher;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.model.mesher.ChunkMesher;
 import com.flowpowered.api.model.mesh.Mesh;
-import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshotGroup;
 import com.flowpowered.engine.render.model.ChunkModel;
 import com.flowpowered.engine.scheduler.render.RenderThread;
@@ -69,8 +67,8 @@ public class ParallelChunkMesher {
      * @param chunk The chunk to mesh
      * @return The chunk's model
      */
-    public ChunkModel queue(ChunkSnapshot chunk) {
-        return new ChunkModel(renderer, chunk.getPosition(), executor.submit(new ChunkMeshTask(chunk)));
+    public ChunkModel queue(ChunkSnapshot chunk, ChunkModel previous) {
+        return new ChunkModel(renderer, executor.submit(new ChunkMeshTask(chunk)), previous);
     }
 
     /**

@@ -25,14 +25,10 @@ package com.flowpowered.engine;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.render.FlowRenderer;
 
 public interface FlowClient extends Client, FlowEngine {
-
-    @Override
-	FlowWorld getWorld();
 
     @Override
     FlowRenderer getRenderer();

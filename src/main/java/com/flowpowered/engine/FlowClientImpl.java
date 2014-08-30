@@ -24,7 +24,6 @@
 package com.flowpowered.engine;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -39,7 +38,6 @@ import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.render.FlowRenderer;
 
 public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
-    private final AtomicReference<FlowWorld> activeWorld = new AtomicReference<>();
     private final FlowWorldManager<FlowWorld> worldManager;
     private final FlowNetworkClient client = new FlowNetworkClient(this);
 
@@ -63,7 +61,6 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
         FlowWorld world = new FlowWorld(this, "TestWorld");
         worldManager.addWorld(world);
         getScheduler().addAsyncManager(world);
-        activeWorld.set(world);
     }
 
     @Override
@@ -87,11 +84,6 @@ public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
     @Override
     public FlowWorldManager<FlowWorld> getWorldManager() {
         return worldManager;
-    }
-
-    @Override
-    public FlowWorld getWorld() {
-        return activeWorld.get();
     }
 
     @Override

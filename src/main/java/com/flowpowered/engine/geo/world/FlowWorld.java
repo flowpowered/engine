@@ -439,6 +439,7 @@ public class FlowWorld extends BaseComponentOwner implements World, StartTickMan
 
     @Override
     public void copySnapshotRun(int sequence) {
+        snapshotManager.copyAllSnapshots();
         // TODO: modified status
         snapshot.update(this);
     }

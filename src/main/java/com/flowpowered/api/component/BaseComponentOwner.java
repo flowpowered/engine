@@ -33,7 +33,6 @@ import com.google.common.collect.HashBiMap;
 
 import com.flowpowered.api.Engine;
 import com.flowpowered.commons.datatable.ManagedHashMap;
-import com.flowpowered.events.Listener;
 
 public class BaseComponentOwner implements ComponentOwner {
     /**
@@ -158,9 +157,7 @@ public class BaseComponentOwner implements ComponentOwner {
                 } catch (Exception e) {
                     engine.getLogger().error("Error detaching component " + type + " from holder: ", e);
                 }
-                if (component instanceof Listener) {
-                    engine.getEventManager().unRegisterEvents((Listener) component);
-                }
+                engine.getEventManager().unRegisterEventsByOwner(component);
             }
 
             return component;

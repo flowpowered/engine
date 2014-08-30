@@ -46,4 +46,8 @@ public abstract class RegionSnapshot {
 
     public abstract ChunkSnapshot[] getChunks();
 
+    @Override
+    public String toString() {
+        return "RegionSnapshot{" + "position=" + position + ", world=" + world + '}';
+    }
 }

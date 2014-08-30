@@ -38,7 +38,6 @@ import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
-import com.flowpowered.engine.FlowSingleplayerImpl;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.InputSnapshotMessage;
 
@@ -88,15 +87,6 @@ public class InputThread extends TickingElement {
             while (Keyboard.next()) {
                 // Create a new event
                 final KeyboardEvent event = new KeyboardEvent(Keyboard.getEventKey(), Keyboard.getEventKeyState());
-                // TEST CODE
-                if (client instanceof FlowSingleplayerImpl) {
-                    FlowSingleplayerImpl e = (FlowSingleplayerImpl) client;
-                    if (event.getKeyId() == Keyboard.KEY_C && event.wasPressedDown()) {
-                        e.getPlayer().setTransformProvider(e.getTestEntity().getPhysics());
-                    } else if (event.getKeyId() == Keyboard.KEY_V && event.wasPressedDown()) {
-                        e.getPlayer().setTransformProvider(e.getTestEntity2().getPhysics());
-                    }
-                }
                 currentKeys.add(event);
                 // Add to the queues, if we don't have an empty queue, return, there's nothing more to add
                 if (!keyboardQueue.add(event)) {

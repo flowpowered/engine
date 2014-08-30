@@ -90,9 +90,10 @@ public abstract class FlowEngineImpl implements FlowEngine, CopySnapshotManager 
     }
 
     public void start() {
-        scheduler.startMainThread();
-        scheduler.addAsyncManager(this);
+        pluginManager.loadPlugins();
         pluginManager.enablePlugins();
+        scheduler.addAsyncManager(this);
+        scheduler.startMainThread();
         System.out.println("Engine started.");
     }
 
