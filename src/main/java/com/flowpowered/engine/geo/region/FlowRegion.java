@@ -152,7 +152,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         final int localY = y & CHUNKS.MASK;
         final int localZ = z & CHUNKS.MASK;
 
-        final FlowChunk chunk = chunks.get()[getChunkIndex(localX, localY, localZ)];
+        final FlowChunk chunk = chunks.get()[getChunkKey(localX, localY, localZ)];
         if (chunk != null) {
             checkChunkLoaded(chunk, loadopt);
             return chunk;
@@ -198,7 +198,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         if (!loadopt.isWait()) {
             return null;
         }
-        final FlowChunk generatedChunk = live.get()[getChunkIndex(localX, localY, localZ)];
+        final FlowChunk generatedChunk = live.get()[getChunkKey(localX, localY, localZ)];
         if (generatedChunk != null) {
             checkChunkLoaded(generatedChunk, loadopt);
             return generatedChunk;
@@ -248,15 +248,10 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         chunkY &= CHUNKS.MASK;
         chunkZ &= CHUNKS.MASK;
 
-        int key = 0;
-        key |= chunkX;
-        key |= chunkY << CHUNKS.BITS;
-        key |= chunkZ << (CHUNKS.BITS << 1);
-
-        return key;
+        return (CHUNKS.AREA * chunkX) + (CHUNKS.SIZE * chunkY) + chunkZ;
     }
 
-    protected void setGeneratedChunks(FlowChunk[][][] newChunks, int baseX, int baseY, int baseZ) {
+    protected void setGeneratedChunks(FlowChunk[][][] newChunks) {
         while(true) {
             FlowChunk[] live = this.live.get();
             FlowChunk[] newArray = Arrays.copyOf(live, live.length);
@@ -264,11 +259,12 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             for (int x = 0; x < width; x++) {
                 for (int z = 0; z < width; z++) {
                     for (int y = 0; y < width; y++) {
-                        int chunkIndex = getChunkIndex(x + baseX, y + baseY, z + baseZ);
+                        FlowChunk curr = newChunks[x][y][z];
+                        int chunkIndex = getChunkKey(curr.getChunkX(), curr.getChunkY(), curr.getChunkZ());
                         if (live[chunkIndex] != null) {
                             throw new IllegalStateException("Tried to set a generated chunk, but a chunk already existed!");
                         }
-                        newArray[chunkIndex] = newChunks[x][y][z];
+                        newArray[chunkIndex] = curr;
                     }
                 }
             }
@@ -280,7 +276,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     }
 
     protected FlowChunk setChunk(FlowChunk newChunk, int x, int y, int z, ChunkDataForRegion dataForRegion) {
-        final int chunkIndex = getChunkIndex(x, y, z);
+        final int chunkIndex = getChunkKey(x, y, z);
         while (true) {
             FlowChunk[] live = this.live.get();
             FlowChunk old = live[chunkIndex];
@@ -556,10 +552,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return ALL_STAGES;
     }
 
-    protected static int getChunkIndex(int x, int y, int z) {
-        return (CHUNKS.AREA * x) + (CHUNKS.SIZE * y) + z;
-    }
-
     public FlowWorld getFlowWorld() {
         return (FlowWorld) super.getWorld().refresh(engine.getWorldManager());
     }
@@ -574,7 +566,7 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
     }
 
     public void setChunk(int worldChunkX, int worldChunkY, int worldChunkZ, int[] blocks) {
-        final int chunkIndex = getChunkIndex(worldChunkX & Region.CHUNKS.MASK, worldChunkY & Region.CHUNKS.MASK, worldChunkZ & Region.CHUNKS.MASK);
+        final int chunkIndex = getChunkKey(worldChunkX & Region.CHUNKS.MASK, worldChunkY & Region.CHUNKS.MASK, worldChunkZ & Region.CHUNKS.MASK);
         while (true) {
             FlowChunk[] live = this.live.get();
             FlowChunk[] newArray = Arrays.copyOf(live, live.length);

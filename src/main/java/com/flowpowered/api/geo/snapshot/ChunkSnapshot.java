@@ -64,4 +64,9 @@ public abstract class ChunkSnapshot {
     public abstract ChunkSnapshot getRelativeChunk(int x, int y, int z);
 
     public abstract long getUpdateNumber();
+
+    @Override
+    public String toString() {
+        return "ChunkSnapshot{" + "position=" + position + '}';
+    }
 }

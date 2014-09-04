@@ -169,12 +169,16 @@ public class RenderThread extends TickingElement {
             if (chunk == null) {
                 throw new IllegalArgumentException("Can't give the renderer a chunk that unloads! This is the client!");
             }
+
             FlowChunkSnapshot snapshot = chunk.getSnapshot();
             final Vector3i position = snapshot.getPosition();
+
             // TODO: priority meshing? new meshes > old meshes; closer meshes > farther meshes
             // Add current chunk
             this.chunks.put(position, snapshot);
             addChunkModel(snapshot);
+            chunkLastUpdateNumbers.put(position, snapshot.getUpdateNumber());
+
             // Remesh surrounding chunks
             for (BlockFace f : BlockFaces.NESWBT) {
                 Vector3i localPosition = position.add(f.getOffset());

@@ -175,7 +175,7 @@ public class RegionGenerator implements Named {
             if (!generated.compareAndSet(GenerateState.IN_PROGRESS, GenerateState.COPYING)) {
                 throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " to copying, state is " + generated.get() + " wait is " + wait);
             }
-            region.setGeneratedChunks(chunks, chunkXLocal, chunkYLocal, chunkZLocal);
+            region.setGeneratedChunks(chunks);
 
             // We need to set the generated state before we unlock the readLock so waiting generators get the state immediately
             if (!generated.compareAndSet(GenerateState.COPYING, GenerateState.COPIED)) {

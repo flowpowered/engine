@@ -6,7 +6,7 @@
     </Console>
     <RollingFile name="RollingFile" fileName="flow.log" filePattern="flow.%i.log">
       <PatternLayout pattern="%d{HH:mm:ss} [%-5level] [%logger{36}] %msg%n"/>
-      <SizeBasedTriggeringPolicy size="50000" />
+      <SizeBasedTriggeringPolicy size="500000" />
     </RollingFile>
   </Appenders>
   <Loggers>

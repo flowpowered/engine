@@ -32,12 +32,12 @@ import com.flowpowered.math.vector.Vector3i;
  */
 public class ChunkSnapshotGroup {
     private final ChunkSnapshot middle;
-    private final ChunkSnapshot top;
-    private final ChunkSnapshot bottom;
-    private final ChunkSnapshot north;
-    private final ChunkSnapshot east;
-    private final ChunkSnapshot south;
-    private final ChunkSnapshot west;
+    private ChunkSnapshot top;
+    private ChunkSnapshot bottom;
+    private ChunkSnapshot north;
+    private ChunkSnapshot east;
+    private ChunkSnapshot south;
+    private ChunkSnapshot west;
 
     /**
      * Constructs a new snapshot group from the middle chunk snapshot and the world snapshot. The world snapshot from the chunk will be used to source the neighbouring chunks (if they exist).
@@ -45,14 +45,7 @@ public class ChunkSnapshotGroup {
      * @param middle The middle chunk
      */
     public ChunkSnapshotGroup(ChunkSnapshot middle) {
-        System.out.println("Middle: " + middle.getPosition());
         this.middle = middle;
-        this.top = middle.getRelativeChunk(Vector3i.UP);
-        this.bottom = middle.getRelativeChunk(Vector3i.UP.mul(-1));
-        this.north = middle.getRelativeChunk(Vector3i.RIGHT.mul(-1));
-        this.south = middle.getRelativeChunk(Vector3i.RIGHT);
-        this.east = middle.getRelativeChunk(Vector3i.FORWARD.mul(-1));
-        this.west = middle.getRelativeChunk(Vector3i.FORWARD);
     }
 
     /**
@@ -75,17 +68,17 @@ public class ChunkSnapshotGroup {
      */
     public BlockMaterial getMaterial(int x, int y, int z) {
         if (x < 0) {
-            return north != null ? north.getMaterial(x, y, z) : null;
+            return north != null || (north = middle.getRelativeChunk(Vector3i.RIGHT.mul(-1))) != null ? north.getMaterial(x, y, z) : null;
         } else if (x >= Chunk.BLOCKS.SIZE) {
-            return south != null ? south.getMaterial(x, y, z) : null;
+            return south != null || (south = middle.getRelativeChunk(Vector3i.RIGHT)) != null ? south.getMaterial(x, y, z) : null;
         } else if (y < 0) {
-            return bottom != null ? bottom.getMaterial(x, y, z) : null;
+            return bottom != null || (bottom = middle.getRelativeChunk(Vector3i.UP.mul(-1))) != null ? bottom.getMaterial(x, y, z) : null;
         } else if (y >= Chunk.BLOCKS.SIZE) {
-            return top != null ? top.getMaterial(x, y, z) : null;
+            return top != null || (top = middle.getRelativeChunk(Vector3i.UP)) != null ? top.getMaterial(x, y, z) : null;
         } else if (z < 0) {
-            return east != null ? east.getMaterial(x, y, z) : null;
+            return east != null || (east = middle.getRelativeChunk(Vector3i.FORWARD.mul(-1))) != null ? east.getMaterial(x, y, z) : null;
         } else if (z >= Chunk.BLOCKS.SIZE) {
-            return west != null ? west.getMaterial(x, y, z) : null;
+            return west != null || (west = middle.getRelativeChunk(Vector3i.FORWARD)) != null ? west.getMaterial(x, y, z) : null;
         }
         return middle.getMaterial(x, y, z);
     }

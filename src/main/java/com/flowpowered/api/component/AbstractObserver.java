@@ -136,6 +136,7 @@ public abstract class AbstractObserver {
     protected void updateObserver() {
         Transform t = getTransform();
         Set<ChunkReference> old = observingChunks.get();
+        boolean newObserve = false;
         ImmutableSet.Builder<ChunkReference> newObserving = ImmutableSet.builder();
         HashSet<ChunkReference> observing = new HashSet<>();
         if (t != Transform.INVALID) {
@@ -147,6 +148,8 @@ public abstract class AbstractObserver {
             Iterator<Vector3i> itr = liveObserverIterator.get().getIteratorFor(cx, cy, cz);
             Chunk center = w.getChunk(cx, cy, cz, loadOpt);
             observeChunksFailed = center == null;
+            // TODO: fix this
+            center = null;
             while (itr.hasNext()) {
                 Vector3i v = itr.next();
                 // We want to use relative when we can, it's faster
@@ -157,6 +160,7 @@ public abstract class AbstractObserver {
                     observing.add(ref);
                     if (!old.contains(ref)) {
                         newObserving.add(ref);
+                        newObserve = true;
                     }
                 } else {
                     observeChunksFailed = true;
@@ -167,13 +171,17 @@ public abstract class AbstractObserver {
         // For every chunk that we were observing but not anymore
         for (ChunkReference ref : old) {
             Chunk chunk = ref.get();
-            if (ref == null) {
-                throw new IllegalStateException("Chunk(" + chunk.getChunkX() + " " + chunk.getChunkY() + " " + chunk.getChunkZ() + ") was unloaded while being observed!");
+            if (chunk == null) {
+                continue;
             }
             chunk.removeObserver(this);
         }
-        stopObserving(ImmutableSet.copyOf(old));
-        startObserving(newObserving.build());
+        if (!old.isEmpty()) {
+            stopObserving(ImmutableSet.copyOf(old));
+        }
+        if (newObserve) {
+            startObserving(newObserving.build());
+        }
         observingChunks.set(observing);
     }
 
