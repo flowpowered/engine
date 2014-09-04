@@ -24,6 +24,7 @@
 package com.flowpowered.engine.geo.snapshot;
 
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -47,8 +48,8 @@ public class FlowChunkSnapshot extends ChunkSnapshot {
     private long updateNumber = 0;
     private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    public FlowChunkSnapshot(FlowWorldSnapshot world, FlowRegionSnapshot region, Vector3i position) {
-        super(position, region, world);
+    public FlowChunkSnapshot(FlowRegionSnapshot region, Vector3i position) {
+        super(position, region);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class FlowChunkSnapshot extends ChunkSnapshot {
             // Get the chunk from the current region
             return (FlowChunkSnapshot) getRegion().getChunk(otherChunkX, otherChunkY, otherChunkZ);
         }
-        FlowRegionSnapshot other = (FlowRegionSnapshot) getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
+        FlowRegionSnapshot other = (FlowRegionSnapshot) getRegion().getWorld().getRegion(otherRegionX, otherRegionY, otherRegionZ);
         return other == null ? null : other.getChunk(otherChunkX, otherChunkY, otherChunkZ);
     }
 
@@ -112,7 +113,7 @@ public class FlowChunkSnapshot extends ChunkSnapshot {
      * @return Whether or not the snapshot state has changed
      */
     public boolean update(FlowChunk current) {
-        if (!current.getPosition().toInt().equals(position) || !current.getWorld().getName().equals(world.getName())) {
+        if (!current.getPosition().toInt().equals(position) || !current.getWorld().getName().equals(getRegion().getWorld().getName())) {
             throw new IllegalArgumentException("Cannot accept a chunk from another position or world");
         }
         final Lock lock = this.lock.writeLock();
@@ -165,12 +166,12 @@ public class FlowChunkSnapshot extends ChunkSnapshot {
         if (!position.equals(that.position)) {
             return false;
         }
-        return world.equals(that.world);
+        return getRegion().equals(that.getRegion());
     }
 
     @Override
     public int hashCode() {
-        int result = world.hashCode();
+        int result = getRegion().hashCode();
         result = 31 * result + position.hashCode();
         return result;
     }

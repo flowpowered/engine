@@ -87,4 +87,11 @@ public class WorldReference {
     public String getName() {
         return name;
     }
+
+    public static final WorldReference NULL = new WorldReference("") {
+        @Override
+        public World refresh(WorldManager manager) {
+            return null;
+        }
+    };
 }

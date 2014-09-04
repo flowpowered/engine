@@ -23,9 +23,12 @@
  */
 package com.flowpowered.api;
 
+import javax.annotation.Nullable;
+
 import com.flowpowered.api.player.Player;
 
 public interface Singleplayer extends Server, Client {
 
+    @Nullable
     Player getPlayer();
 }

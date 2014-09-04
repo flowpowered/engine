@@ -45,6 +45,7 @@ public class ChunkSnapshotGroup {
      * @param middle The middle chunk
      */
     public ChunkSnapshotGroup(ChunkSnapshot middle) {
+        System.out.println("Middle: " + middle.getPosition());
         this.middle = middle;
         this.top = middle.getRelativeChunk(Vector3i.UP);
         this.bottom = middle.getRelativeChunk(Vector3i.UP.mul(-1));

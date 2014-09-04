@@ -99,7 +99,7 @@ public class FlowRegionSnapshot extends RegionSnapshot {
                 if (currentChunk == null && currentSnapshot == null) {
                     continue;
                 } else if (currentChunk != null && currentSnapshot == null) {
-                    FlowChunkSnapshot chunkSnapshot = new FlowChunkSnapshot((FlowWorldSnapshot) world, this, currentChunk.getPosition().toInt());
+                    FlowChunkSnapshot chunkSnapshot = currentChunk.getSnapshot();
                     chunkSnapshot.update(currentChunk);
                     chunks[i] = chunkSnapshot;
                     changed = true;

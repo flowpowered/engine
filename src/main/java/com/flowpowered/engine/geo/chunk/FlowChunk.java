@@ -26,25 +26,24 @@ package com.flowpowered.engine.geo.chunk;
 import java.util.List;
 import java.util.Set;
 
-import gnu.trove.map.hash.TShortObjectHashMap;
-
-import com.flowpowered.commons.datatable.ManagedHashMap;
-import com.flowpowered.commons.hashing.NibbleQuadHashed;
-import com.flowpowered.commons.store.block.AtomicBlockStore;
-import com.flowpowered.events.Cause;
-
+import com.flowpowered.api.component.AbstractObserver;
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.player.Player;
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.BlockContainer;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
+import com.flowpowered.commons.datatable.ManagedHashMap;
+import com.flowpowered.commons.hashing.NibbleQuadHashed;
+import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
+import com.flowpowered.events.Cause;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
+import gnu.trove.map.hash.TShortObjectHashMap;
 
 public class FlowChunk extends Chunk {
 
@@ -62,6 +61,7 @@ public class FlowChunk extends Chunk {
      * Storage for block ids, data and auxiliary data. For blocks with data = 0 and auxiliary data = null, the block is stored as a short.
      */
     protected final AtomicBlockStore blockStore;
+    private final FlowChunkSnapshot snapshot;
 
     public FlowChunk(FlowRegion region, int x, int y, int z, int generationIndex, AtomicBlockStore blockStore) {
         super(region.getEngine(), region.getWorld(), x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
@@ -69,6 +69,7 @@ public class FlowChunk extends Chunk {
         this.dataMap = new ManagedHashMap();
         this.generationIndex = generationIndex;
         this.blockStore = blockStore;
+        this.snapshot = new FlowChunkSnapshot(region.getSnapshot(), getPosition().toInt());
     }
 
     @Override
@@ -87,12 +88,12 @@ public class FlowChunk extends Chunk {
     }
 
     @Override
-    public boolean refreshObserver(Entity player) {
+    public boolean refreshObserver(AbstractObserver observer) {
         return true;
     }
 
     @Override
-    public boolean removeObserver(Entity player) {
+    public boolean removeObserver(AbstractObserver observer) {
         return true;
     }
 
@@ -291,5 +292,9 @@ public class FlowChunk extends Chunk {
             }
             return value;
         }
+    }
+
+    public FlowChunkSnapshot getSnapshot() {
+        return snapshot;
     }
 }

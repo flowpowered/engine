@@ -119,6 +119,10 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
         return player;
     }
 
+    protected void addPlayer(FlowPlayer player) {
+
+    }
+
     @Override
     public FlowServerWorldManager getWorldManager() {
         return worldManager;

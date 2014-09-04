@@ -32,29 +32,30 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.logging.log4j.Logger;
-
-import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.api.Client;
 import com.flowpowered.api.Server;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.api.scheduler.TickStage;
-import com.flowpowered.engine.player.FlowPlayer;
+import com.flowpowered.commons.TPSMonitor;
+import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.geo.region.RegionGenerator;
+import com.flowpowered.engine.player.FlowPlayer;
+import com.flowpowered.engine.util.ClientObserver;
 import com.flowpowered.engine.util.thread.AsyncManager;
 import com.flowpowered.engine.util.thread.LoggingThreadPoolExecutor;
 import com.flowpowered.engine.util.thread.coretasks.CopySnapshotTask;
-import com.flowpowered.engine.util.thread.coretasks.LocalDynamicUpdatesTask;
-import com.flowpowered.engine.util.thread.coretasks.GlobalDynamicUpdatesTask;
 import com.flowpowered.engine.util.thread.coretasks.FinalizeTask;
+import com.flowpowered.engine.util.thread.coretasks.GlobalDynamicUpdatesTask;
+import com.flowpowered.engine.util.thread.coretasks.GlobalPhysicsTask;
 import com.flowpowered.engine.util.thread.coretasks.LightingTask;
+import com.flowpowered.engine.util.thread.coretasks.LocalDynamicUpdatesTask;
+import com.flowpowered.engine.util.thread.coretasks.LocalPhysicsTask;
 import com.flowpowered.engine.util.thread.coretasks.ManagerRunnable;
 import com.flowpowered.engine.util.thread.coretasks.ManagerRunnableFactory;
-import com.flowpowered.engine.util.thread.coretasks.LocalPhysicsTask;
-import com.flowpowered.engine.util.thread.coretasks.GlobalPhysicsTask;
 import com.flowpowered.engine.util.thread.coretasks.PreSnapshotTask;
 import com.flowpowered.engine.util.thread.coretasks.StartTickTask;
+import org.apache.logging.log4j.Logger;
 
 public class MainThread extends TickingElement {
     private final FlowScheduler scheduler;
@@ -94,6 +95,7 @@ public class MainThread extends TickingElement {
     // scheduler executor service
     protected final ExecutorService executorService;
     private final TPSMonitor tpsMonitor = new TPSMonitor();
+    private final ClientObserver observe;
 
     public MainThread(FlowScheduler scheduler) {
         super("MainThread", 20);
@@ -101,6 +103,11 @@ public class MainThread extends TickingElement {
         this.logger = scheduler.getEngine().getLogger();
         final int nThreads = Runtime.getRuntime().availableProcessors() * 2 + 1;
         executorService = LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(nThreads, "FlowScheduler - AsyncManager executor service", scheduler.getEngine().getLogger());
+        if (scheduler.getEngine().getPlatform().isClient()) {
+            observe = new ClientObserver((Client) scheduler.getEngine());
+        } else {
+            observe = null;
+        }
     }
 
     @Override
@@ -194,9 +201,12 @@ public class MainThread extends TickingElement {
         if (scheduler.getEngine().getPlatform().isServer()) {
             for (Player p : ((Server) scheduler.getEngine()).getOnlinePlayers()) {
                 Transform transform = p.getTransformProvider().getTransform();
-                ((FlowPlayer) p).getNetwork().finalizeRun(transform);
                 ((FlowPlayer) p).getNetwork().preSnapshotRun(transform);
             }
+        }
+
+        if (scheduler.getEngine().getPlatform().isClient()) {
+            observe.update();
         }
 
         doCopySnapshot();

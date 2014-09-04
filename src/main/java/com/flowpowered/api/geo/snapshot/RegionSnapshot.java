@@ -34,6 +34,10 @@ public abstract class RegionSnapshot {
         this.world = world;
     }
 
+    public WorldSnapshot getWorld() {
+        return world;
+    }
+
     public Vector3i getPosition() {
         return position;
     }

@@ -28,7 +28,7 @@ import java.util.UUID;
 import com.flowpowered.api.Engine;
 import com.flowpowered.api.component.BaseComponentOwner;
 import com.flowpowered.api.component.Component;
-import com.flowpowered.api.component.entity.Observer;
+import com.flowpowered.api.component.entity.EntityObserver;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.EntitySnapshot;
 import com.flowpowered.api.entity.Physics;
@@ -42,9 +42,9 @@ import com.flowpowered.engine.geo.region.FlowRegion;
 
 public class FlowEntity extends BaseComponentOwner implements Entity {
     private final int id;
-    private FlowPhysics physics;
+    private final FlowPhysics physics;
 
-    private Observer observer;
+    private final EntityObserver observer;
 
     public FlowEntity(Engine engine, int id, Transform transform) {
         super(engine);
@@ -52,7 +52,7 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
         this.physics = new FlowPhysics(this);
         this.physics.setTransform(transform);
         this.physics.copySnapshot();
-        this.observer = new Observer(this);
+        this.observer = new EntityObserver(this);
     }
 
     @Override
@@ -125,11 +125,7 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
             physics.crossInto(regionSnapshot, regionLive);
         }
 
-        observer.finalizeRun(physics.getTransform());
-    }
-
-    void preSnapshotRun() {
-        observer.preSnapshotRun(physics.getTransform());
+        observer.update();
     }
 
     void copySnapshot() {
@@ -142,4 +138,8 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
         return physics;
     }
 
+    @Override
+    public EntityObserver getObserver() {
+        return observer;
+    }
 }

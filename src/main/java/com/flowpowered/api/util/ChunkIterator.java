@@ -21,23 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine;
+package com.flowpowered.api.util;
 
-import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Iterator;
 
-import com.flowpowered.api.Client;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.render.FlowRenderer;
+import com.flowpowered.math.vector.Vector3i;
 
-public interface FlowClient extends Client, FlowEngine {
-
-    @Override
-    FlowRenderer getRenderer();
-
-    // TODO: move to Client
-    @Nullable
-    FlowSession getSession();
-
-    void setTransform(Transform transform);
+public interface ChunkIterator extends Serializable {
+    Iterator<Vector3i> getIteratorFor(int centerX, int centerY, int centerZ);
 }

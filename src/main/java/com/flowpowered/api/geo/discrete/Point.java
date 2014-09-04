@@ -45,7 +45,7 @@ public class Point implements Serializable {
 
     // INVALID
     private Point() {
-       this.world = null;
+       this.world = WorldReference.NULL;
        this.vector = Vector3f.ZERO;
     }
 
@@ -54,6 +54,9 @@ public class Point implements Serializable {
     }
 
     public Point(World world, Vector3f vector) {
+        if (world == null) {
+            throw new UnsupportedOperationException("Null worlds not allowed! Use Point.INVALID");
+        }
         this.world = new WorldReference(world);
         this.vector = vector;
     }

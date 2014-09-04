@@ -58,7 +58,7 @@ public class OutwardIterator implements Iterator<Vector3i>, Serializable {
         first = true;
         distance = 0;
         this.endDistance = maxDistance;
-        this.hasNext = true;
+        this.hasNext = endDistance >= 0;
     }
 
     /**
@@ -67,7 +67,7 @@ public class OutwardIterator implements Iterator<Vector3i>, Serializable {
     public void reset(int x, int y, int z) {
         current = new Vector3i(x, y, z);
         first = true;
-        hasNext = true;
+        this.hasNext = endDistance >= 0;
         distance = 0;
     }
 
@@ -79,6 +79,7 @@ public class OutwardIterator implements Iterator<Vector3i>, Serializable {
         } else if (startDistance > 0) {
             // reset to start at distance
             y = y + startDistance - 1;
+            distance = startDistance;
             first = false;
         }
     }

@@ -38,7 +38,7 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 
 public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
-    private final FlowSingleplayerSession session = new FlowSingleplayerSession(this, false);
+    private FlowSingleplayerSession session = null;
 
     public FlowSingleplayerImpl(FlowApplication args) {
         super(args);
@@ -57,13 +57,19 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
 
     @Override
     public void start() {
+        getScheduler().startClientThreads(this);
+        try {
+            // Wait until RenderThread has initialized
+            // TODO: confirm necessary
+            getScheduler().getRenderThread().getIntializedLatch().await();
+        } catch (InterruptedException ex) {}
+
         super.start();
 
         FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(this, true));
         this.player.set(player);
+        session = new FlowSingleplayerSession(this, false);
         session.setPlayer(player);
-
-        getScheduler().startClientThreads(this);
     }
 
     @Override
@@ -89,7 +95,12 @@ public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSinglepl
 
     @Override
     public Transform getTransform() {
-        return player.get().getTransformProvider().getTransform();
+        FlowPlayer player = getPlayer();
+        if (player == null) {
+            return Transform.INVALID;
+        } else {
+            return player.getTransformProvider().getTransform();
+        }
     }
 
     @Override

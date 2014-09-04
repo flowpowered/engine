@@ -21,23 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine;
+package com.flowpowered.api.component;
 
-import javax.annotation.Nullable;
-
-import com.flowpowered.api.Client;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.render.FlowRenderer;
-
-public interface FlowClient extends Client, FlowEngine {
+public class PlayerObserveChunksComponent extends Component {
 
     @Override
-    FlowRenderer getRenderer();
+    public void onTick(float dt) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    // TODO: move to Client
-    @Nullable
-    FlowSession getSession();
+    @Override
+    public boolean canTick() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    void setTransform(Transform transform);
 }

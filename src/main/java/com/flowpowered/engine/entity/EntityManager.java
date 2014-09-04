@@ -141,9 +141,8 @@ public class EntityManager {
      * Finalizes the manager at the FINALIZERUN tick stage
      */
     public void preSnapshotRun() {
-        for (FlowEntity e : entities.get().values()) {
-            e.preSnapshotRun();
-        }
+        //for (FlowEntity e : entities.get().values()) {
+        //}
     }
 
     /**

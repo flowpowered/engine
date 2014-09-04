@@ -29,20 +29,14 @@ import com.flowpowered.math.vector.Vector3i;
 public abstract class ChunkSnapshot {
     protected final Vector3i position;
     protected final RegionSnapshot region;
-    protected final WorldSnapshot world;
 
-    public ChunkSnapshot(Vector3i position, RegionSnapshot region, WorldSnapshot world) {
+    public ChunkSnapshot(Vector3i position, RegionSnapshot region) {
         this.position = position;
         this.region = region;
-        this.world = world;
     }
 
     public RegionSnapshot getRegion() {
         return region;
-    }
-
-    public WorldSnapshot getWorld() {
-        return world;
     }
 
     public Vector3i getPosition() {

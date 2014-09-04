@@ -25,22 +25,26 @@ package com.flowpowered.engine.scheduler.render;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
-import com.flowpowered.api.geo.snapshot.RegionSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.api.material.block.BlockFace;
 import com.flowpowered.api.material.block.BlockFaces;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
-import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.render.FlowRenderer;
 import com.flowpowered.engine.render.mesher.ParallelChunkMesher;
@@ -66,9 +70,12 @@ public class RenderThread extends TickingElement {
     private final InputThread input;
     private final ParallelChunkMesher mesher;
     // TEST CODE
+    private final LinkedBlockingQueue<ChunkReference> toAdd = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<ChunkReference> toRemove = new LinkedBlockingQueue<>();
+    private final Map<Vector3i, ChunkSnapshot> chunks = new HashMap<>();
     private final Map<Vector3i, ChunkModel> chunkModels = new HashMap<>();
-    private long worldLastUpdateNumber = -1;
     private final TObjectLongMap<Vector3i> chunkLastUpdateNumbers = new TObjectLongHashMap<>();
+    private final CountDownLatch intializedLatch = new CountDownLatch(1);
 
     public RenderThread(FlowClient client) {
         super("RenderThread", FPS);
@@ -87,13 +94,14 @@ public class RenderThread extends TickingElement {
         input.subscribeToKeyboard();
         input.getKeyboardQueue().add(new KeyboardEvent(Keyboard.KEY_ESCAPE, true));
         input.subscribeToMouse();
+        intializedLatch.countDown();
     }
 
     @Override
     public void onStop() {
         mesher.shutdown();
         // Updating with a null world will clear all models
-        updateChunkModels(null);
+        clearChunkModels();
         renderer.dispose();
     }
 
@@ -101,9 +109,9 @@ public class RenderThread extends TickingElement {
     public void onTick(long dt) {
         handleInput();
         updateCameraAndFrustrum();
-        WorldReference ref = client.getSession().getPlayer().getTransformProvider().getTransform().getPosition().getWorld();
+        WorldReference ref = client.getTransform().getPosition().getWorld();
         FlowWorld world = ref == null ? null : (FlowWorld) ref.get();
-        updateChunkModels(world == null ? null : world.getSnapshot());
+        updateChunkModels();
         updateLight(world == null ? 0 : world.getAge());
         renderer.render();
     }
@@ -120,72 +128,79 @@ public class RenderThread extends TickingElement {
         return mesher;
     }
 
-    // TODO: not thread safe; FlowWorldSnapshot could update in the middle of this
-    private void updateChunkModels(FlowWorldSnapshot world) {
-        // If we have no world, remove all chunks
-        if (world == null) {
-            for (ChunkModel model : chunkModels.values()) {
-                // Remove and destroy the model
-                removeChunkModel(model, true);
+    public void addChunks(Set<ChunkReference> chunks) {
+        toAdd.addAll(chunks);
+    }
+
+    public void removeChunks(Set<ChunkReference> chunks) {
+        toRemove.addAll(chunks);
+    }
+
+    private void clearChunkModels() {
+        for (ChunkModel model : chunkModels.values()) {
+            // Remove and destroy the model
+            removeChunkModel(model, true);
+        }
+        chunkModels.clear();
+        chunkLastUpdateNumbers.clear();
+    }
+
+    private void updateChunkModels() {
+        Set<ChunkReference> removeChunks = new HashSet<>();
+        toRemove.drainTo(removeChunks);
+        for (ChunkReference ref : removeChunks) {
+            final Vector3i position = ref.getBase().getVector().toInt();
+            chunks.remove(position);
+            final ChunkModel model = chunkModels.remove(position);
+            if (model == null) continue;
+            // Remove the model, destroying it
+            removeChunkModel(model, true);
+            // Finally, remove the chunk from the collections
+            chunkLastUpdateNumbers.remove(position);
+        }
+
+
+        Map<Vector3i, ChunkSnapshot> oldChunks = new HashMap<>(this.chunks);
+
+        Set<ChunkReference> newChunks = new HashSet<>();
+        toAdd.drainTo(newChunks);
+        for (ChunkReference ref : newChunks) {
+            FlowChunk chunk = (FlowChunk) ref.get();
+            if (chunk == null) {
+                throw new IllegalArgumentException("Can't give the renderer a chunk that unloads! This is the client!");
             }
-            chunkModels.clear();
-            chunkLastUpdateNumbers.clear();
-            worldLastUpdateNumber = -1;
-            return;
-        }
-        // Any updates after this to the world update number will cause a update next tick
-        long update = world.getUpdateNumber();
-        // If the snapshot hasn't updated there's nothing to do
-        if (update <= worldLastUpdateNumber) {
-            return;
-        }
-        // Else, we need to update the chunk models
-        // Remove chunks we don't need anymore
-        for (Iterator<Map.Entry<Vector3i, ChunkModel>> iterator = chunkModels.entrySet().iterator(); iterator.hasNext();) {
-            final Map.Entry<Vector3i, ChunkModel> chunkModel = iterator.next();
-            final Vector3i position = chunkModel.getKey();
-            // If a model is not in the world chunk collection, we remove
-            if (world.getChunk(position) == null) {
-                final ChunkModel model = chunkModel.getValue();
-                // Remove the model, destroying it
-                removeChunkModel(model, true);
-                // Finally, remove the chunk from the collections
-                iterator.remove();
-                chunkLastUpdateNumbers.remove(position);
-            }
-        }
-        final Map<Vector3i, RegionSnapshot> regions = world.getRegions();
-        int added = 0;
-        for (RegionSnapshot region : regions.values()) {
-            // Next go through all the chunks, and update the chunks that are out of date
-            for (ChunkSnapshot chunk : region.getChunks()) {
-                if (chunk == null) {
-                    continue;
-                }
-                // If the chunk model is out of date and visible
-                if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
-                    // TODO: only add models for visible chunks
-                    // The problem is that if turn and new chunks are now visible, they won't be updated because they're part of a previous world update number
-                    // One possible way to reconcile this is update every partial update
-                    // The problem is that almost every update will probably be a partial update, meaning there is no point for the world update number
-                    // The downside with always add the model is more models in renderer
-                    //if (!isChunkVisible(chunk.getPosition())) {
-                    //    continue;
-                    //}
-                    final Vector3i position = chunk.getPosition();
-                    for (BlockFace f : BlockFaces.NESWBTHIS) {
-                        Vector3i localPosition = position.add(f.getOffset());
-                        ChunkSnapshot local = f == BlockFace.THIS ? chunk : chunk.getRelativeChunk(localPosition);
-                        if (local == null) continue;
-                        addChunkModel(local);
-                    }
-                    added++;
+            FlowChunkSnapshot snapshot = chunk.getSnapshot();
+            final Vector3i position = snapshot.getPosition();
+            // TODO: priority meshing? new meshes > old meshes; closer meshes > farther meshes
+            // Add current chunk
+            this.chunks.put(position, snapshot);
+            addChunkModel(snapshot);
+            // Remesh surrounding chunks
+            for (BlockFace f : BlockFaces.NESWBT) {
+                Vector3i localPosition = position.add(f.getOffset());
+                ChunkSnapshot old = oldChunks.get(localPosition);
+                if (old != null) {
+                    chunkLastUpdateNumbers.put(localPosition, 0);
                 }
             }
         }
-        System.out.println("Added: " + added);
-        // Update the world update number
-        worldLastUpdateNumber = update;
+
+        for (ChunkSnapshot chunk : oldChunks.values()) {
+            // If the chunk model is out of date and visible
+            if (chunk.getUpdateNumber() > chunkLastUpdateNumbers.get(chunk.getPosition())) {
+                // TODO: only add models for visible chunks
+                // The problem is that if turn and new chunks are now visible, they won't be updated because they're part of a previous world update number
+                // One possible way to reconcile this is update every partial update
+                // The problem is that almost every update will probably be a partial update, meaning there is no point for the world update number
+                // The downside with always add the model is more models in renderer
+                //if (!isChunkVisible(chunk.getPosition())) {
+                //    continue;
+                //}
+                // TODO: we need to check if the surrounding chunks need to be remeshed (should only be true if edge blocks change transparency)
+                // If we can somehow get the exact faces of the chunk which are dirty, we can cut down on remeshing of surrounding chunks to about 1/6 best case to 3/6 worst case for one block change
+                addChunkModel(chunk);
+            }
+        }
         // Safety precautions
         if (renderer.getRenderModelsNode().getAttribute("models", Collections.EMPTY_LIST).size() > chunkModels.size()) {
             System.out.println("There are more models in the renderer (" + renderer.getRenderModelsNode().getAttribute("models", Collections.EMPTY_LIST).size() + ") than there are chunk models " + chunkModels.size() + "), leak?");
@@ -298,5 +313,9 @@ public class RenderThread extends TickingElement {
         // But here's my frustum
         // so cull me maybe?
         return frustum.intersectsCuboid(CHUNK_VERTICES, position);
+    }
+
+    public CountDownLatch getIntializedLatch() {
+        return intializedLatch;
     }
 }

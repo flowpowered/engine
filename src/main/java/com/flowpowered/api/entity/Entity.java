@@ -29,6 +29,7 @@ import com.flowpowered.commons.datatable.ManagedMap;
 
 import com.flowpowered.api.Engine;
 import com.flowpowered.api.component.ComponentOwner;
+import com.flowpowered.api.component.entity.EntityObserver;
 import com.flowpowered.api.geo.WorldSource;
 import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.geo.cuboid.Region;
@@ -114,4 +115,6 @@ public interface Entity extends Tickable, WorldSource, ComponentOwner {
      * @return {@link ManagedMap}
      */
     public ManagedMap getData();
+
+    EntityObserver getObserver();
 }

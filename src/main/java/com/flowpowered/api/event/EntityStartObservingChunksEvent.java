@@ -21,23 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine;
+package com.flowpowered.api.event;
 
-import javax.annotation.Nullable;
+import com.flowpowered.api.entity.Entity;
+import com.flowpowered.api.geo.reference.ChunkReference;
+import com.flowpowered.events.SimpleEvent;
+import com.google.common.collect.ImmutableSet;
 
-import com.flowpowered.api.Client;
-import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.render.FlowRenderer;
+public class EntityStartObservingChunksEvent extends SimpleEvent {
+    private final Entity observer;
+    private final ImmutableSet<ChunkReference> observed;
 
-public interface FlowClient extends Client, FlowEngine {
+    public EntityStartObservingChunksEvent(Entity observer, ImmutableSet<ChunkReference> observed) {
+        this.observer = observer;
+        this.observed = observed;
+    }
 
-    @Override
-    FlowRenderer getRenderer();
+    public Entity getObserver() {
+        return observer;
+    }
 
-    // TODO: move to Client
-    @Nullable
-    FlowSession getSession();
-
-    void setTransform(Transform transform);
+    public ImmutableSet<ChunkReference> getObserved() {
+        return observed;
+    }
 }

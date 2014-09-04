@@ -27,18 +27,16 @@ import java.util.List;
 import java.util.Set;
 
 import com.flowpowered.api.Engine;
-import com.flowpowered.commons.BitSize;
-
+import com.flowpowered.api.component.AbstractObserver;
 import com.flowpowered.api.entity.Entity;
-import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.AreaBlockAccess;
 import com.flowpowered.api.geo.LoadOption;
-import com.flowpowered.api.geo.World;
-import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.material.block.BlockFace;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.util.UnloadSavable;
+import com.flowpowered.commons.BitSize;
 import com.flowpowered.math.vector.Vector3i;
 
 /**
@@ -160,7 +158,7 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
      * @param player the player
      * @return false if the player was already observing the chunk
      */
-    public abstract boolean refreshObserver(Entity player);
+    public abstract boolean refreshObserver(AbstractObserver observer);
 
     /**
      * De-register a player as observing the chunk.
@@ -168,7 +166,7 @@ public abstract class Chunk extends Cube implements AreaBlockAccess, UnloadSavab
      * @param player the player
      * @return true if the player was observing the chunk
      */
-    public abstract boolean removeObserver(Entity player);
+    public abstract boolean removeObserver(AbstractObserver observer);
 
     @Override
     public boolean containsBlock(int x, int y, int z) {
