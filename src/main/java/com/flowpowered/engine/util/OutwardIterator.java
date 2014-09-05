@@ -61,33 +61,6 @@ public class OutwardIterator implements Iterator<Vector3i>, Serializable {
         this.hasNext = endDistance >= 0;
     }
 
-    /**
-     * Resets the iterator and positions it at (x, y, z)
-     */
-    public void reset(int x, int y, int z) {
-        current = new Vector3i(x, y, z);
-        first = true;
-        this.hasNext = endDistance >= 0;
-        distance = 0;
-    }
-
-    public void reset(int x, int y, int z, int startDistance, int endDistance) {
-        this.endDistance = endDistance;
-        reset(x, y, z);
-        if (startDistance > endDistance) {
-            this.hasNext = false;
-        } else if (startDistance > 0) {
-            // reset to start at distance
-            y = y + startDistance - 1;
-            distance = startDistance;
-            first = false;
-        }
-    }
-
-    public void reset(int x, int y, int z, int endDistance) {
-        reset(x, y, z, 0, endDistance);
-    }
-
     @Override
     public boolean hasNext() {
         return hasNext;

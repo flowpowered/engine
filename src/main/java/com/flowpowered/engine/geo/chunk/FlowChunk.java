@@ -70,6 +70,7 @@ public class FlowChunk extends Chunk {
         this.generationIndex = generationIndex;
         this.blockStore = blockStore;
         this.snapshot = new FlowChunkSnapshot(region.getSnapshot(), getPosition().toInt());
+        this.snapshot.update(this);
     }
 
     @Override

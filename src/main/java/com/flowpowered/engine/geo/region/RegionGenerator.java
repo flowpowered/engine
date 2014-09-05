@@ -109,7 +109,7 @@ public class RegionGenerator implements Named {
         // Represent the coords of the section of the region
         // Values are from 0 to width
         final int sectionX = (chunkXWorld & Region.CHUNKS.MASK) >> shift;
-                final int sectionY = (chunkYWorld & Region.CHUNKS.MASK) >> shift;
+        final int sectionY = (chunkYWorld & Region.CHUNKS.MASK) >> shift;
         final int sectionZ = (chunkZWorld & Region.CHUNKS.MASK) >> shift;
         // Represent the local chunk coords of the base of the section
         // Values start at 0 and are spaced by width chunks

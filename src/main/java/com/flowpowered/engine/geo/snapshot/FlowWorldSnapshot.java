@@ -86,9 +86,7 @@ public class FlowWorldSnapshot extends WorldSnapshot {
         final Lock lock = this.lock.readLock();
         lock.lock();
         try {
-            FlowRegionSnapshot get = regions.get(x, y, z);
-            if (get == null) System.out.println("Couldn't get: " + x + ", " + y + ", " + z);
-            return get;
+            return regions.get(x, y, z);
         } finally {
             lock.unlock();
         }
@@ -165,7 +163,6 @@ public class FlowWorldSnapshot extends WorldSnapshot {
                 FlowRegionSnapshot regionSnapshot = regions.get(position.getX(), position.getY(), position.getZ());
                 if (regionSnapshot == null) {
                     regionSnapshot = region.getSnapshot();
-                    System.out.println("Adding region snapshot: " + position);
                     regions.put(position.getX(), position.getY(), position.getZ(), regionSnapshot);
                     changed = true;
                 }

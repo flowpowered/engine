@@ -68,7 +68,7 @@ public abstract class AbstractObserver {
         private static final long serialVersionUID = 1L;
         @Override
         public Iterator<Vector3i> getIteratorFor(int centerX, int centerY, int centerZ) {
-            return new OutwardIterator(centerZ, centerZ, centerZ, getSyncDistance());
+            return new OutwardIterator(centerX, centerY, centerZ, getSyncDistance());
         }
     };
 
