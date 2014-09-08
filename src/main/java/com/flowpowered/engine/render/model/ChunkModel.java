@@ -81,13 +81,13 @@ public class ChunkModel extends Model {
                 previous = null;
             }
         }
-        if (!renderer.isChunkVisible(getPosition())) {
-            return;
-        }
         // If we have a vertex array, we can render
         if (complete) {
             // Only render if the model has a vertex array and we're visible
             if (getVertexArray() != null) {
+                if (!renderer.isChunkVisible(getPosition())) {
+                    return;
+                }
                 super.render();
             }
         } else if (previous != null) {

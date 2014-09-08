@@ -38,8 +38,6 @@ import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.geo.snapshot.ChunkSnapshot;
 import com.flowpowered.api.input.KeyboardEvent;
-import com.flowpowered.api.material.block.BlockFace;
-import com.flowpowered.api.material.block.BlockFaces;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
@@ -179,14 +177,15 @@ public class RenderThread extends TickingElement {
             addChunkModel(snapshot);
             chunkLastUpdateNumbers.put(position, snapshot.getUpdateNumber());
 
+            // TODO: add this back in to make ChunkModels in render as efficient as possible
             // Remesh surrounding chunks
-            for (BlockFace f : BlockFaces.NESWBT) {
-                Vector3i localPosition = position.add(f.getOffset());
-                ChunkSnapshot old = oldChunks.get(localPosition);
-                if (old != null) {
-                    chunkLastUpdateNumbers.put(localPosition, 0);
-                }
-            }
+            //for (BlockFace f : BlockFaces.NESWBT) {
+            //    Vector3i localPosition = position.add(f.getOffset());
+            //    ChunkSnapshot old = oldChunks.get(localPosition);
+            //    if (old != null) {
+            //        chunkLastUpdateNumbers.put(localPosition, 0);
+            //    }
+            //}
         }
 
         for (ChunkSnapshot chunk : oldChunks.values()) {

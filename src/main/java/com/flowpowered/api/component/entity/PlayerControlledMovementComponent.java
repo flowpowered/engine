@@ -36,7 +36,7 @@ import com.flowpowered.math.matrix.Matrix4f;
 import com.flowpowered.math.vector.Vector3f;
 
 public class PlayerControlledMovementComponent extends EntityComponent {
-    private static final float SPEED = 20f;
+    private static final float SPEED = 10f;
 
     private Player controller;
 

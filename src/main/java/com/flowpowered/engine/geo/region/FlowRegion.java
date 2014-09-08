@@ -175,12 +175,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
         return null;
     }
 
-    private static volatile int genCount = 0;
-
-    public static int getGenCount() {
-        return genCount;
-    }
-
     // If loadopt.isWait(), this method is run synchronously and so is any further generation
     // If !loadopt.isWait(), this method is run by a runnable, because the loading is taxing; any further generation is also run in its own Runnable
     private FlowChunk loadOrGenChunkImmediately(int worldX, int worldY, int worldZ, final LoadOption loadopt) {
@@ -193,7 +187,6 @@ public class FlowRegion extends Region implements CompleteAsyncManager {
             return newChunk;
         }
 
-        genCount++;
         generator.generateChunk(worldX, worldY, worldZ, loadopt.isWait());
         if (!loadopt.isWait()) {
             return null;

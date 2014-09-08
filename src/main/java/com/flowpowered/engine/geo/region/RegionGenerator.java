@@ -176,6 +176,7 @@ public class RegionGenerator implements Named {
                 throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " to copying, state is " + generated.get() + " wait is " + wait);
             }
             region.setGeneratedChunks(chunks);
+            genCount.incrementAndGet();
 
             // We need to set the generated state before we unlock the readLock so waiting generators get the state immediately
             if (!generated.compareAndSet(GenerateState.COPYING, GenerateState.COPIED)) {
@@ -185,7 +186,13 @@ public class RegionGenerator implements Named {
             sectionLock.unlock();
         }
     }
-    
+
+    private static AtomicInteger genCount = new AtomicInteger();
+
+    public static int getGenCount() {
+        return genCount.get();
+    }
+
     private static void initExecutorService(Logger logger) {
         if (pool.get() == null) {
             pool.compareAndSet(null, LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() * 2 + 1, "RegionGenerator - async pool", logger));

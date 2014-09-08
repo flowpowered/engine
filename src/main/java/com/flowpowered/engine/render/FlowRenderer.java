@@ -39,7 +39,7 @@ import javax.imageio.ImageIO;
 
 import com.flowpowered.api.render.Renderer;
 import com.flowpowered.commons.TPSMonitor;
-import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.scheduler.FlowScheduler;
 import com.flowpowered.engine.scheduler.render.RenderThread;
 import com.flowpowered.math.vector.Vector2i;
@@ -332,7 +332,7 @@ public class FlowRenderer implements Renderer {
         Camera camera = renderModelsNode.getAttribute("camera");
         positionModel.setString("Position: " + camera.getPosition().toInt().toString() + " Rotation: " + camera.getRotation().toString());
 
-        genCountModel.setString("GenCount: " + FlowRegion.getGenCount());
+        genCountModel.setString("GenCount: " + RegionGenerator.getGenCount());
     }
 
     /**
@@ -450,7 +450,7 @@ public class FlowRenderer implements Renderer {
     @Override
     public Vector2i getResolution() {
         return windowSize;
-}
+    }
 
     @Override
     public float getAspectRatio() {

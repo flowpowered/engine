@@ -51,7 +51,7 @@ public class FlatWorldGenerator implements WorldGenerator {
         }
         final int bottom = Math.max(-32, minBlockY);
         final int top = Math.min(-1, maxBlockY);
-        blockData.setHorizontalLayer(bottom, top - bottom + 1, material);
+        blockData.setHorizontalLayer(bottom, top - bottom, material);
     }
 
     @Override
