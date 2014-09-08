@@ -147,7 +147,8 @@ public class RenderThread extends TickingElement {
         Set<ChunkReference> removeChunks = new HashSet<>();
         toRemove.drainTo(removeChunks);
         for (ChunkReference ref : removeChunks) {
-            final Vector3i position = ref.getBase().getVector().toInt();
+            final Vector3i blockBase = ref.getBase().getVector().toInt();
+            final Vector3i position = new Vector3i(blockBase.getX() >> Chunk.BLOCKS.BITS, blockBase.getY() >> Chunk.BLOCKS.BITS, blockBase.getZ() >> Chunk.BLOCKS.BITS);
             chunks.remove(position);
             final ChunkModel model = chunkModels.remove(position);
             if (model == null) continue;

@@ -109,6 +109,7 @@ public class FlowRenderer implements Renderer {
     private StringModel itpsMonitorModel;
     private StringModel positionModel;
     private StringModel genCountModel;
+    private StringModel modelsModel;
     private boolean fpsMonitorStarted = false;
 
     private FlowScheduler scheduler;
@@ -260,7 +261,7 @@ public class FlowRenderer implements Renderer {
             e.printStackTrace();
             return;
         }
-        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789.-: GenCount", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
+        final StringModel sandboxModel = new StringModel(context, graph.getProgram("font"), "FlowEngineFTPSInputPositionWRa0123456789.-: GenCountModels", ubuntu.deriveFont(Font.PLAIN, 15), windowSize.getX());
         final float aspect = getAspectRatio();
         sandboxModel.setPosition(new Vector3f(0.005, .97 * aspect, -0.1));
         sandboxModel.setString("Flow Engine - WIP");
@@ -288,6 +289,11 @@ public class FlowRenderer implements Renderer {
         genCoModel.setPosition(new Vector3f(0.005, .82 * aspect, -0.1));
         guiModels.add(genCoModel);
         genCountModel = genCoModel;
+
+        final StringModel modelModel = sandboxModel.getInstance();
+        modelModel.setPosition(new Vector3f(0.005, .79 * aspect, -0.1));
+        guiModels.add(modelModel);
+        modelsModel = modelModel;
 
         updateHUD();
     }
@@ -333,6 +339,7 @@ public class FlowRenderer implements Renderer {
         positionModel.setString("Position: " + camera.getPosition().toInt().toString() + " Rotation: " + camera.getRotation().toString());
 
         genCountModel.setString("GenCount: " + RegionGenerator.getGenCount());
+        modelsModel.setString("Models: " + models.size());
     }
 
     /**
