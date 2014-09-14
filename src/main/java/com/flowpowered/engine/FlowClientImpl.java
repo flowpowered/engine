@@ -31,6 +31,7 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.material.MaterialRegistry;
+
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.network.FlowNetworkClient;
 import com.flowpowered.engine.network.FlowSession;
@@ -62,7 +63,7 @@ public class FlowClientImpl extends AbstractFlowClientImpl {
         FlowServerWorld world = new FlowServerWorld(engine, "TestWorld", null);
         engine.getWorldManager().addWorld(world);
         world.getThread().start();
-        client.connect(new InetSocketAddress(engine.getArgs().server, engine.getArgs().port));
+        client.connect(new InetSocketAddress(engine.getArgs().getServer(), engine.getArgs().getPort()));
         super.onAdd();
     }
 

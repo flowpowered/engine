@@ -29,11 +29,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import com.flowpowered.commons.StringUtil;
+
 import com.flowpowered.api.event.PlayerJoinedEvent;
 import com.flowpowered.api.geo.ServerWorldManager;
 import com.flowpowered.api.material.MaterialRegistry;
 import com.flowpowered.api.player.Player;
-import com.flowpowered.commons.StringUtil;
+
 import com.flowpowered.engine.network.FlowNetworkServer;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.player.FlowPlayer;
@@ -53,7 +55,7 @@ public class FlowServerImpl implements FlowServer {
     @Override
     public void onAdd() {
         MaterialRegistry.setupServer(this);
-        server.bind(new InetSocketAddress(engine.getArgs().port));
+        server.bind(new InetSocketAddress(engine.getArgs().getPort()));
     }
 
     @Override

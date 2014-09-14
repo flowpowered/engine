@@ -29,24 +29,26 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.slf4j.LoggerFactory;
 
 import uk.org.lidalia.slf4jext.Level;
 
+import com.flowpowered.commons.LoggerOutputStream;
+
+import com.flowpowered.events.EventManager;
+import com.flowpowered.events.SimpleEventManager;
+
 import com.flowpowered.api.EnginePart;
 import com.flowpowered.api.event.engine.EnginePartAddedEvent;
 import com.flowpowered.api.util.LogUtil;
-import com.flowpowered.commons.LoggerOutputStream;
+
 import com.flowpowered.engine.filesystem.FlowFileSystem;
 import com.flowpowered.engine.geo.world.FlowWorldManager;
 import com.flowpowered.engine.plugins.FlowPluginManager;
 import com.flowpowered.engine.scheduler.FlowScheduler;
-import com.flowpowered.events.EventManager;
-import com.flowpowered.events.SimpleEventManager;
 
 public class FlowEngineImpl implements FlowEngine {
-    private FlowApplication args;
+    private StartupArguments args;
     private Set<FlowEnginePart> parts = new HashSet<>();
     private final EventManager eventManager;
     private final FlowFileSystem fileSystem;
@@ -72,7 +74,7 @@ public class FlowEngineImpl implements FlowEngine {
         return logger;
     }
 
-    public void init(FlowApplication args) {
+    public void init(StartupArguments args) {
         this.args = args;
         // Make sure we log something and let log4j2 initialize before we redirect System.out and System.err
         // Otherwise it could try to log to the redirected stdout causing infinite loop.
@@ -99,13 +101,13 @@ public class FlowEngineImpl implements FlowEngine {
         return true;
     }
 
-    public FlowApplication getArgs() {
+    public StartupArguments getArgs() {
         return args;
     }
 
     @Override
     public boolean debugMode() {
-        return args.debug;
+        return args.isDebug();
     }
 
     @Override

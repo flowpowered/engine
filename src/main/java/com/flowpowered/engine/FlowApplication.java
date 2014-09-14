@@ -27,12 +27,13 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 import com.flowpowered.api.Platform;
+
 import com.flowpowered.engine.util.argument.PlatformConverter;
 
 /**
  * A main class for launching various platforms
  */
-public class FlowApplication {
+public class FlowApplication implements StartupArguments {
     @Parameter(names = {"--platform", "-platform", "--p", "-p"}, converter = PlatformConverter.class)
     public Platform platform = Platform.SINGLEPLAYER;
     @Parameter(names = {"--debug", "-debug", "--d", "-d"}, description = "Debug Mode")
@@ -74,5 +75,30 @@ public class FlowApplication {
             t.printStackTrace();
             Runtime.getRuntime().halt(1);
         }
+    }
+
+    @Override
+    public boolean isDebug() {
+        return debug;
+    }
+
+    @Override
+    public String getProtocol() {
+        return protocol;
+    }
+
+    @Override
+    public String getServer() {
+        return server;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public String getUser() {
+        return user;
     }
 }
