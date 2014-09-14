@@ -106,7 +106,7 @@ public final class SyncedStringMap extends StringToUniqueIntegerMap implements E
     @Override
     public void clear() {
         super.clear();
-        callEvent(new SyncedMapEvent(this, SyncedMapEvent.Action.SET, new ArrayList<Pair<Integer, String>>()));
+        callEvent(new SyncedMapEvent(this, SyncedMapEvent.Action.SET, new ArrayList<>()));
     }
 
     public int getId() {

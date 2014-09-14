@@ -37,7 +37,7 @@ import com.flowpowered.commons.store.MemoryStore;
 import com.flowpowered.math.GenericMath;
 
 /**
- * Handles all registered materials on the server statically.
+ * Statically handles all server-side registered materials.
  */
 public abstract class MaterialRegistry {
     private final static ConcurrentHashMap<String, Material> nameLookup = new ConcurrentHashMap<>(1000);
@@ -73,11 +73,16 @@ public abstract class MaterialRegistry {
         if (setup) {
             throw new IllegalStateException("Can not setup material registry twice!");
         }
-        materialRegistry = SyncedStringMap.create(null, new MemoryStore<Integer>(), 1, Short.MAX_VALUE, Material.class.getName());
+        materialRegistry = SyncedStringMap.create(null, new MemoryStore<>(), 1, Short.MAX_VALUE, Material.class.getName());
 
         setup = true;
     }
 
+    /**
+     * Checks whether the MaterialRegistry has been set up. If this returns {@code true}, further attempts to set up the registry will result in {@link IllegalStateException}.
+     *
+     * @return whether the MaterialRegistry has been set up
+     */
     public static boolean isSetup() {
         return setup;
     }
@@ -172,7 +177,7 @@ public abstract class MaterialRegistry {
     /**
      * Gets the material for the given packed full state
      *
-     * @param state the full state of the block
+     * @param packedState the packed state of the block
      * @return Material of the id
      */
     public static BlockMaterial get(int packedState) {
@@ -195,9 +200,9 @@ public abstract class MaterialRegistry {
     public static Material[] values() {
         //TODO: This is wrong, need to count # of registered materials
         HashSet<Material> set = new HashSet<>(1000);
-        for (int i = 0; i < materialLookup.length; i++) {
-            if (materialLookup[i].get() != null) {
-                set.add(materialLookup[i].get()[0]);
+        for (AtomicReference<Material[]> aMaterialLookup : materialLookup) {
+            if (aMaterialLookup.get() != null) {
+                set.add(aMaterialLookup.get()[0]);
             }
         }
         return set.toArray(new Material[0]);

@@ -37,8 +37,8 @@ public class SnapshotManager {
 
     public void copyAllSnapshots() {
         synchronized (managed) {
-            for (int i = 0; i < managed.size(); i++) {
-                managed.get(i).copySnapshot();
+            for (Snapshotable aManaged : managed) {
+                aManaged.copySnapshot();
             }
         }
     }

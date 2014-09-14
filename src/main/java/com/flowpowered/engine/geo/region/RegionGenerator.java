@@ -94,12 +94,7 @@ public class RegionGenerator implements Named {
      */
     public void generateChunk(final int chunkX, final int chunkY, final int chunkZ, boolean wait) {
         if (!wait) {
-            pool.get().submit(new Runnable() {
-                @Override
-                public void run() {
-                    generateChunk0(chunkX, chunkY, chunkZ, false);
-                }
-            });
+            pool.get().submit(() -> generateChunk0(chunkX, chunkY, chunkZ, false));
         } else {
             generateChunk0(chunkX, chunkY, chunkZ, true);
         }

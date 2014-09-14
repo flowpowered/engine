@@ -50,7 +50,7 @@ public class BAAWrapper {
         if (baa != null) {
             try {
                 baa.closeIfTimedOut();
-            } catch (IOException ioe) {
+            } catch (IOException ignore) {
             }
             if (baa.isClosed()) {
                 baaRef.compareAndSet(baa, null);
@@ -73,7 +73,7 @@ public class BAAWrapper {
                     baaRef.compareAndSet(baa, null);
                 }
                 return success;
-            } catch (IOException ioe) {
+            } catch (IOException ignore) {
             }
         }
         return true;
@@ -96,8 +96,7 @@ public class BAAWrapper {
             }
             try {
                 return baa.exists(i);
-            } catch (BAAClosedException e) {
-                continue;
+            } catch (BAAClosedException ignore) {
             } catch (IOException e) {
                 return false;
             }
@@ -122,8 +121,7 @@ public class BAAWrapper {
             try {
                 baa.delete(i);
                 return true;
-            } catch (BAAClosedException e) {
-                continue;
+            } catch (BAAClosedException ignore) {
             } catch (IOException e) {
                 return false;
             }
@@ -218,7 +216,7 @@ public class BAAWrapper {
             if (count > 10) {
                 try {
                     Thread.sleep(1);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignore) {
                 }
             } else if (count > 0) {
                 Thread.yield();

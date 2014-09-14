@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
@@ -172,11 +173,7 @@ public class SnapshotableLinkedHashMap<K, V> implements Snapshotable {
      */
     public List<K> getDirtyList() {
         if (!dirtyListGenerated) {
-            for (K o : dirty) {
-                if (dirtyListTemp.add(o)) {
-                    dirtyList.add(o);
-                }
-            }
+            dirtyList.addAll(dirty.stream().filter(dirtyListTemp::add).collect(Collectors.toList()));
             dirtyListTemp.clear();
             dirtyListGenerated = true;
         }

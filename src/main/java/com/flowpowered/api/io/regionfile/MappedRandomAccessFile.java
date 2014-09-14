@@ -69,11 +69,7 @@ public class MappedRandomAccessFile {
     }
 
     public void close() throws IOException {
-        for (MappedByteBuffer m : pages) {
-            if (m != null) {
-                m.force();
-            }
-        }
+        pages.stream().filter(m -> m != null).forEach(MappedByteBuffer::force);
         lock.release();
         file.close();
     }

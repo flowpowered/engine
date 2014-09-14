@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.LoadOption;
@@ -43,7 +44,7 @@ import com.flowpowered.engine.network.message.UpdateEntityMessage;
 import com.flowpowered.networking.session.Session;
 
 /**
- * The networking behind {@link org.spout.api.entity.Player}s. This component holds the {@link Session} which is the connection the Player has to the server.
+ * The networking behind {@link Player}s. This component holds the {@link Session} which is the connection the Player has to the server.
  * This class also syncs *loaded* chunks to the client. It makes no attempt to load or generate chunks.
  */
 public class PlayerNetwork {
@@ -92,9 +93,8 @@ public class PlayerNetwork {
     }
 
     public void addChunks(Set<Chunk> chunks) {
-        for (Chunk chunk : chunks) {
-            chunkSendQueue.add(new ChunkReference(chunk));
-        }
+        chunkSendQueue.addAll(chunks.stream().map(ChunkReference::new).collect(
+                Collectors.toList()));
     }
 
     public void removeChunks(Set<Chunk> toRemove) {
@@ -111,9 +111,7 @@ public class PlayerNetwork {
         }
 
         // We want to free all chunks first
-        for (ChunkReference ref : chunkFreeQueue) {
-            freeChunk(ref);
-        }
+        chunkFreeQueue.forEach(this::freeChunk);
         chunkFreeQueue.clear();
 
         // We will sync old chunks, but not new ones

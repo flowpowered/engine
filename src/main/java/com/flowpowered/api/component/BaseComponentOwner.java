@@ -211,7 +211,7 @@ public class BaseComponentOwner implements ComponentOwner {
 
     @SuppressWarnings ("unchecked")
     @Override
-    public <T extends Object> Collection<T> getAllOfType(Class<T> type) {
+    public <T> Collection<T> getAllOfType(Class<T> type) {
         Preconditions.checkNotNull(type);
         synchronized (components) {
             ArrayList<T> matches = new ArrayList<>();

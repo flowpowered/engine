@@ -57,12 +57,7 @@ public class FlowPluginManager extends PluginManager<FlowContext> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ContextCreator<FlowContext> cc = new ContextCreator<FlowContext>() {
-            @Override
-            public FlowContext createContext(Plugin<FlowContext> plugin) {
-                return new FlowContext(plugin, engine);
-            }
-        };
+        ContextCreator<FlowContext> cc = plugin -> new FlowContext(plugin, engine);
         addLoader(new SimplePluginLoader<>(cc, new URLClassLoader(getURLs(FlowFileSystem.PLUGINS_DIRECTORY, "*.jar"))));
         addLoader(new AnnotatedPluginLoader<>(cc, FlowFileSystem.PLUGINS_DIRECTORY, getClass().getClassLoader()));
     }

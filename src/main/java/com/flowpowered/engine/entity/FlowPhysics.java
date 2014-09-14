@@ -81,7 +81,7 @@ public class FlowPhysics extends Physics {
     @Override
     public void deactivate() {
         if (entity != null && entity.getRegion() != null && body != null) {
-            ((FlowRegion) entity.getRegion()).getDynamicsWorld().destroyRigidBody(body);
+            entity.getRegion().getDynamicsWorld().destroyRigidBody(body);
         }
         body = null;
         activated = false;

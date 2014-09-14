@@ -137,7 +137,7 @@ public class FlowTaskManager implements TaskManager {
 
     @Override
     public <T> Future<T> callSyncMethod(Object owner, Callable<T> task, TaskPriority priority) {
-        FutureTask<T> future = new FutureTask<T>(task);
+        FutureTask<T> future = new FutureTask<>(task);
         runTask(owner, future, priority);
         return future;
     }
@@ -200,19 +200,13 @@ public class FlowTaskManager implements TaskManager {
     @Override
     public void cancelTasks(Object plugin) {
         ArrayList<FlowTask> tasks = new ArrayList<>(activeTasks.values());
-        for (FlowTask task : tasks) {
-            if (task.getOwner() == plugin) {
-                cancelTask(task);
-            }
-        }
+        tasks.stream().filter(task -> task.getOwner() == plugin).forEach(this::cancelTask);
     }
 
     @Override
     public void cancelAllTasks() {
         ArrayList<FlowTask> tasks = new ArrayList<>(activeTasks.values());
-        for (FlowTask task : tasks) {
-            cancelTask(task);
-        }
+        tasks.forEach(this::cancelTask);
     }
 
     @Override
@@ -226,7 +220,7 @@ public class FlowTaskManager implements TaskManager {
      */
     @Override
     public List<Task> getPendingTasks() {
-        return new ArrayList<Task>(activeTasks.values());
+        return new ArrayList<>(activeTasks.values());
     }
 
     @Override

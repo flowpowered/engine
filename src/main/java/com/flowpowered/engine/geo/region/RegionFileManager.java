@@ -73,12 +73,7 @@ public class RegionFileManager {
             return regionFile;
         }
         final Path file = regionDirectory.resolve(filename);
-        BAAWrapper.BAACreator c = new BAAWrapper.BAACreator() {
-            @Override
-            public ByteArrayArray create() throws IOException {
-                return new SimpleRegionFile(file, SEGMENT_SIZE, FlowRegion.CHUNKS.VOLUME, TIMEOUT);
-            }
-        };
+        BAAWrapper.BAACreator c = () -> new SimpleRegionFile(file, SEGMENT_SIZE, FlowRegion.CHUNKS.VOLUME, TIMEOUT);
         regionFile = new BAAWrapper(c);
         BAAWrapper oldRegionFile = cache.putIfAbsent(filename, regionFile);
         if (oldRegionFile != null) {
@@ -111,11 +106,7 @@ public class RegionFileManager {
         } catch (InterruptedException ie) {
             logger.info("Interrupted when trying to stop RegionFileManager timeout thread");
         }
-        for (BAAWrapper regionFile : cache.values()) {
-            if (!regionFile.attemptClose()) {
-                logger.info("Unable to close region file.");
-            }
-        }
+        cache.values().stream().filter(regionFile -> !regionFile.attemptClose()).forEach(regionFile -> logger.info("Unable to close region file."));
     }
 
     private static String getFilename(int rx, int ry, int rz) {

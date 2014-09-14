@@ -164,12 +164,7 @@ public class FlowRegion extends Region {
             return loadOrGenChunkImmediately(x, y, z, loadopt);
         }
 
-        engine.getScheduler().getTaskManager().runCoreAsyncTask(new Runnable() {
-            @Override
-            public void run() {
-                loadOrGenChunkImmediately(x, y, z, loadopt);
-            }
-        });
+        engine.getScheduler().getTaskManager().runCoreAsyncTask(() -> loadOrGenChunkImmediately(x, y, z, loadopt));
         return null;
     }
 
@@ -339,7 +334,7 @@ public class FlowRegion extends Region {
     }
 
     @Override
-    public short clearBlockDataBits(int x, int y, int z, int bits, Cause<?> source) {
+    public short clearBlockDataBits(int x, int y, int z, int bits, Cause<?> cause) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -354,7 +349,7 @@ public class FlowRegion extends Region {
     }
 
     @Override
-    public int setBlockDataField(int x, int y, int z, int bits, int value, Cause<?> source) {
+    public int setBlockDataField(int x, int y, int z, int bits, int value, Cause<?> cause) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

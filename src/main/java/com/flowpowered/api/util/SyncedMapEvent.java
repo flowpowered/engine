@@ -31,7 +31,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.flowpowered.events.object.ObjectEvent;
 
 /**
- * Event called when modifications occur on a StringMap
+ * Event called when modifications occur on a SyncedStringMap
  */
 public class SyncedMapEvent extends ObjectEvent<SyncedStringMap> {
     public static enum Action {

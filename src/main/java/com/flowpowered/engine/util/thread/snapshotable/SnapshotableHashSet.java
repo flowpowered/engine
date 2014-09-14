@@ -41,7 +41,7 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
 public class SnapshotableHashSet<T> implements Snapshotable {
     private final Set<T> snapshot = new HashSet<>();
     private final Set<T> unmodifySnapshot = Collections.unmodifiableSet(snapshot);
-    private final Set<T> live = Collections.newSetFromMap(new ConcurrentHashMap<T, Boolean>());
+    private final Set<T> live = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Set<T> unmodifyLive = Collections.unmodifiableSet(live);
     private final ConcurrentLinkedQueue<T> dirty = new ConcurrentLinkedQueue<>();
     private final ArrayList<T> dirtyList = new ArrayList<>();
@@ -52,9 +52,7 @@ public class SnapshotableHashSet<T> implements Snapshotable {
 
     public SnapshotableHashSet(SnapshotManager manager, HashSet<T> initial) {
         if (initial != null) {
-            for (T o : initial) {
-                add(o);
-            }
+            initial.forEach(this::add);
         }
         if (manager != null) {
             manager.add(this);

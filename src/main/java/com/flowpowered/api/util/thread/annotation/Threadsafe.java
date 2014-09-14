@@ -24,7 +24,7 @@
 package com.flowpowered.api.util.thread.annotation;
 
 public @interface Threadsafe {
-    public String author() default "SpoutDev";
+    public String author() default "Flow Dev";
 
     public String version() default "1.0";
 

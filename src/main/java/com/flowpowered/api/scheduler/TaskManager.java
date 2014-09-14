@@ -96,7 +96,7 @@ public interface TaskManager {
      * @param task the task to execute
      * @param delay the delay, in ms, before the task starts
      * @param period the repeat period, in ms, of the task, or <= 0 to indicate a single shot task
-     * @return
+     * @return the {@link Task} object for the newly scheduled task
      */
     public Task runTaskTimerAsynchronously(Object owner, Runnable task, long delay, long period);
 

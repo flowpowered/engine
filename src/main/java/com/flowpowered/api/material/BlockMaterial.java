@@ -259,7 +259,6 @@ public class BlockMaterial extends Material implements Placeable {
      *
      * @param oldMaterial the previous material, or null if the update was not due to a material change
      * @param block that got updated
-     * @return true if the block was updated
      */
     public void onUpdate(BlockMaterial oldMaterial, Block block) {
     }
@@ -308,7 +307,6 @@ public class BlockMaterial extends Material implements Placeable {
     /**
      * Sets the occludes faces of this Block Material<br> Occluded faces do not let light though and require rendering behind it at those faces
      *
-     * @param data of this Block Material
      * @param faces to make this Block Material occlude
      * @return this Block Material
      */
@@ -349,7 +347,7 @@ public class BlockMaterial extends Material implements Placeable {
     }
 
     /**
-     * Checks the block to see if it can be created at that position<br> Orientation-specific checks are performed in the {@link #canPlace(com.flowpowered.api.geo.cuboid.Block, short, com.flowpowered.api.material.block.BlockFace, com.flowpowered.math.vector.Vector3f, boolean, com.flowpowered.api.event.Cause)} method<br> Use this method to see if creation is possible at a
+     * Checks the block to see if it can be created at that position<br> Orientation-specific checks are performed in the {@link #canPlace(Block, short, BlockFace, Vector3f, boolean, Cause)} method<br> Use this method to see if creation is possible at a
      * given position when not placed
      *
      * @param block this Block Material should be created in
@@ -362,7 +360,7 @@ public class BlockMaterial extends Material implements Placeable {
     }
 
     /**
-     * Creates this Block Material at a block in the world<br> Orientation-specific changes are performed in the {@link #onPlacement(com.flowpowered.api.geo.cuboid.Block, short, com.flowpowered.api.material.block.BlockFace, com.flowpowered.math.vector.Vector3f, boolean, com.flowpowered.api.event.Cause)} method<br> Use this method to create the block at a given position
+     * Creates this Block Material at a block in the world<br> Orientation-specific changes are performed in the {@link #onPlacement(Block, short, BlockFace, Vector3f, boolean, Cause)} method<br> Use this method to create the block at a given position
      * when not placed
      *
      * @param block to create this Block Material in
@@ -411,9 +409,9 @@ public class BlockMaterial extends Material implements Placeable {
     }
 
     /**
-     * Helper method to create a MaterialCause.
+     * Helper method to create a Cause of generic type BlockMaterial.
      *
-     * Same as using new MaterialCause(material, block)
+     * Same as using new Cause<BlockMaterial>(material, block)
      *
      * @param block location of the event
      * @return cause
@@ -422,6 +420,11 @@ public class BlockMaterial extends Material implements Placeable {
         return new MaterialCause<>(this, block);
     }
 
+    /**
+     * Gets a {@link Set} of all {@link BlockComponent}s attached to this BlockMaterial.
+     *
+     * @return all attached Block Components
+     */
     public Set<Class<? extends BlockComponent>> getComponents() {
         return components;
     }

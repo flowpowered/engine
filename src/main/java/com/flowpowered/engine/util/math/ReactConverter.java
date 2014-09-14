@@ -23,7 +23,6 @@
  */
 package com.flowpowered.engine.util.math;
 
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.reference.WorldReference;

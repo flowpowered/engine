@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import com.flowpowered.api.generator.EmptyWorldGenerator;
 import com.flowpowered.api.generator.WorldGenerator;
@@ -96,11 +97,7 @@ public class FlowWorldManager implements WorldManager, ServerWorldManager {
 
     @Override
     public Collection<World> getWorlds() {
-        Collection<World> w = new ArrayList<>();
-        for (FlowWorld world : loadedWorlds.values()) {
-            w.add(world);
-        }
-        return w;
+        return loadedWorlds.values().stream().collect(Collectors.toList());
     }
 
     @Override
@@ -146,12 +143,7 @@ public class FlowWorldManager implements WorldManager, ServerWorldManager {
     public List<Path> getWorldFolders() {
         DirectoryStream<Path> stream;
         try {
-            stream = Files.newDirectoryStream(getWorldFolder(), new DirectoryStream.Filter<Path>() {
-                @Override
-                public boolean accept(Path entry) throws IOException {
-                    return Files.isDirectory(entry) && Files.exists(entry.resolve("world.dat"));
-                }
-            });
+            stream = Files.newDirectoryStream(getWorldFolder(), entry -> Files.isDirectory(entry) && Files.exists(entry.resolve("world.dat")));
         } catch (IOException ex) {
             engine.getLogger().error("Error when listing world folders.", ex);
             return Collections.emptyList();
@@ -171,7 +163,7 @@ public class FlowWorldManager implements WorldManager, ServerWorldManager {
 
     @Override
     public boolean unloadWorld(String name, boolean save) {
-        return unloadWorld((ServerWorld) loadedWorlds.get(name), save);
+        return unloadWorld(loadedWorlds.get(name), save);
     }
 
     @Override

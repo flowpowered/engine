@@ -168,16 +168,16 @@ public abstract class Material extends MaterialRegistry {
         if (submaterialsDirty) {
             int materialCount = 0;
             Material[] sm = subMaterials.get();
-            for (int i = 0; i < sm.length; i++) {
-                if (sm[i] != null) {
+            for (Material aSm : sm) {
+                if (aSm != null) {
                     materialCount++;
                 }
             }
             Material[] newSubmaterials = new Material[materialCount];
             materialCount = 0;
-            for (int i = 0; i < sm.length; i++) {
-                if (sm[i] != null) {
-                    newSubmaterials[materialCount++] = sm[i];
+            for (Material aSm : sm) {
+                if (aSm != null) {
+                    newSubmaterials[materialCount++] = aSm;
                 }
             }
             this.submaterialsContiguous = newSubmaterials;
@@ -332,11 +332,7 @@ public abstract class Material extends MaterialRegistry {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Material) {
-            return other == this;
-        } else {
-            return false;
-        }
+        return other instanceof Material && other == this;
     }
 
     @Override

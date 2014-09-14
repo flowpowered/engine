@@ -30,7 +30,7 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention (value = RetentionPolicy.RUNTIME)
 public @interface DelayedWrite {
-    public String author() default "SpoutDev";
+    public String author() default "Flow Dev";
 
     public String version() default "1.0";
 

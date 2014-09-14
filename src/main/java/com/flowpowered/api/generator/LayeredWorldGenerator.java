@@ -24,12 +24,10 @@
 package com.flowpowered.api.generator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.flowpowered.api.geo.World;
-import com.flowpowered.api.geo.cuboid.Chunk;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 

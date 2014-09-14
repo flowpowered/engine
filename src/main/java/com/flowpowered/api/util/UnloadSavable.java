@@ -23,6 +23,9 @@
  */
 package com.flowpowered.api.util;
 
+/**
+ * Represents something which can be unloaded and saved within the engine.
+ */
 public interface UnloadSavable {
     /**
      * Performs the necessary tasks to unload this object.

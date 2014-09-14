@@ -100,7 +100,7 @@ public class EntityManager {
     public void addEntity(FlowEntity entity) {
         entities.put(entity.getId(), entity);
         if (entity instanceof Player) {
-            players.put((Player) entity, new ArrayList<FlowEntity>());
+            players.put((Player) entity, new ArrayList<>());
         }
     }
 
@@ -156,10 +156,6 @@ public class EntityManager {
 
         // We want one more tick with for the removed Entities
         // The next tick works with the snapshotted values which contains has all removed entities with isRemoved true
-        for (FlowEntity e : entities.get().values()) {
-            if (e.isRemoved()) {
-                removeEntity(e);
-            }
-        }
+        entities.get().values().stream().filter(FlowEntity::isRemoved).forEach(this::removeEntity);
     }
 }

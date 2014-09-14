@@ -94,7 +94,7 @@ public class FlowEngineImpl implements FlowEngine {
     @Override
     public boolean stop(String reason) {
         scheduler.stop();
-        pluginManager.disablePlugins();;
+        pluginManager.disablePlugins();
         System.out.println("Engine stopped");
         return true;
     }

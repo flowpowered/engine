@@ -23,7 +23,6 @@
  */
 package com.flowpowered.api.material.block;
 
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.WorldManager;
 import com.flowpowered.api.geo.cuboid.Block;
 import com.flowpowered.api.geo.reference.WorldReference;

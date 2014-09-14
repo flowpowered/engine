@@ -111,9 +111,7 @@ public class FlowServerWorld extends FlowWorld implements ServerWorld {
 
     @Override
     public void queueChunksForGeneration(List<Vector3f> chunks) {
-        for (Vector3f chunk : chunks) {
-            queueChunkForGeneration(chunk);
-        }
+        chunks.forEach(this::queueChunkForGeneration);
     }
 
     @Override

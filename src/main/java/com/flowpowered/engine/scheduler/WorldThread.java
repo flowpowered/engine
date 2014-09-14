@@ -101,14 +101,14 @@ public class WorldThread extends TickingElement {
     }
 
     private void doFinalizeTick() {
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach((FlowRegion r) -> r.finalizeRun());
+        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach(FlowRegion::finalizeRun);
     }
 
     private void doCopySnapshot() {
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach((FlowRegion r) -> r.preSnapshotRun());
+        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach(FlowRegion::preSnapshotRun);
 
         world.copySnapshotRun();
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach((FlowRegion r) -> r.copySnapshotRun());
+        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach(FlowRegion::copySnapshotRun);
     }
 
     public int getTPS() {

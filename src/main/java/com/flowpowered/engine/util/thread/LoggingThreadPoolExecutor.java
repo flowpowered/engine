@@ -39,12 +39,12 @@ import com.flowpowered.engine.scheduler.MarkedNamedThreadFactory;
 
 public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
     public static LoggingThreadPoolExecutor newFixedThreadExecutorWithMarkedName(int nThreads, String name, Logger logger) {
-        return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+        return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
                 new MarkedNamedThreadFactory(name, true), logger);
     }
 
     public static LoggingThreadPoolExecutor newFixedThreadExecutorWithMarkedName(ThreadGroup group, int nThreads, String name, Logger logger) {
-        return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+        return new LoggingThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
                 new MarkedNamedThreadFactory(group, name, true), logger);
     }
 
@@ -76,7 +76,7 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
         if (t == null && r instanceof Future<?>) {
             try {
                 ((Future<?>) r).get();
-            } catch (CancellationException ce) {
+            } catch (CancellationException ignore) {
             } catch (ExecutionException ee) {
                 t = ee.getCause();
             } catch (InterruptedException ie) {

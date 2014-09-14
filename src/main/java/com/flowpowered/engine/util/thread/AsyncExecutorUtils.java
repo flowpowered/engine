@@ -59,8 +59,8 @@ public class AsyncExecutorUtils {
             log.info("    PID: " + thread.getId() + " | Alive: " + thread.isAlive() + " | State: " + thread.getState());
             log.info("    Stack:");
             StackTraceElement[] stack = entry.getValue();
-            for (int line = 0; line < stack.length; line++) {
-                log.info("        " + stack[line].toString());
+            for (StackTraceElement aStack : stack) {
+                log.info("        " + aStack.toString());
             }
         }
         log.info(LINE);

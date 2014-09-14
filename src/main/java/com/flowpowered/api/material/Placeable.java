@@ -34,7 +34,7 @@ import com.flowpowered.math.vector.Vector3f;
  */
 public interface Placeable {
     /**
-     * Called when this block is about to be placed (before {@link #onPlacement(Block, short, BlockFace, boolean)}), checking if placement is allowed or not.
+     * Called when this block is about to be placed (before {@link #onPlacement(Block, short, BlockFace, Vector3f, boolean, Cause)}), checking if placement is allowed or not.
      *
      * @param block to place
      * @param data block data to use during placement

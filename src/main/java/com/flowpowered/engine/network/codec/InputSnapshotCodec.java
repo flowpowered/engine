@@ -24,7 +24,6 @@
 package com.flowpowered.engine.network.codec;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 

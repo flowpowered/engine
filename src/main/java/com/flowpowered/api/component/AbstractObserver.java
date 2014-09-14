@@ -53,7 +53,7 @@ public abstract class AbstractObserver {
     /**
      * Chunks currently being observed
      */
-    protected final AtomicReference<Set<ChunkReference>> observingChunks = new AtomicReference<Set<ChunkReference>>(new HashSet<ChunkReference>());
+    protected final AtomicReference<Set<ChunkReference>> observingChunks = new AtomicReference<>(new HashSet<>());
     protected final AtomicReference<ChunkIterator> liveObserverIterator = new AtomicReference<>(NO_CHUNKS);
     protected final Engine engine;
     protected boolean observeChunksFailed = true;
@@ -70,7 +70,7 @@ public abstract class AbstractObserver {
         public Iterator<Vector3i> getIteratorFor(int centerX, int centerY, int centerZ) {
             return new OutwardIterator(centerX, centerY, centerZ, getSyncDistance());
         }
-    };
+    }
 
     /**
      * Returns if the owning {@link com.flowpowered.api.entity.Entity} is an observer. <p/> Observer means the Entity can trigger network updates (such as chunk creation) within its sync distance.

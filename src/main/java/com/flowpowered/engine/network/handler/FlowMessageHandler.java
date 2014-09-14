@@ -71,6 +71,6 @@ public class FlowMessageHandler<T extends Message> implements MessageHandler<Flo
     public enum PlayerRequirement {
         NO,
         IGNORE,
-        ERROR;
+        ERROR
     }
 }

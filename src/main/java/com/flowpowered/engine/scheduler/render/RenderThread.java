@@ -275,7 +275,7 @@ public class RenderThread extends TickingElement {
     private static final Vector3f SHADOWED_CHUNKS = new Vector3f(Chunk.BLOCKS.SIZE * 4, 64, Chunk.BLOCKS.SIZE * 4);
     private static final long MILLIS_IN_A_DAY = 1000 * 60 * 60 * 24;
     private void updateLight(long time) {
-        time %= MILLIS_IN_A_DAY;;
+        time %= MILLIS_IN_A_DAY;
         double lightAngle;
         final double dayAngle = ((double) time / (MILLIS_IN_A_DAY)) * TWO_PI;
         if (dayAngle < Math.PI) {

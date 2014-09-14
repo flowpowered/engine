@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import com.flowpowered.api.util.thread.annotation.DelayedWrite;
 import com.flowpowered.api.util.thread.annotation.LiveRead;
@@ -142,9 +143,7 @@ public class SnapshotableArrayList<T> implements Snapshotable {
         if (dirty.size() > 0) {
             snapshot.clear();
             synchronized (live) {
-                for (T o : live) {
-                    snapshot.add(o);
-                }
+                snapshot.addAll(live.stream().collect(Collectors.toList()));
             }
         }
         dirty.clear();

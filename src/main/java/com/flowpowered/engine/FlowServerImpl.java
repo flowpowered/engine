@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.flowpowered.api.event.PlayerJoinedEvent;
 import com.flowpowered.api.geo.ServerWorldManager;
@@ -65,11 +66,7 @@ public class FlowServerImpl implements FlowServer {
     public Collection<Player> getOnlinePlayers() {
         Map<String, FlowPlayer> playerList = players.get();
         ArrayList<Player> onlinePlayers = new ArrayList<>(playerList.size());
-        for (FlowPlayer player : playerList.values()) {
-            if (player.isOnline()) {
-                onlinePlayers.add(player);
-            }
-        }
+        onlinePlayers.addAll(playerList.values().stream().filter(Player::isOnline).collect(Collectors.toList()));
         return onlinePlayers;
     }
 

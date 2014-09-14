@@ -25,11 +25,7 @@ package com.flowpowered.engine.util;
 
 import java.io.IOException;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.flowpowered.api.Client;
-import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.reference.WorldReference;

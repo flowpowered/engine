@@ -29,7 +29,6 @@ import com.flowpowered.commons.bit.ByteBitMask;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
 import com.flowpowered.math.imaginary.Quaternionf;
-import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 
 /**

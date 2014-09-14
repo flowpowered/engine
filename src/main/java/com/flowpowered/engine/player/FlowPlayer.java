@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.World;
@@ -221,7 +220,7 @@ public class FlowPlayer implements Player {
 
     public void copyInput(FlowWorld world) {
         synchronized (inputMutex) {
-            LinkedList<InputSnapshot> snapshot = new LinkedList<InputSnapshot>();
+            LinkedList<InputSnapshot> snapshot = new LinkedList<>();
             inputSnapshots.put(world.getThread().getThread().getThreadGroup(), snapshot);
             ConcurrentLinkedQueue<InputSnapshot> get = liveInput.getIfPresent(world);
             if (get == null) {

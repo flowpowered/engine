@@ -52,7 +52,7 @@ public class MainThread extends TickingElement {
             server.copySnapshot();
             for (Player p : server.getOnlinePlayers()) {
                 Transform transform = p.getTransformProvider().getTransform();
-                ((FlowPlayer) p).getNetwork().preSnapshotRun(transform);
+                p.getNetwork().preSnapshotRun(transform);
             }
         }
     }
