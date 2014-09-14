@@ -31,12 +31,14 @@ import org.spout.renderer.lwjgl.LWJGLUtil;
 
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.material.MaterialRegistry;
+
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.network.FlowNetworkClient;
 import com.flowpowered.engine.network.FlowSession;
 
 public class FlowClientImpl extends AbstractFlowClientImpl {
     private final FlowNetworkClient client;
+    private InetSocketAddress address;
 
     private volatile Transform transform = Transform.INVALID;
 
@@ -53,6 +55,10 @@ public class FlowClientImpl extends AbstractFlowClientImpl {
         this.client = new FlowNetworkClient(engine);
     }
 
+    public void setServerAddress(InetSocketAddress address) {
+        this.address = address;
+    }
+
     @Override
     public void onAdd() {
         if (!MaterialRegistry.isSetup()) {
@@ -62,7 +68,7 @@ public class FlowClientImpl extends AbstractFlowClientImpl {
         FlowServerWorld world = new FlowServerWorld(engine, "TestWorld", null);
         engine.getWorldManager().addWorld(world);
         world.getThread().start();
-        client.connect(new InetSocketAddress(engine.getArgs().server, engine.getArgs().port));
+        client.connect(address);
         super.onAdd();
     }
 

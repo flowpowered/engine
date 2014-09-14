@@ -23,10 +23,13 @@
  */
 package com.flowpowered.engine;
 
+import java.net.InetSocketAddress;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 import com.flowpowered.api.Platform;
+
 import com.flowpowered.engine.util.argument.PlatformConverter;
 
 /**
@@ -53,18 +56,20 @@ public class FlowApplication {
             commands.parse(args);
 
             FlowEngineImpl engine = new FlowEngineImpl();
-            engine.init(main);
+            engine.init(main.debug);
             engine.start();
 
             switch (main.platform) {
                 case CLIENT:
-                    engine.add(new FlowClientImpl(engine));
+                    FlowClientImpl client = new FlowClientImpl(engine);
+                    client.setServerAddress(new InetSocketAddress(main.server, main.port));
+                    engine.add(client);
                     break;
                 case SERVER:
-                    engine.add(new FlowServerImpl(engine));
+                    engine.add(main.makeServer(engine));
                     break;
                 case SINGLEPLAYER:
-                    engine.add(new FlowServerImpl(engine));
+                    engine.add(main.makeServer(engine));
                     engine.add(new FlowSingleplayerImpl(engine));
                     break;
                 default:
@@ -74,5 +79,11 @@ public class FlowApplication {
             t.printStackTrace();
             Runtime.getRuntime().halt(1);
         }
+    }
+
+    protected FlowServerImpl makeServer(FlowEngineImpl engine) {
+        FlowServerImpl server = new FlowServerImpl(engine);
+        server.setBindAddress(new InetSocketAddress(port));
+        return server;
     }
 }

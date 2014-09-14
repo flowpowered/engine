@@ -29,17 +29,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import com.flowpowered.commons.StringUtil;
+
 import com.flowpowered.api.event.PlayerJoinedEvent;
 import com.flowpowered.api.geo.ServerWorldManager;
 import com.flowpowered.api.material.MaterialRegistry;
 import com.flowpowered.api.player.Player;
-import com.flowpowered.commons.StringUtil;
+
 import com.flowpowered.engine.network.FlowNetworkServer;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
 public class FlowServerImpl implements FlowServer {
+    private InetSocketAddress bindAddress;
     private final FlowEngineImpl engine;
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
     private final FlowNetworkServer server;
@@ -50,10 +53,14 @@ public class FlowServerImpl implements FlowServer {
         this.server = new FlowNetworkServer(engine);
     }
 
+    public void setBindAddress(InetSocketAddress address) {
+        this.bindAddress = address;
+    }
+
     @Override
     public void onAdd() {
         MaterialRegistry.setupServer(this);
-        server.bind(new InetSocketAddress(engine.getArgs().port));
+        server.bind(bindAddress);
     }
 
     @Override
