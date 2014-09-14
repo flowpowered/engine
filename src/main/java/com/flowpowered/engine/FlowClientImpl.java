@@ -38,7 +38,7 @@ import com.flowpowered.engine.network.FlowSession;
 
 public class FlowClientImpl extends AbstractFlowClientImpl {
     private final FlowNetworkClient client;
-    private InetSocketAddress address;
+    private final InetSocketAddress address;
 
     private volatile Transform transform = Transform.INVALID;
 
@@ -50,13 +50,10 @@ public class FlowClientImpl extends AbstractFlowClientImpl {
         }
     }
 
-    public FlowClientImpl(FlowEngineImpl engine) {
+    public FlowClientImpl(FlowEngineImpl engine, InetSocketAddress serverAddress) {
         super(engine);
         this.client = new FlowNetworkClient(engine);
-    }
-
-    public void setServerAddress(InetSocketAddress address) {
-        this.address = address;
+        this.address = serverAddress;
     }
 
     @Override

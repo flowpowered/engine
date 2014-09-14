@@ -42,19 +42,16 @@ import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
 public class FlowServerImpl implements FlowServer {
-    private InetSocketAddress bindAddress;
+    private final InetSocketAddress bindAddress;
     private final FlowEngineImpl engine;
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
     private final FlowNetworkServer server;
 
-    public FlowServerImpl(FlowEngineImpl engine) {
+    public FlowServerImpl(FlowEngineImpl engine, InetSocketAddress bindAddress) {
         this.engine = engine;
+        this.bindAddress = bindAddress;
         this.players = new SnapshotableLinkedHashMap<>(null);
         this.server = new FlowNetworkServer(engine);
-    }
-
-    public void setBindAddress(InetSocketAddress address) {
-        this.bindAddress = address;
     }
 
     @Override

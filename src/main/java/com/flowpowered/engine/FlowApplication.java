@@ -61,15 +61,13 @@ public class FlowApplication {
 
             switch (main.platform) {
                 case CLIENT:
-                    FlowClientImpl client = new FlowClientImpl(engine);
-                    client.setServerAddress(new InetSocketAddress(main.server, main.port));
-                    engine.add(client);
+                    engine.add(new FlowClientImpl(engine, new InetSocketAddress(main.server, main.port)));
                     break;
                 case SERVER:
-                    engine.add(main.makeServer(engine));
+                    engine.add(new FlowServerImpl(engine, new InetSocketAddress(main.port)));
                     break;
                 case SINGLEPLAYER:
-                    engine.add(main.makeServer(engine));
+                    engine.add(new FlowServerImpl(engine, new InetSocketAddress(main.port)));
                     engine.add(new FlowSingleplayerImpl(engine));
                     break;
                 default:
@@ -79,11 +77,5 @@ public class FlowApplication {
             t.printStackTrace();
             Runtime.getRuntime().halt(1);
         }
-    }
-
-    protected FlowServerImpl makeServer(FlowEngineImpl engine) {
-        FlowServerImpl server = new FlowServerImpl(engine);
-        server.setBindAddress(new InetSocketAddress(port));
-        return server;
     }
 }
