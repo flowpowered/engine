@@ -40,7 +40,6 @@ import com.flowpowered.commons.datatable.SerializableMap;
 import com.flowpowered.commons.sanitation.SafeCast;
 import com.flowpowered.commons.store.BinaryFileStore;
 import com.flowpowered.engine.FlowEngine;
-import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 
 import org.apache.logging.log4j.Logger;
@@ -58,7 +57,7 @@ import org.spout.nbt.util.NBTMapper;
 public class WorldFiles {
     public static final byte WORLD_VERSION = 1;
 
-    public static FlowServerWorld loadWorld(FlowServer engine, WorldGenerator generator, String worldName) {
+    public static FlowServerWorld loadWorld(FlowEngine engine, WorldGenerator generator, String worldName) {
         final Logger logger = engine.getLogger();
 
         Path worldDir = FlowFileSystem.WORLDS_DIRECTORY.resolve(worldName);

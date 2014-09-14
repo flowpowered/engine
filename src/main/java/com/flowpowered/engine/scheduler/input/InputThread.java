@@ -38,11 +38,13 @@ import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.queue.SubscribableQueue;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.message.InputSnapshotMessage;
 
 public class InputThread extends TickingElement {
     private static final int TPS = 60;
+    private final FlowEngine engine;
     private final FlowClient client;
     private boolean mouseCreated = false, keyboardCreated = false;
     private final SubscribableQueue<KeyboardEvent> keyboardQueue = new SubscribableQueue<>(false);
@@ -56,8 +58,9 @@ public class InputThread extends TickingElement {
         return tpsMonitor.getTPS();
     }
 
-    public InputThread(FlowClient client) {
+    public InputThread(FlowEngine engine, FlowClient client) {
         super("input", TPS);
+        this.engine = engine;
         this.client = client;
     }
 
@@ -158,7 +161,7 @@ public class InputThread extends TickingElement {
         System.out.println("Input stop");
 
         // We make sure to end of the game, else there's no way to stop it normally (no input!)
-        client.stop();
+        engine.stop(null);
         if (Keyboard.isCreated()) {
             Keyboard.destroy();
         }

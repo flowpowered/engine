@@ -24,6 +24,7 @@
 package com.flowpowered.engine.util;
 
 import com.flowpowered.api.Client;
+import com.flowpowered.api.Engine;
 import com.flowpowered.api.component.AbstractObserver;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.reference.ChunkReference;
@@ -38,8 +39,8 @@ import com.google.common.collect.ImmutableSet;
 public class ClientObserver extends AbstractObserver {
     private final Client client;
 
-    public ClientObserver(Client client) {
-        super(client);
+    public ClientObserver(Engine engine, Client client) {
+        super(engine);
         this.client = client;
         liveObserverIterator.set(new SyncDistanceChunkIterator());
     }
@@ -80,7 +81,7 @@ public class ClientObserver extends AbstractObserver {
 
     @Override
     protected void startObserving(ImmutableSet<ChunkReference> observing) {
-        RenderThread renderThread = ((FlowScheduler) client.getScheduler()).getRenderThread();
+        RenderThread renderThread = ((FlowScheduler) engine.getScheduler()).getRenderThread();
         if (renderThread != null) {
             renderThread.addChunks(observing);
         }
@@ -88,7 +89,7 @@ public class ClientObserver extends AbstractObserver {
 
     @Override
     protected void stopObserving(ImmutableSet<ChunkReference> observing) {
-        RenderThread renderThread = ((FlowScheduler) client.getScheduler()).getRenderThread();
+        RenderThread renderThread = ((FlowScheduler) engine.getScheduler()).getRenderThread();
         if (renderThread != null) {
             renderThread.removeChunks(observing);
         }

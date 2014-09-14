@@ -80,13 +80,13 @@ public final class FlowScheduler implements Scheduler {
         mainThread.start();
     }
 
-    public void startClientThreads(FlowClient client) {
+    public void startClientThreads(FlowEngine engine, FlowClient client) {
         if (renderThread != null && renderThread.isRunning() || inputThread != null && inputThread.isRunning()) {
             throw new IllegalStateException("Attempt was made to start the client threads twice");
         }
 
-        inputThread = new InputThread(client);
-        renderThread = new RenderThread(client);
+        inputThread = new InputThread(engine, client);
+        renderThread = new RenderThread(engine, client);
         renderThread.start();
         inputThread.start();
     }

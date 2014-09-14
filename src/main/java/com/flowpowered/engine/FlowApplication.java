@@ -40,9 +40,9 @@ public class FlowApplication {
     @Parameter(names = {"--protocol"}, description = "Protocol to connect with")
     public String protocol = null;
     @Parameter(names = {"--server"}, description = "Server to connect to")
-    public String server = null;
+    public String server = "localhost";
     @Parameter(names = {"--port"}, description = "Port to connect to")
-    public int port = -1;
+    public int port = 25565;
     @Parameter(names = {"--user"}, description = "User to connect as")
     public String user = null;
 
@@ -52,23 +52,24 @@ public class FlowApplication {
             JCommander commands = new JCommander(main);
             commands.parse(args);
 
-            FlowEngineImpl engine;
+            FlowEngineImpl engine = new FlowEngineImpl();
+            engine.init(main);
+            engine.start();
+
             switch (main.platform) {
                 case CLIENT:
-                    engine = new FlowClientImpl(main);
+                    engine.add(new FlowClientImpl(engine));
                     break;
                 case SERVER:
-                    engine = new FlowServerImpl(main);
+                    engine.add(new FlowServerImpl(engine));
                     break;
                 case SINGLEPLAYER:
-                    engine = new FlowSingleplayerImpl(main);
+                    engine.add(new FlowServerImpl(engine));
+                    engine.add(new FlowSingleplayerImpl(engine));
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown platform: " + main.platform);
             }
-
-            engine.init();
-            engine.start();
         } catch (Throwable t) {
             t.printStackTrace();
             Runtime.getRuntime().halt(1);

@@ -29,10 +29,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Chunk;
-import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.discrete.Transform;
+import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.player.reposition.NullRepositionManager;
 import com.flowpowered.api.player.reposition.RepositionManager;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
@@ -105,7 +106,7 @@ public class PlayerNetwork {
     }
 
     public void preSnapshotRun(Transform transform) {
-        if (session.getEngine().getPlatform().isClient()) {
+        if (session.getEngine().get(Client.class) != null) {
             return;
         }
 

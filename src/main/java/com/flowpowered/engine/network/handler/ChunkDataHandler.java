@@ -32,7 +32,7 @@ public class ChunkDataHandler extends FlowMessageHandler<ChunkDataMessage> {
 
     @Override
     public void handleClient(FlowSession session, ChunkDataMessage message) {
-        FlowClient client = (FlowClient) session.getEngine();
+        FlowClient client = session.getEngine().get(FlowClient.class);
         // TODO: allow adding chunks to other worlds
         FlowWorld world = (FlowWorld) client.getSession().getPlayer().getTransformProvider().getTransform().getPosition().getWorld().get();
         if (message.isUnload()) {

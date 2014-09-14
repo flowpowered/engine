@@ -21,19 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.network.handler;
+package com.flowpowered.api;
 
-import com.flowpowered.engine.FlowClient;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.network.message.UpdateEntityMessage;
-
-public class UpdateEntityHandler extends FlowMessageHandler<UpdateEntityMessage> {
-
-    @Override
-    public void handleClient(FlowSession session, UpdateEntityMessage message) {
-        // Player-only atm
-        // TODO: other entities
-        session.getEngine().get(FlowClient.class).setTransform(message.getTransform());
-    }
-
+public interface EnginePart {
 }

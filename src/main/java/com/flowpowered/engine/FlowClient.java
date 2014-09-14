@@ -30,7 +30,7 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.render.FlowRenderer;
 
-public interface FlowClient extends Client, FlowEngine {
+public interface FlowClient extends Client, FlowEnginePart {
 
     @Override
     FlowRenderer getRenderer();

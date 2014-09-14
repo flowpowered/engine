@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.flowpowered.api.Server;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.ServerWorld;
 import com.flowpowered.api.geo.World;
@@ -139,7 +140,7 @@ public class RegionSource implements Iterable<Region> {
      * @return true if exists, false if doesn't exist
      */
     public static boolean regionFileExists(World world, int x, int y, int z) {
-        if (!world.getEngine().getPlatform().isServer()) {
+        if (world.getEngine().get(Server.class) == null) {
             return false;
         }
         Path worldDirectory = ((ServerWorld) world).getDirectory();

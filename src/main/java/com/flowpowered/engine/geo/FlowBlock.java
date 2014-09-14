@@ -23,28 +23,28 @@
  */
 package com.flowpowered.engine.geo;
 
-import com.flowpowered.engine.geo.chunk.FlowChunk;
-import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.geo.region.FlowRegion;
 import java.util.Collection;
-
-import com.flowpowered.api.Engine;
-import com.flowpowered.commons.StringUtil;
-import com.flowpowered.commons.datatable.ManagedMap;
-import com.flowpowered.events.Cause;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.flowpowered.api.Engine;
+import com.flowpowered.api.Server;
 import com.flowpowered.api.component.BlockComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
-import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.discrete.Point;
+import com.flowpowered.api.geo.reference.ChunkReference;
 import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.api.material.BlockMaterial;
 import com.flowpowered.api.material.Material;
 import com.flowpowered.api.material.block.BlockFace;
+import com.flowpowered.commons.StringUtil;
+import com.flowpowered.commons.datatable.ManagedMap;
+import com.flowpowered.engine.geo.chunk.FlowChunk;
+import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.events.Cause;
 import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.math.vector.Vector3i;
 
@@ -153,7 +153,7 @@ public class FlowBlock implements Block {
     public boolean setMaterial(BlockMaterial material, int data, Cause<?> cause) {
         FlowChunk chunk = this.getChunk();
         // TODO once stable, remove this
-        if (!engine.getPlatform().isServer()) {
+        if (engine.get(Server.class) == null) {
             throw new UnsupportedOperationException("Temporary lockdown of setMaterial. Server only!");
         }
         return chunk.setBlockMaterial(x, y, z, material, (short) data, cause);

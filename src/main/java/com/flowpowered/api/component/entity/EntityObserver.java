@@ -23,6 +23,7 @@
  */
 package com.flowpowered.api.component.entity;
 
+import com.flowpowered.api.Server;
 import com.flowpowered.api.component.AbstractObserver;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.event.EntityStartObservingChunksEvent;
@@ -81,7 +82,7 @@ public class EntityObserver extends AbstractObserver {
 
     @Override
     public void update() {
-        if (!engine.getPlatform().isServer()) {
+        if (engine.get(Server.class) == null) {
             return;
         }
         //Entity changed chunks as observer OR observer status changed so update

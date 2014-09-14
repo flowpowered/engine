@@ -115,6 +115,7 @@ public class FlowRenderer implements Renderer {
     private boolean fpsMonitorStarted = false;
 
     private FlowScheduler scheduler;
+    private FlowClient client;
 
     public FlowRenderer() {
         // Set the default OpenGL version to GL30
@@ -124,8 +125,9 @@ public class FlowRenderer implements Renderer {
     /**
      * Creates the OpenGL context and initializes the internal resources for the renderer
      */
-    public void init(FlowScheduler scheduler) {
+    public void init(FlowScheduler scheduler, FlowClient client) {
         this.scheduler = scheduler;
+        this.client = client;
 
         initContext();
         initGraph();
@@ -334,7 +336,7 @@ public class FlowRenderer implements Renderer {
     private void updateHUD() {
         fpsMonitor.update();
         fpsMonitorModel.setString("FPS: " + fpsMonitor.getTPS());
-        FlowWorld currentWorld = (FlowWorld) ((FlowClient) scheduler.getEngine()).getTransform().getPosition().getWorld().get();
+        FlowWorld currentWorld = (FlowWorld) client.getTransform().getPosition().getWorld().get();
         if (currentWorld != null) {
             tpsMonitorModel.setString("TPS: " + currentWorld.getThread().getTPS());
         } else {

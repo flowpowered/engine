@@ -25,17 +25,15 @@ package com.flowpowered.engine;
 
 import com.flowpowered.api.Server;
 import com.flowpowered.engine.player.FlowPlayer;
-import com.flowpowered.engine.geo.world.FlowServerWorldManager;
 import com.flowpowered.engine.network.FlowSession;
 
-public interface FlowServer extends Server, FlowEngine {
+public interface FlowServer extends Server, FlowEnginePart {
 
     @Override
 	FlowPlayer getPlayer(String name, boolean exact);
 
-    @Override
-    FlowServerWorldManager getWorldManager();
-
     FlowPlayer addPlayer(String name, FlowSession session);
+
+    public void copySnapshot();
 }
  

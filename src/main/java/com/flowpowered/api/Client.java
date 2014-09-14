@@ -29,7 +29,7 @@ import com.flowpowered.api.render.Renderer;
 /**
  * Represents the client-specific component of the Flow platform.
  */
-public interface Client extends Engine {
+public interface Client extends EnginePart {
 
     /**
      * Gets the renderer that the client is using.

@@ -23,19 +23,21 @@
  */
 package com.flowpowered.api;
 
+import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.Logger;
 
-import com.flowpowered.commons.Named;
+import com.flowpowered.api.geo.WorldManager;
+import com.flowpowered.api.plugins.FlowContext;
+import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.events.EventManager;
 import com.flowpowered.filesystem.FileSystem;
-import com.flowpowered.api.geo.WorldManager;
-import com.flowpowered.api.scheduler.Scheduler;
 import com.flowpowered.plugins.PluginManager;
 
 /**
  * Represents the core of an implementation of an engine (powers a game).
  */
-public interface Engine extends Named {
+public interface Engine {
 
     /**
      * Gets the version.
@@ -43,17 +45,8 @@ public interface Engine extends Named {
      * @return build version
      */
     String getVersion();
-
-    Platform getPlatform();
     
     Logger getLogger();
-
-    /**
-     * Ends this engine instance safely. All worlds, players, and configuration data is saved, and all threads are ended cleanly.<br/> <br/> Players will be sent a default disconnect message.
-     *
-     * @return true for for the first stop
-     */
-    boolean stop();
 
     /**
      * Ends this engine instance safely. All worlds, players, and configuration data is saved, and all threads are ended cleanly. <br/> If any players are connected, will kick them with the given reason.
@@ -61,13 +54,14 @@ public interface Engine extends Named {
      * @param reason for stopping the game instance
      * @return true for for the first stop
      */
-    boolean stop(String reason);
+    boolean stop(@Nullable String reason);
 
     /**
      * Returns true if the game is running in debug mode <br/> <br/> To start debug mode, start Flow with -debug
      *
      * @return true if server is started with the -debug flag, false if not
      */
+    // TODO: move to Configuration or something
     boolean debugMode();
 
     Scheduler getScheduler();
@@ -89,5 +83,8 @@ public interface Engine extends Named {
 
     WorldManager getWorldManager();
 
-    PluginManager getPluginManager();
+    PluginManager<FlowContext> getPluginManager();
+
+    @Nullable
+    <P extends EnginePart> P get(Class<P> part);
 }

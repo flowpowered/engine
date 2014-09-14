@@ -21,19 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.engine.network.handler;
+package com.flowpowered.engine;
 
-import com.flowpowered.engine.FlowClient;
-import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.network.message.UpdateEntityMessage;
+import com.flowpowered.engine.render.FlowRenderer;
+import org.apache.logging.log4j.LogManager;
+import org.spout.renderer.lwjgl.LWJGLUtil;
 
-public class UpdateEntityHandler extends FlowMessageHandler<UpdateEntityMessage> {
+public abstract class AbstractFlowClientImpl implements FlowClient {
+    protected final FlowEngineImpl engine;
 
-    @Override
-    public void handleClient(FlowSession session, UpdateEntityMessage message) {
-        // Player-only atm
-        // TODO: other entities
-        session.getEngine().get(FlowClient.class).setTransform(message.getTransform());
+    static {
+        try {
+            LWJGLUtil.deployNatives(null);
+        } catch (Exception ex) {
+            LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
+        }
     }
 
+    public AbstractFlowClientImpl(FlowEngineImpl engine) {
+        this.engine = engine;
+    }
+
+    @Override
+    public void onAdd() {
+        engine.getScheduler().startClientThreads(engine, this);
+    }
+
+    @Override
+    public void stop(String reason) {
+    }
+
+    @Override
+    public FlowRenderer getRenderer() {
+        return engine.getScheduler().getRenderThread().getRenderer();
+    }
 }

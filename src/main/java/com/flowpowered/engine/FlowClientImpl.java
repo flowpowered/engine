@@ -29,66 +29,46 @@ import org.apache.logging.log4j.LogManager;
 
 import org.spout.renderer.lwjgl.LWJGLUtil;
 
-import com.flowpowered.api.Platform;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.geo.world.FlowWorldManager;
+import com.flowpowered.api.material.MaterialRegistry;
+import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.network.FlowNetworkClient;
 import com.flowpowered.engine.network.FlowSession;
-import com.flowpowered.engine.render.FlowRenderer;
 
-public class FlowClientImpl extends FlowEngineImpl implements FlowClient {
-    private final FlowWorldManager<FlowWorld> worldManager;
-    private final FlowNetworkClient client = new FlowNetworkClient(this);
+public class FlowClientImpl extends AbstractFlowClientImpl {
+    private final FlowNetworkClient client;
 
     private volatile Transform transform = Transform.INVALID;
 
-    public FlowClientImpl(FlowApplication args) {
-        super(args);
-        this.worldManager = new FlowWorldManager<>(this);
-    }
-
-    @Override
-    public void init() {
+    static {
         try {
             LWJGLUtil.deployNatives(null);
         } catch (Exception ex) {
             LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
-            return;
         }
-        super.init();
+    }
+
+    public FlowClientImpl(FlowEngineImpl engine) {
+        super(engine);
+        this.client = new FlowNetworkClient(engine);
+    }
+
+    @Override
+    public void onAdd() {
+        if (!MaterialRegistry.isSetup()) {
+            MaterialRegistry.setupClient();
+        }
         // TEST CODE
-        FlowWorld world = new FlowWorld(this, "TestWorld");
-        worldManager.addWorld(world);
+        FlowServerWorld world = new FlowServerWorld(engine, "TestWorld", null);
+        engine.getWorldManager().addWorld(world);
         world.getThread().start();
+        client.connect(new InetSocketAddress(engine.getArgs().server, engine.getArgs().port));
+        super.onAdd();
     }
 
     @Override
-    public void start() {
-        client.connect(new InetSocketAddress(25565));
-        getScheduler().startClientThreads(this);
-        super.start();
-    }
-
-    @Override
-    public boolean stop() {
+    public void stop(String reason) {
         client.shutdown();
-        return super.stop();
-    }
-
-    @Override
-    public Platform getPlatform() {
-        return Platform.CLIENT;
-    }
-
-    @Override
-    public FlowWorldManager<FlowWorld> getWorldManager() {
-        return worldManager;
-    }
-
-    @Override
-    public FlowRenderer getRenderer() {
-        return getScheduler().getRenderThread().getRenderer();
     }
 
     @Override

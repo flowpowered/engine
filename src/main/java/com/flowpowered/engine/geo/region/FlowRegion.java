@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.flowpowered.api.Server;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.cuboid.Block;
@@ -155,7 +156,7 @@ public class FlowRegion extends Region {
             return chunk;
         }
 
-        if (!loadopt.loadIfNeeded() || !engine.getPlatform().isServer()) {
+        if (!loadopt.loadIfNeeded() || engine.get(Server.class) == null) {
             return null;
         }
 

@@ -23,10 +23,10 @@
  */
 package com.flowpowered.engine.scheduler;
 
-import com.flowpowered.api.Server;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.commons.ticking.TickingElement;
+import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.player.FlowPlayer;
 
 public class MainThread extends TickingElement {
@@ -47,12 +47,13 @@ public class MainThread extends TickingElement {
 
     @Override
     public void onTick(long delta) {
-        if (scheduler.getEngine().getPlatform().isServer()) {
-            for (Player p : ((Server) scheduler.getEngine()).getOnlinePlayers()) {
+        FlowServer server = scheduler.getEngine().get(FlowServer.class);
+        if (server != null) {
+            server.copySnapshot();
+            for (Player p : server.getOnlinePlayers()) {
                 Transform transform = p.getTransformProvider().getTransform();
                 ((FlowPlayer) p).getNetwork().preSnapshotRun(transform);
             }
         }
-        scheduler.getEngine().copySnapshot();
     }
 }

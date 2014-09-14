@@ -27,7 +27,10 @@ import javax.annotation.Nullable;
 
 import com.flowpowered.api.player.Player;
 
-public interface Singleplayer extends Server, Client {
+/**
+ * Represents an EnginePart which has a Player connected to a local server.
+ */
+public interface Singleplayer extends EnginePart {
 
     @Nullable
     Player getPlayer();

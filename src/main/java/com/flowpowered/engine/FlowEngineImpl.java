@@ -24,36 +24,39 @@
 package com.flowpowered.engine;
 
 import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.flowpowered.api.util.LogUtil;
-import com.flowpowered.commons.LoggerOutputStream;
-import com.flowpowered.engine.plugins.FlowPluginManager;
-import com.flowpowered.events.EventManager;
-import com.flowpowered.events.SimpleEventManager;
-import com.flowpowered.api.material.MaterialRegistry;
-import com.flowpowered.api.util.SyncedStringMap;
-import com.flowpowered.engine.filesystem.FlowFileSystem;
-import com.flowpowered.engine.scheduler.FlowScheduler;
+import org.slf4j.LoggerFactory;
 
 import uk.org.lidalia.slf4jext.Level;
 
-public abstract class FlowEngineImpl implements FlowEngine {
-    private final FlowApplication args;
+import com.flowpowered.api.EnginePart;
+import com.flowpowered.api.event.engine.EnginePartAddedEvent;
+import com.flowpowered.api.util.LogUtil;
+import com.flowpowered.commons.LoggerOutputStream;
+import com.flowpowered.engine.filesystem.FlowFileSystem;
+import com.flowpowered.engine.geo.world.FlowWorldManager;
+import com.flowpowered.engine.plugins.FlowPluginManager;
+import com.flowpowered.engine.scheduler.FlowScheduler;
+import com.flowpowered.events.EventManager;
+import com.flowpowered.events.SimpleEventManager;
+
+public class FlowEngineImpl implements FlowEngine {
+    private FlowApplication args;
+    private Set<FlowEnginePart> parts = new HashSet<>();
     private final EventManager eventManager;
     private final FlowFileSystem fileSystem;
     private final FlowPluginManager pluginManager;
     private FlowScheduler scheduler;
-    private SyncedStringMap itemMap;
-    private PrintStream realSystemOut;
-    private PrintStream realSystemErr;
+    private final FlowWorldManager worldManager;
     private final Logger logger = LogManager.getLogger("Flow");
 
-    public FlowEngineImpl(FlowApplication args) {
-        this.args = args;
+    public FlowEngineImpl() {
+        this.worldManager = new FlowWorldManager(this);
         this.eventManager = new SimpleEventManager();
         this.fileSystem = new FlowFileSystem();
         this.pluginManager = new FlowPluginManager(LogUtil.toSLF(logger), this);
@@ -69,18 +72,15 @@ public abstract class FlowEngineImpl implements FlowEngine {
         return logger;
     }
 
-    public void init() {
+    public void init(FlowApplication args) {
+        this.args = args;
         // Make sure we log something and let log4j2 initialize before we redirect System.out and System.err
         // Otherwise it could try to log to the redirected stdout causing infinite loop.
         logger.info("Initializing Engine.");
-        // Just in case.
-        realSystemOut = System.out;
-        realSystemErr = System.err;
         //And now redirect the streams to a logger.
         String loggerName = logger.getName();
         System.setOut(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDOUT"), Level.INFO), true));
         System.setErr(new PrintStream(new LoggerOutputStream(LoggerFactory.getLogger(loggerName + ".STDERR"), Level.WARN), true));
-        itemMap = MaterialRegistry.setupRegistry(this);
         scheduler = new FlowScheduler(this);
     }
 
@@ -92,16 +92,15 @@ public abstract class FlowEngineImpl implements FlowEngine {
     }
 
     @Override
-    public boolean stop() {
+    public boolean stop(String reason) {
         scheduler.stop();
         pluginManager.disablePlugins();;
         System.out.println("Engine stopped");
         return true;
     }
 
-    @Override
-    public boolean stop(String reason) {
-        return stop();
+    public FlowApplication getArgs() {
+        return args;
     }
 
     @Override
@@ -130,10 +129,23 @@ public abstract class FlowEngineImpl implements FlowEngine {
     }
 
     @Override
-    public String getName() {
-        return "Flow Engine";
+    public FlowWorldManager getWorldManager() {
+        return worldManager;
     }
 
-    public void copySnapshot() {
+    @Override
+    public <P extends EnginePart> P get(Class<P> part) {
+        for (FlowEnginePart p : parts) {
+            if (part.isInstance(p)) {
+                return (P) p;
+            }
+        }
+        return null;
+    }
+
+    public <P extends FlowEnginePart> void add(P part) {
+        parts.add(part);
+        part.onAdd();
+        eventManager.callEvent(new EnginePartAddedEvent(part));
     }
 }

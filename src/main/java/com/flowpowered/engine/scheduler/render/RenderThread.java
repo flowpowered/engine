@@ -41,6 +41,7 @@ import com.flowpowered.api.input.KeyboardEvent;
 import com.flowpowered.commons.ViewFrustum;
 import com.flowpowered.commons.ticking.TickingElement;
 import com.flowpowered.engine.FlowClient;
+import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
 import com.flowpowered.engine.geo.world.FlowWorld;
@@ -63,6 +64,7 @@ import org.spout.renderer.api.GLVersioned.GLVersion;
 public class RenderThread extends TickingElement {
     public static final int FPS = 60;
     public static final GLVersion DEFAULT_VERSION = GLVersion.GL32;
+    private final FlowEngine engine;
     private final FlowClient client;
     private final FlowRenderer renderer;
     private final ViewFrustum frustum;
@@ -77,20 +79,21 @@ public class RenderThread extends TickingElement {
     private final CountDownLatch intializedLatch = new CountDownLatch(1);
     private final ClientObserver observe;
 
-    public RenderThread(FlowClient client) {
+    public RenderThread(FlowEngine engine, FlowClient client) {
         super("RenderThread", FPS);
+        this.engine = engine;
         this.client = client;
         this.renderer = new FlowRenderer();
         this.frustum = new ViewFrustum();
-        this.input = client.getScheduler().getInputThread();
+        this.input = engine.getScheduler().getInputThread();
         this.mesher = new ParallelChunkMesher(this, new StandardChunkMesher());
-        this.observe = new ClientObserver(client);
+        this.observe = new ClientObserver(engine, client);
     }
 
     @Override
     public void onStart() {
         renderer.setGLVersion(DEFAULT_VERSION);
-        renderer.init(client.getScheduler());
+        renderer.init(engine.getScheduler(), client);
 
         input.subscribeToKeyboard();
         input.getKeyboardQueue().add(new KeyboardEvent(Keyboard.KEY_ESCAPE, true));
@@ -118,8 +121,8 @@ public class RenderThread extends TickingElement {
         renderer.render();
     }
     
-    public FlowClient getEngine() {
-        return client;
+    public FlowEngine getEngine() {
+        return engine;
     }
 
     public FlowRenderer getRenderer() {

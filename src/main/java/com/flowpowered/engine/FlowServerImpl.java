@@ -23,47 +23,42 @@
  */
 package com.flowpowered.engine;
 
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import com.flowpowered.api.Platform;
 import com.flowpowered.api.event.PlayerJoinedEvent;
+import com.flowpowered.api.geo.ServerWorldManager;
+import com.flowpowered.api.material.MaterialRegistry;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.commons.StringUtil;
-import com.flowpowered.engine.geo.world.FlowServerWorldManager;
 import com.flowpowered.engine.network.FlowNetworkServer;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLinkedHashMap;
 
-public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
+public class FlowServerImpl implements FlowServer {
+    private final FlowEngineImpl engine;
     protected final SnapshotableLinkedHashMap<String, FlowPlayer> players;
-    private final FlowServerWorldManager worldManager;
-    private final FlowNetworkServer server = new FlowNetworkServer(this);
+    private final FlowNetworkServer server;
 
-    public FlowServerImpl(FlowApplication args) {
-        super(args);
-        players = new SnapshotableLinkedHashMap<>(null);
-        worldManager = new FlowServerWorldManager(this);
+    public FlowServerImpl(FlowEngineImpl engine) {
+        this.engine = engine;
+        this.players = new SnapshotableLinkedHashMap<>(null);
+        this.server = new FlowNetworkServer(engine);
     }
 
     @Override
-    public void start() {
-        server.bind(new InetSocketAddress(25565));
-        super.start();
+    public void onAdd() {
+        MaterialRegistry.setupServer(this);
+        server.bind(new InetSocketAddress(engine.getArgs().port));
     }
 
     @Override
-    public boolean stop() {
+    public void stop(String reason) {
         server.shutdown();
-        return super.stop();
-    }
-
-    @Override
-    public Platform getPlatform() {
-        return Platform.SERVER;
     }
 
     @Override
@@ -115,21 +110,17 @@ public class FlowServerImpl extends FlowEngineImpl implements FlowServer {
         players.put(player.getName(), player);
         session.setPlayer(player);
 
-        getEventManager().callEvent(new PlayerJoinedEvent(player));
+        engine.getEventManager().callEvent(new PlayerJoinedEvent(player));
         return player;
-    }
-
-    protected void addPlayer(FlowPlayer player) {
-
-    }
-
-    @Override
-    public FlowServerWorldManager getWorldManager() {
-        return worldManager;
     }
 
     @Override
     public void copySnapshot() {
         players.copySnapshot();
+    }
+
+    @Override
+    public ServerWorldManager getWorldManager() {
+        return engine.getWorldManager();
     }
 }

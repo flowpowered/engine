@@ -25,72 +25,38 @@ package com.flowpowered.engine;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.LogManager;
-
-
-import com.flowpowered.api.Platform;
+import com.flowpowered.api.EnginePart;
 import com.flowpowered.api.geo.discrete.Transform;
-import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.engine.network.FlowSession;
 import com.flowpowered.engine.network.FlowSingleplayerSession;
-import com.flowpowered.engine.render.FlowRenderer;
-import org.spout.renderer.lwjgl.LWJGLUtil;
+import com.flowpowered.engine.player.FlowPlayer;
 
-public class FlowSingleplayerImpl extends FlowServerImpl implements FlowSingleplayer {
+public class FlowSingleplayerImpl extends AbstractFlowClientImpl implements EnginePart, FlowSingleplayer {
     private final AtomicReference<FlowPlayer> player = new AtomicReference<>();
     private FlowSingleplayerSession session = null;
 
-    public FlowSingleplayerImpl(FlowApplication args) {
-        super(args);
+    public FlowSingleplayerImpl(FlowEngineImpl engine) {
+        super(engine);
     }
 
     @Override
-    public void init() {
-        try {
-            LWJGLUtil.deployNatives(null);
-        } catch (Exception ex) {
-            LogManager.getLogger(FlowSingleplayer.class.getName()).fatal("", ex);
-            return;
-        }
-        super.init();
-    }
-
-    @Override
-    public void start() {
-        getScheduler().startClientThreads(this);
+    public void onAdd() {
+        super.onAdd();
         try {
             // Wait until RenderThread has initialized
             // TODO: confirm necessary
-            getScheduler().getRenderThread().getIntializedLatch().await();
+            engine.getScheduler().getRenderThread().getIntializedLatch().await();
         } catch (InterruptedException ex) {}
 
-        super.start();
-
-        FlowPlayer player = addPlayer("Flowy", new FlowSingleplayerSession(this, true));
+        FlowPlayer player = engine.get(FlowServer.class).addPlayer("Flowy", new FlowSingleplayerSession(engine, true));
         this.player.set(player);
-        session = new FlowSingleplayerSession(this, false);
+        session = new FlowSingleplayerSession(engine, false);
         session.setPlayer(player);
-    }
-
-    @Override
-    public boolean stop() {
-        return super.stop();
-
-    }
-
-    @Override
-    public Platform getPlatform() {
-        return Platform.SINGLEPLAYER;
     }
 
     @Override
     public FlowPlayer getPlayer() {
         return player.get();
-    }
-
-    @Override
-    public FlowRenderer getRenderer() {
-        return getScheduler().getRenderThread().getRenderer();
     }
 
     @Override

@@ -25,5 +25,5 @@ package com.flowpowered.engine;
 
 import com.flowpowered.api.Singleplayer;
 
-public interface FlowSingleplayer extends FlowClient, FlowServer, Singleplayer {
+public interface FlowSingleplayer extends Singleplayer, FlowEnginePart {
 }

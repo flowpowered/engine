@@ -32,7 +32,7 @@ public class LoginHandler extends FlowMessageHandler<LoginMessage> {
     @Override
     public void handleServer(FlowSession session, LoginMessage message) {
         System.out.println("Login on Server from " + session.getAddress());
-        ((FlowServer) session.getEngine()).addPlayer(message.getPlayerName(), session);
+        session.getEngine().get(FlowServer.class).addPlayer(message.getPlayerName(), session);
     }
 
     @Override

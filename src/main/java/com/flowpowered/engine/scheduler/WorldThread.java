@@ -24,11 +24,11 @@
 package com.flowpowered.engine.scheduler;
 
 
+import com.flowpowered.api.Server;
 import com.flowpowered.api.player.Player;
 import com.flowpowered.commons.TPSMonitor;
 import com.flowpowered.commons.bit.ShortBitMask;
 import com.flowpowered.commons.ticking.TickingElement;
-import com.flowpowered.engine.FlowServer;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.region.RegionGenerator;
 import com.flowpowered.engine.geo.world.FlowWorld;
@@ -90,8 +90,9 @@ public class WorldThread extends TickingElement {
 
         doCopySnapshot();
 
-        if (scheduler.getEngine().getPlatform().isServer()) {
-            for (Player p : ((FlowServer) scheduler.getEngine()).getOnlinePlayers()) {
+        Server server = scheduler.getEngine().get(Server.class);
+        if (server != null) {
+            for (Player p : server.getOnlinePlayers()) {
                 ((FlowPlayer) p).copyInput(world);
             }
         }

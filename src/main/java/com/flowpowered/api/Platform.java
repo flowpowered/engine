@@ -24,7 +24,7 @@
 package com.flowpowered.api;
 
 /**
- * Platform describes whether the plugin was written for the client, the server, or for both.
+ * Represents a startup argument for the engine. Not used elsewhere; should use Engine#get to get an EnginePart.
  */
 public enum Platform {
     SERVER(false, true),

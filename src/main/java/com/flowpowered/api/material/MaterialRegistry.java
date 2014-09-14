@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.flowpowered.api.Engine;
 import com.flowpowered.api.Server;
 import com.flowpowered.api.material.block.BlockFullState;
 import com.flowpowered.api.util.SyncedStringMap;
@@ -56,38 +55,31 @@ public abstract class MaterialRegistry {
         }
     }
 
-    /**
-     * Sets up the material registry for its first use. May not be called more than once.<br/> This attempts to load the materials.dat file from the 'worlds' directory into memory.<br/>
-     *
-     * Can throw an {@link IllegalStateException} if the material registry has already been setup.
-     *
-     * @return StringToUniqueIntegerMap of registered materials
-     */
-    public static SyncedStringMap setupRegistry(Engine engine) {
+    public static void setupServer(Server server) {
         if (setup) {
             throw new IllegalStateException("Can not setup material registry twice!");
         }
-        if (engine.getPlatform().isServer()) {
-            setupServer((Server) engine);
-        } else {
-            setupClient();
-        }
-
-        setup = true;
-        return materialRegistry;
-    }
-
-    private static void setupServer(Server server) {
         Path serverItemMap = server.getWorldManager().getWorldFolder().resolve("materials.dat");
         BinaryFileStore store = new BinaryFileStore(serverItemMap);
         materialRegistry = SyncedStringMap.create(null, store, 1, Short.MAX_VALUE, Material.class.getName());
         if (Files.exists(serverItemMap)) {
             store.load();
         }
+
+        setup = true;
     }
 
-    private static void setupClient() {
+    public static void setupClient() {
+        if (setup) {
+            throw new IllegalStateException("Can not setup material registry twice!");
+        }
         materialRegistry = SyncedStringMap.create(null, new MemoryStore<Integer>(), 1, Short.MAX_VALUE, Material.class.getName());
+
+        setup = true;
+    }
+
+    public static boolean isSetup() {
+        return setup;
     }
 
     /**
