@@ -85,6 +85,7 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
             return oldWorld;
         }
 
+        world.getThread().start();
         //getEventManager().callDelayedEvent(new WorldLoadEvent(world));
         return world;
     }
@@ -139,6 +140,7 @@ public class FlowServerWorldManager extends FlowWorldManager<FlowServerWorld> im
                 //getEventManager().callDelayedEvent(new WorldUnloadEvent(world));
                 w.unload(save);
             }
+            w.getThread().stop();
             // Note: Worlds should not allow being saved twice and/or throw exceptions if accessed after unloading.
             // Also, should blank out as much internal world data as possible, in case plugins retain references to unloaded worlds.
         }
