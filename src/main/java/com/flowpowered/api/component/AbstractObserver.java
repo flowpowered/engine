@@ -185,6 +185,10 @@ public abstract class AbstractObserver {
         observingChunks.set(observing);
     }
 
+    public Set<ChunkReference> getObservingChunks() {
+        return observingChunks.get();
+    }
+
     public abstract void copySnapshot();
 
     protected abstract void startObserving(ImmutableSet<ChunkReference> observing);

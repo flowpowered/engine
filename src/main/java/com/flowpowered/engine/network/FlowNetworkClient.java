@@ -26,6 +26,7 @@ package com.flowpowered.engine.network;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.flowpowered.engine.FlowEngine;
+import com.flowpowered.engine.player.FlowPlayer;
 import com.flowpowered.networking.NetworkClient;
 import com.flowpowered.networking.session.Session;
 
@@ -44,6 +45,7 @@ public class FlowNetworkClient extends NetworkClient {
         if (!session.compareAndSet(null, new FlowSession(engine, c))) {
             throw new IllegalStateException("Two sessions created on the client!");
         }
+        session.get().setPlayer(new FlowPlayer(session.get(), "Flowy"));
         return session.get();
     }
 

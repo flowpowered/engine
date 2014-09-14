@@ -21,18 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.flowpowered.api.component;
+package com.flowpowered.api.component.entity;
+
+import java.util.Set;
+
+import com.flowpowered.api.component.Component;
+import com.flowpowered.api.entity.Entity;
+import com.flowpowered.api.event.EntityStartObservingChunksEvent;
+import com.flowpowered.api.event.EntityStopObservingChunksEvent;
+import com.flowpowered.api.geo.reference.ChunkReference;
+import com.flowpowered.api.player.Player;
+import com.flowpowered.events.EventHandler;
 
 public class PlayerObserveChunksComponent extends Component {
+    private Player controller;
 
     @Override
     public void onTick(float dt) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public boolean canTick() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
+    public void setController(Player player) {
+        Set<ChunkReference> chunks = ((Entity) getOwner()).getObserver().getObservingChunks();
+        if (this.controller != null) {
+            controller.getNetwork().removeChunks(chunks);
+        }
+        this.controller = player;
+        if (this.controller != null) {
+            controller.getNetwork().addChunks(chunks);
+        }
+    }
+
+    @EventHandler
+    public void onObserve(EntityStartObservingChunksEvent e) {
+        if (e.getObserver().equals(getOwner()) && controller != null) {
+            controller.getNetwork().addChunks(e.getObserved());
+        }
+    }
+
+    @EventHandler
+    public void onStopObserve(EntityStopObservingChunksEvent e) {
+        if (e.getObserver().equals(getOwner()) && controller != null) {
+            controller.getNetwork().removeChunks(e.getObserved());
+        }
+    }
 }

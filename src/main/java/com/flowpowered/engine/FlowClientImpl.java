@@ -59,7 +59,7 @@ public class FlowClientImpl extends AbstractFlowClientImpl {
             MaterialRegistry.setupClient();
         }
         // TEST CODE
-        FlowServerWorld world = new FlowServerWorld(engine, "TestWorld", null);
+        FlowServerWorld world = new FlowServerWorld(engine, "fallback", null);
         engine.getWorldManager().addWorld(world);
         world.getThread().start();
         client.connect(new InetSocketAddress(engine.getArgs().server, engine.getArgs().port));

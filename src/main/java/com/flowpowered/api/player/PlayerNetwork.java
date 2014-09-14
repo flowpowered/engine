@@ -27,8 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import com.flowpowered.api.Client;
 import com.flowpowered.api.geo.LoadOption;
@@ -58,8 +58,8 @@ public class PlayerNetwork {
      * Chunks that have been sent to the client
      */
     private final Set<ChunkReference> activeChunks = new LinkedHashSet<>();
-    private final Set<ChunkReference> chunkSendQueue = new LinkedHashSet<>();
-    private final Set<ChunkReference> chunkFreeQueue = new LinkedHashSet<>();
+    private final ConcurrentLinkedQueue<ChunkReference> chunkSendQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ChunkReference> chunkFreeQueue = new ConcurrentLinkedQueue<>();
 
     protected volatile Transform previousTransform = Transform.INVALID;
     private final AtomicReference<RepositionManager> rm = new AtomicReference<>(NullRepositionManager.INSTANCE);
@@ -92,17 +92,15 @@ public class PlayerNetwork {
         }
     }
 
-    public void addChunks(Set<Chunk> chunks) {
-        chunkSendQueue.addAll(chunks.stream().map(ChunkReference::new).collect(
-                Collectors.toList()));
+    public void addChunks(Set<ChunkReference> chunks) {
+        chunkSendQueue.addAll(chunks);
     }
 
-    public void removeChunks(Set<Chunk> toRemove) {
-        for (Chunk chunk : toRemove) {
-            ChunkReference ref = new ChunkReference(chunk);
+    public void removeChunks(Set<ChunkReference> toRemove) {
+        toRemove.stream().forEach((ref) -> {
             chunkFreeQueue.add(ref);
             chunks.remove(ref);
-        }
+        });
     }
 
     public void preSnapshotRun(Transform transform) {
@@ -116,6 +114,9 @@ public class PlayerNetwork {
 
         // We will sync old chunks, but not new ones
         Set<ChunkReference> toSync = new LinkedHashSet<>(activeChunks);
+
+        sendPositionUpdates(transform);
+        previousTransform = transform;
 
         // Now send new chunks
         int chunksSentThisTick = 0;
@@ -135,8 +136,7 @@ public class PlayerNetwork {
         previousTransform = transform;
 
         // Update the active chunks
-        for (Iterator<ChunkReference> it = toSync.iterator(); it.hasNext();) {
-            ChunkReference ref = it.next();
+        for (ChunkReference ref : toSync) {
             Chunk chunk = ref.get();
             // If it was unloaded, we have to free it
             // We don't remove it from our chunks though
