@@ -36,7 +36,6 @@ import com.flowpowered.api.geo.LocalAreaAccess;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.util.UnloadSavable;
-import org.spout.physics.engine.DynamicsWorld;
 
 /**
  * Represents a cube containing 16x16x16 Chunks (256x256x256 Blocks)
@@ -162,8 +161,6 @@ public abstract class Region extends Cube implements AreaChunkAccess, LocalAreaA
     public abstract Entity getEntity(int id);
 
     public abstract List<Player> getPlayers();
-
-    public abstract DynamicsWorld getDynamicsWorld();
 
     public Engine getEngine() {
         return engine;

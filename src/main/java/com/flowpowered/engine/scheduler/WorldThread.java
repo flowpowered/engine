@@ -40,7 +40,7 @@ public class WorldThread extends TickingElement {
     private final Logger logger;
     private final TPSMonitor tpsMonitor = new TPSMonitor();
     private WorldTickStage currentStage = WorldTickStage.STAGE1;
-    private FlowWorld world;
+    private final FlowWorld world;
 
     public WorldThread(FlowScheduler scheduler, FlowWorld world) {
         super("WorldThread - " + world.getName(), 20);
@@ -82,9 +82,7 @@ public class WorldThread extends TickingElement {
         scheduler.getTaskManager().heartbeat(realDelta);
 
         world.startTickRun(0, realDelta);
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach((FlowRegion r) -> r.startTickRun(0, realDelta));
-
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach((FlowRegion r) -> r.startTickRun(1, realDelta));
+        world.startTickRun(1, realDelta);
 
         doFinalizeTick();
 
@@ -101,14 +99,14 @@ public class WorldThread extends TickingElement {
     }
 
     private void doFinalizeTick() {
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach(FlowRegion::finalizeRun);
+        world.finalizeRun();
     }
 
     private void doCopySnapshot() {
-        world.getRegions().stream().map((r) -> (FlowRegion) r).forEach(FlowRegion::preSnapshotRun);
+        world.preSnapshotRun();
 
-        world.copySnapshotRun();
         world.getRegions().stream().map((r) -> (FlowRegion) r).forEach(FlowRegion::copySnapshotRun);
+        world.copySnapshotRun();
     }
 
     public int getTPS() {

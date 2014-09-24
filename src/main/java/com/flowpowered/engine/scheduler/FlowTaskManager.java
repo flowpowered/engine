@@ -30,10 +30,11 @@ import java.util.PriorityQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,7 +48,7 @@ public class FlowTaskManager implements TaskManager {
     /**
      * Executor to handle execution of async tasks
      */
-    private final ExecutorService asyncTaskExecutor = Executors.newCachedThreadPool(new MarkedNamedThreadFactory("Async task exectuor - ", false));
+    private final ExecutorService asyncTaskExecutor;
 
     /**
      * Tasks
@@ -73,7 +74,9 @@ public class FlowTaskManager implements TaskManager {
         this.scheduler = scheduler;
         primaryThread = Thread.currentThread();
         this.upTime = new AtomicLong(age);
-        
+        ThreadPoolExecutor tp = new ThreadPoolExecutor(5, 10, 2*60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(), new MarkedNamedThreadFactory("Async task exectuor - ", false));
+        tp.allowCoreThreadTimeOut(true);
+        this.asyncTaskExecutor = tp;
     }
 
     /**

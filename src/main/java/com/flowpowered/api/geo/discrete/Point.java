@@ -26,6 +26,7 @@ package com.flowpowered.api.geo.discrete;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
@@ -154,5 +155,27 @@ public class Point implements Serializable {
             e.printStackTrace();
         }
         return field;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 83 * hash + Objects.hashCode(this.world);
+        hash = 83 * hash + Objects.hashCode(this.vector);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final Point other = (Point) obj;
+        if (!Objects.equals(this.world, other.world))
+            return false;
+        if (!Objects.equals(this.vector, other.vector))
+            return false;
+        return true;
     }
 }

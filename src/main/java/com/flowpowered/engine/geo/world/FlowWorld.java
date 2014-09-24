@@ -27,13 +27,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import com.flowpowered.events.Cause;
-
 import com.flowpowered.api.component.BaseComponentOwner;
 import com.flowpowered.api.component.Component;
 import com.flowpowered.api.entity.Entity;
 import com.flowpowered.api.entity.EntityPrefab;
-import com.flowpowered.api.player.Player;
 import com.flowpowered.api.geo.LoadOption;
 import com.flowpowered.api.geo.World;
 import com.flowpowered.api.geo.cuboid.Chunk;
@@ -41,22 +38,27 @@ import com.flowpowered.api.geo.cuboid.Region;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.material.BlockMaterial;
+import com.flowpowered.api.player.Player;
 import com.flowpowered.api.scheduler.TaskManager;
 import com.flowpowered.api.util.cuboid.CuboidBlockMaterialBuffer;
 import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
 import com.flowpowered.engine.entity.FlowEntity;
-import com.flowpowered.engine.geo.region.RegionSource;
+import com.flowpowered.engine.entity.FlowPhysics;
 import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.region.RegionSource;
 import com.flowpowered.engine.geo.snapshot.FlowWorldSnapshot;
+import com.flowpowered.engine.physics.PhysicsManager;
 import com.flowpowered.engine.scheduler.WorldThread;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotManager;
 import com.flowpowered.engine.util.thread.snapshotable.SnapshotableLong;
+import com.flowpowered.events.Cause;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
+import org.apache.logging.log4j.Level;
 
 public class FlowWorld extends BaseComponentOwner implements World {
     // TEST CODE
@@ -68,6 +70,11 @@ public class FlowWorld extends BaseComponentOwner implements World {
      * The duration of a day in the game, in real life, in milliseconds.
      */
     public static final long GAME_DAY_IRL = 1000 * 60;
+    // END TEST CODE
+    /**
+     * Holds all of the entities to be simulated
+     */
+    protected final EntityManager entityManager = new EntityManager();
     private final FlowEngine engine;
     private final String name;
     private final UUID uid;
@@ -76,6 +83,7 @@ public class FlowWorld extends BaseComponentOwner implements World {
     private final RegionSource regionSource;
     private final FlowWorldSnapshot snapshot;
     private final WorldThread thread;
+    private final PhysicsManager physics;
 
     public FlowWorld(FlowEngine engine, String name, UUID uid, long age) {
         super(engine);
@@ -87,6 +95,7 @@ public class FlowWorld extends BaseComponentOwner implements World {
         this.regionSource = new RegionSource(engine, this);
         this.snapshot = new FlowWorldSnapshot(this);
         this.thread = new WorldThread(engine.getScheduler(), this);
+        this.physics = new PhysicsManager();
     }
 
     public FlowWorld(FlowEngine engine, String name) {
@@ -129,7 +138,7 @@ public class FlowWorld extends BaseComponentOwner implements World {
         }
 
         FlowEntity entity = EntityManager.createEntity(getEngine(), new Transform(new Point(this, point), Quaternionf.fromAxesAnglesDeg(0, 0, 0), Vector3f.ONE));
-        region.getEntityManager().addEntity(entity);
+        entityManager.addEntity(entity);
         return entity;
     }
 
@@ -432,11 +441,46 @@ public class FlowWorld extends BaseComponentOwner implements World {
     public void startTickRun(int stage, long delta) {
         if (stage == 0) {
             age.set((long) (age.get() + (delta / 1000000d * (MILLIS_IN_DAY / GAME_DAY_IRL))));
+            updateEntities(delta);
+        } else if (stage == 1) {
+            updateDynamics(delta);
         }
+    }
+
+	private void updateEntities(float dt) {
+        entityManager.getAll().stream().forEach((ent) -> {
+            try {
+                ent.tick(dt);
+            } catch (Exception e) {
+                engine.getLogger().log(Level.ERROR, "Unhandled exception during tick for " + ent.toString(), e);
+            }
+        });
+	}
+
+    /**
+     * Updates physics in this region Steps simulation forward and finally alerts the API in components.
+     */
+    private void updateDynamics(float dt) {
+        entityManager.getAll().stream().map((e) -> (FlowPhysics) e.getPhysics()).forEach(FlowPhysics::onPrePhysicsTick);
+        physics.update();
+        entityManager.getAll().stream().map((e) -> (FlowPhysics) e.getPhysics()).forEach(FlowPhysics::onPostPhysicsTick);
+    }
+
+    public EntityManager getEntityManager() {
+        return entityManager;
+    }
+
+    public void finalizeRun() {
+        entityManager.finalizeRun();
+    }
+
+    public void preSnapshotRun() {
+        entityManager.preSnapshotRun();
     }
 
     public void copySnapshotRun() {
         snapshotManager.copyAllSnapshots();
+        entityManager.copyAllSnapshots();
         // TODO: modified status
         snapshot.update(this);
     }
@@ -463,5 +507,9 @@ public class FlowWorld extends BaseComponentOwner implements World {
 
     public WorldThread getThread() {
         return thread;
+    }
+
+    public PhysicsManager getPhysicsManager() {
+        return physics;
     }
 }

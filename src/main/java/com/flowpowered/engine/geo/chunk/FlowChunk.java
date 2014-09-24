@@ -40,10 +40,17 @@ import com.flowpowered.commons.store.block.AtomicBlockStore;
 import com.flowpowered.engine.geo.FlowBlock;
 import com.flowpowered.engine.geo.region.FlowRegion;
 import com.flowpowered.engine.geo.snapshot.FlowChunkSnapshot;
+import com.flowpowered.engine.geo.world.FlowWorld;
+import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.events.Cause;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
 import gnu.trove.map.hash.TShortObjectHashMap;
+import org.spout.physics.body.RigidBody;
+import org.spout.physics.collision.shape.BoxShape;
+import org.spout.physics.math.Quaternion;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 public class FlowChunk extends Chunk {
 
@@ -71,6 +78,18 @@ public class FlowChunk extends Chunk {
         this.blockStore = blockStore;
         this.snapshot = new FlowChunkSnapshot(region.getSnapshot(), getPosition().toInt());
         this.snapshot.update(this);
+
+        // TEST CODE
+        if (y < 0) {
+            ((FlowWorld) region.getWorld().get()).getPhysicsManager().queuePreUpdateTask((w) -> {
+                RigidBody b = w.createRigidBody(
+                    new Transform(ReactConverter.toReactVector3(getBlockX(), getBlockY(), getBlockZ()), Quaternion.identity()),
+                    1f,
+                    new BoxShape(new Vector3(8f, 8f, 8f))
+                    );
+                b.enableMotion(false);
+            });
+        }
     }
 
     @Override

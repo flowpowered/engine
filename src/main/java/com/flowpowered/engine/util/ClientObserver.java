@@ -66,6 +66,7 @@ public class ClientObserver extends AbstractObserver {
 
     @Override
     public void update() {
+        // TODO: make this update a lot less
         updateObserver();
     }
 

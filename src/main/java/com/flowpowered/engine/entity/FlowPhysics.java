@@ -30,12 +30,13 @@ import com.flowpowered.api.entity.Physics;
 import com.flowpowered.api.geo.discrete.Point;
 import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.reference.WorldReference;
-import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.math.imaginary.Quaternionf;
 import com.flowpowered.math.vector.Vector3f;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.engine.DynamicsWorld;
 import org.spout.physics.engine.Material;
 import org.spout.physics.math.Quaternion;
 
@@ -44,8 +45,8 @@ import org.spout.physics.math.Quaternion;
  */
 public class FlowPhysics extends Physics {
     //Flow
-    private AtomicReference<Transform> snapshot = new AtomicReference<>(Transform.INVALID);
-    private AtomicReference<Transform> live = new AtomicReference<>(Transform.INVALID);
+    private final AtomicReference<Transform> snapshot = new AtomicReference<>(Transform.INVALID);
+    private final AtomicReference<Transform> live = new AtomicReference<>(Transform.INVALID);
     //React
     private RigidBody body;
     private boolean activated = false;
@@ -55,7 +56,7 @@ public class FlowPhysics extends Physics {
     }
 
     @Override
-    public FlowPhysics activate(final float mass, final CollisionShape shape) {
+    public FlowPhysics activate(final float mass, final CollisionShape shape, DynamicsWorld sim) {
         if (mass < 1f) {
             throw new IllegalArgumentException("Cannot activate physics with mass less than 1f");
         }
@@ -63,25 +64,25 @@ public class FlowPhysics extends Physics {
             throw new IllegalArgumentException("Cannot activate physics with a null shape");
         }
         deactivate();
-        FlowRegion to = (FlowRegion) entity.getRegion();
         Transform transform = live.get();
-        body = to.getDynamicsWorld().createRigidBody(new org.spout.physics.math.Transform(ReactConverter.toReactVector3(transform.getPosition().getVector()), new Quaternion(0, 0, 0, 1)), mass, shape);
+        body = sim.createRigidBody(new org.spout.physics.math.Transform(ReactConverter.toReactVector3(transform.getPosition().getVector()), new Quaternion(0, 0, 0, 1)), mass, shape);
         body.setMaterial(new Material());
         activated = true;
         return this;
     }
 
-    public void crossInto(final FlowRegion from, final FlowRegion to) {
+    public void crossInto(final FlowWorld from, final FlowWorld to) {
         if (entity != null && from != null && body != null) {
-            from.getDynamicsWorld().destroyRigidBody(body);
-            body = to.getDynamicsWorld().createRigidBody(body.getTransform(), body.getMass(), body.getCollisionShape());
+            from.getPhysicsManager().queuePreUpdateTask((w) -> w.destroyRigidBody(body));
+            body = to.getPhysicsManager().getSimulation().createRigidBody(body.getTransform(), body.getMass(), body.getCollisionShape());
         }
     }
 
     @Override
     public void deactivate() {
-        if (entity != null && entity.getRegion() != null && body != null) {
-            entity.getRegion().getDynamicsWorld().destroyRigidBody(body);
+        FlowWorld world =(FlowWorld) entity.getWorld().get();
+        if (world != null && body != null) {
+            world.getPhysicsManager().queuePreUpdateTask((w) -> w.destroyRigidBody(body));
         }
         body = null;
         activated = false;
@@ -278,7 +279,7 @@ public class FlowPhysics extends Physics {
     /**
      * Called after the simulation was polled for an update. <p> This updates Flow's live with the transform of the body. The render transform is updated with interpolation from the body </p>
      */
-    public void onPostPhysicsTick(float dt) {
+    public void onPostPhysicsTick() {
         if (body == null) {
             return;
         }

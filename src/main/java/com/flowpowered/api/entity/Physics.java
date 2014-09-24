@@ -34,6 +34,7 @@ import com.flowpowered.api.util.thread.annotation.SnapshotRead;
 import com.flowpowered.api.util.thread.annotation.Threadsafe;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.engine.DynamicsWorld;
 
 /**
  * Component that gives the owner the characteristics to be a part of a Scene. <p> A Scene consists of {@link Transform}s which represent the snapshot state, the live state, and the rendering state.
@@ -53,7 +54,7 @@ public abstract class Physics implements TransformProvider {
      * @return This component, for chaining
      * @throws IllegalArgumentException If mass is < 0f or shape is null
      */
-    public abstract Physics activate(final float mass, final CollisionShape shape);
+    public abstract Physics activate(final float mass, final CollisionShape shape, DynamicsWorld sim);
 
     /**
      * Deactivates this {@link com.flowpowered.api.entity.Entity}, removing it from the physics space

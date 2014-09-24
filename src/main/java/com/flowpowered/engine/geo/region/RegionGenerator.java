@@ -144,38 +144,43 @@ public class RegionGenerator implements Named {
                 throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " to in progress, state is " + generated.get() + " wait is " + wait);
             }
 
-            int chunkInWorldX = baseChunkX + chunkXLocal;
-            int chunkInWorldY = baseChunkY + chunkYLocal;
-            int chunkInWorldZ = baseChunkZ + chunkZLocal;
+            try {
+                int chunkInWorldX = baseChunkX + chunkXLocal;
+                int chunkInWorldY = baseChunkY + chunkYLocal;
+                int chunkInWorldZ = baseChunkZ + chunkZLocal;
 
-            final CuboidBlockMaterialBuffer buffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift);
-            ((ServerWorld) region.getWorld().get()).getGenerator().generate(buffer, region.getWorld().get());
+                final CuboidBlockMaterialBuffer buffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift, Chunk.BLOCKS.SIZE << shift);
+                ((ServerWorld) region.getWorld().get()).getGenerator().generate(buffer, region.getWorld().get());
 
-            FlowChunk[][][] chunks = new FlowChunk[width][width][width];
-            for (int xx = 0; xx < width; xx++) {
-                chunkInWorldX = baseChunkX + chunkXLocal + xx;
-                for (int zz = 0; zz < width; zz++) {
-                    chunkInWorldZ = baseChunkZ + chunkZLocal + zz;
-                    for (int yy = 0 ; yy < width; yy++) {
-                        chunkInWorldY = baseChunkY + chunkYLocal + yy;
-                        final CuboidBlockMaterialBuffer chunkBuffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
-                        chunkBuffer.write(buffer);
-                        FlowChunk newChunk = new FlowChunk(region, chunkInWorldX, chunkInWorldY, chunkInWorldZ, generationIndex, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, chunkBuffer.getRawId(), chunkBuffer.getRawData()));
-                        chunks[xx][yy][zz] = newChunk;
+                FlowChunk[][][] chunks = new FlowChunk[width][width][width];
+                for (int xx = 0; xx < width; xx++) {
+                    chunkInWorldX = baseChunkX + chunkXLocal + xx;
+                    for (int zz = 0; zz < width; zz++) {
+                        chunkInWorldZ = baseChunkZ + chunkZLocal + zz;
+                        for (int yy = 0 ; yy < width; yy++) {
+                            chunkInWorldY = baseChunkY + chunkYLocal + yy;
+                            final CuboidBlockMaterialBuffer chunkBuffer = new CuboidBlockMaterialBuffer(chunkInWorldX << Chunk.BLOCKS.BITS, chunkInWorldY << Chunk.BLOCKS.BITS, chunkInWorldZ << Chunk.BLOCKS.BITS, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE, Chunk.BLOCKS.SIZE);
+                            chunkBuffer.write(buffer);
+                            FlowChunk newChunk = new FlowChunk(region, chunkInWorldX, chunkInWorldY, chunkInWorldZ, generationIndex, new AtomicPaletteBlockStore(Chunk.BLOCKS.BITS, true, true, 10, chunkBuffer.getRawId(), chunkBuffer.getRawData()));
+                            chunks[xx][yy][zz] = newChunk;
+                        }
+
                     }
-
                 }
-            }
 
-            if (!generated.compareAndSet(GenerateState.IN_PROGRESS, GenerateState.COPYING)) {
-                throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " to copying, state is " + generated.get() + " wait is " + wait);
-            }
-            region.setGeneratedChunks(chunks);
-            genCount.incrementAndGet();
+                if (!generated.compareAndSet(GenerateState.IN_PROGRESS, GenerateState.COPYING)) {
+                    throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " to copying, state is " + generated.get() + " wait is " + wait);
+                }
+                region.setGeneratedChunks(chunks);
+                genCount.incrementAndGet();
 
-            // We need to set the generated state before we unlock the readLock so waiting generators get the state immediately
-            if (!generated.compareAndSet(GenerateState.COPYING, GenerateState.COPIED)) {
-                throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " copied twice after generation, generation state is " + generated + " wait is " + wait);
+                // We need to set the generated state before we unlock the readLock so waiting generators get the state immediately
+                if (!generated.compareAndSet(GenerateState.COPYING, GenerateState.COPIED)) {
+                    throw new IllegalStateException("Unable to set generate state for column " + sectionX + ", " + sectionY +", " + sectionZ + " in region " + region.getBase().toBlockString() + " copied twice after generation, generation state is " + generated + " wait is " + wait);
+                }
+            } catch (Exception e) {
+                generated.set(GenerateState.NONE);
+                throw e;
             }
         } finally {
             sectionLock.unlock();
@@ -190,7 +195,7 @@ public class RegionGenerator implements Named {
 
     private static void initExecutorService(Logger logger) {
         if (pool.get() == null) {
-            pool.compareAndSet(null, LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() * 2 + 1, "RegionGenerator - async pool", logger));
+            pool.compareAndSet(null, LoggingThreadPoolExecutor.newFixedThreadExecutorWithMarkedName(Runtime.getRuntime().availableProcessors() + 1, "RegionGenerator - async pool", logger));
         }
     }
 

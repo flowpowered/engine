@@ -39,6 +39,7 @@ import com.flowpowered.api.geo.discrete.Transform;
 import com.flowpowered.api.geo.reference.WorldReference;
 import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.region.FlowRegion;
+import com.flowpowered.engine.geo.world.FlowWorld;
 
 public class FlowEntity extends BaseComponentOwner implements Entity {
     private final int id;
@@ -46,7 +47,7 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
 
     private final EntityObserver observer;
 
-    public FlowEntity(Engine engine, int id, Transform transform) {
+    protected FlowEntity(Engine engine, int id, Transform transform) {
         super(engine);
         this.id = id;
         this.physics = new FlowPhysics(this);
@@ -115,14 +116,14 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
     }
 
     void finalizeRun() {
-        FlowRegion regionLive = getRegion();
-        FlowRegion regionSnapshot = (FlowRegion) physics.getSnapshottedTransform().getPosition().getRegion(LoadOption.LOAD_GEN, getEngine().getWorldManager());
+        FlowWorld worldLive = (FlowWorld) getWorld().get();
+        FlowWorld worldSnapshot = (FlowWorld) physics.getSnapshottedTransform().getPosition().getWorld().get();
         //Move entity from Region A to Region B
-        if (regionSnapshot != regionLive) {
-            regionSnapshot.getEntityManager().removeEntity(this);
+        if (worldSnapshot != worldLive) {
+            worldSnapshot.getEntityManager().removeEntity(this);
             //Add entity to Region B
-            regionLive.getEntityManager().addEntity(this);
-            physics.crossInto(regionSnapshot, regionLive);
+            worldLive.getEntityManager().addEntity(this);
+            physics.crossInto(worldSnapshot, worldLive);
         }
 
         observer.update();

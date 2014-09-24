@@ -45,7 +45,6 @@ import com.flowpowered.engine.FlowEngine;
 import com.flowpowered.engine.entity.EntityManager;
 import com.flowpowered.engine.entity.FlowEntity;
 import com.flowpowered.engine.entity.FlowEntitySnapshot;
-import com.flowpowered.engine.entity.FlowPhysics;
 import com.flowpowered.engine.filesystem.ChunkDataForRegion;
 import com.flowpowered.engine.filesystem.ChunkFiles;
 import com.flowpowered.engine.geo.FlowBlock;
@@ -53,15 +52,11 @@ import com.flowpowered.engine.geo.chunk.FlowChunk;
 import com.flowpowered.engine.geo.snapshot.FlowRegionSnapshot;
 import com.flowpowered.engine.geo.world.FlowServerWorld;
 import com.flowpowered.engine.geo.world.FlowWorld;
-import com.flowpowered.engine.physics.FlowLinkedWorldInfo;
-import com.flowpowered.engine.util.math.ReactConverter;
 import com.flowpowered.engine.scheduler.WorldTickStage;
 import com.flowpowered.events.Cause;
 import com.flowpowered.math.GenericMath;
 import com.flowpowered.math.vector.Vector3f;
 import org.apache.logging.log4j.Level;
-import org.spout.physics.engine.DynamicsWorld;
-import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 
 public class FlowRegion extends Region {
     private final RegionGenerator generator;
@@ -70,10 +65,6 @@ public class FlowRegion extends Region {
      */
     private final BAAWrapper chunkStore;
     protected final FlowEngine engine;
-    /**
-     * Holds all of the entities to be simulated
-     */
-    protected final EntityManager entityManager = new EntityManager();
     // TODO: possibly have a SoftReference of unloaded chunks to allow for quicker loading of chunk
     /**
      * Chunks used for ticking.
@@ -84,7 +75,6 @@ public class FlowRegion extends Region {
      */
     protected final AtomicReference<FlowChunk[]> live = new AtomicReference<>(new FlowChunk[CHUNKS.VOLUME]);
     private final FlowRegionSnapshot snapshot;
-    private final LinkedDynamicsWorld simulation;
 
     public FlowRegion(FlowEngine engine, FlowWorld world, int x, int y, int z, BAAWrapper chunkStore) {
         super(world, x << BLOCKS.BITS, y << BLOCKS.BITS, z << BLOCKS.BITS);
@@ -92,9 +82,6 @@ public class FlowRegion extends Region {
         this.generator = world instanceof FlowServerWorld ? new RegionGenerator(this, 4) : null;
         this.chunkStore = chunkStore;
         this.snapshot = new FlowRegionSnapshot(world.getSnapshot(), getPosition().toInt());
-        simulation = new LinkedDynamicsWorld(ReactConverter.toReactVector3(0f, -9.81f, -0f), 1/20f, new FlowLinkedWorldInfo(this));
-        //simulation.addListener(new FlowCollisionListener());
-        simulation.start();
     }
 
     @Override
@@ -140,9 +127,9 @@ public class FlowRegion extends Region {
         // If we're not waiting, then we don't care because it's async anyways
         if (loadopt.isWait()) {
             if (loadopt.generateIfNeeded()) {
-                ((FlowWorld) getWorld().get()).getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.COPY_SNAPSHOT, WorldTickStage.PRESNAPSHOT, WorldTickStage.LIGHTING));
+                getFlowWorld().getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.COPY_SNAPSHOT, WorldTickStage.PRESNAPSHOT, WorldTickStage.LIGHTING));
             } else if (loadopt.loadIfNeeded()) {
-                ((FlowWorld) getWorld().get()).getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.COPY_SNAPSHOT));
+                getFlowWorld().getThread().checkStage(WorldTickStage.noneOf(WorldTickStage.COPY_SNAPSHOT));
             }
         }
 
@@ -276,7 +263,7 @@ public class FlowRegion extends Region {
                 if (dataForRegion != null) {
                     for (FlowEntitySnapshot snapshot : dataForRegion.loadedEntities) {
                         FlowEntity entity = EntityManager.createEntity(engine, snapshot.getTransform());
-                        entityManager.addEntity(entity);
+                        getFlowWorld().getEntityManager().addEntity(entity);
                     }
                 }
             }
@@ -453,55 +440,10 @@ public class FlowRegion extends Region {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
-
-    public void finalizeRun() {
-        entityManager.finalizeRun();
-    }
-
-    public void preSnapshotRun() {
-        entityManager.preSnapshotRun();
-    }
-
     public void copySnapshotRun() {
-        entityManager.copyAllSnapshots();
         chunks.set(live.get());
         snapshot.update(this);
     }
-
-    public void startTickRun(int stage, long delta) {
-        if (stage == 0) {
-            updateEntities(delta);
-        } else if (stage == 1) {
-            updateDynamics(delta);
-        }
-    }
-
-
-	private void updateEntities(float dt) {
-		for (FlowEntity ent : entityManager.getAll()) {
-			try {
-				ent.tick(dt);
-			} catch (Exception e) {
-				engine.getLogger().log(Level.ERROR, "Unhandled exception during tick for " + ent.toString(), e);
-			}
-		}
-	}
-
-	/**
-	 * Updates physics in this region Steps simulation forward and finally alerts the API in components.
-	 */
-	private void updateDynamics(float dt) {
-		for (final Entity entity : entityManager.getAll()) {
-			((FlowPhysics) entity.getPhysics()).onPrePhysicsTick();
-		}
-        simulation.update();
-		for (final Entity entity : entityManager.getAll()) {
-			((FlowPhysics) entity.getPhysics()).onPostPhysicsTick(dt);
-		}
-	}
 
     public FlowWorld getFlowWorld() {
         return (FlowWorld) super.getWorld().refresh(engine.getWorldManager());
@@ -526,10 +468,5 @@ public class FlowRegion extends Region {
                 break;
             }
         }
-    }
-
-    @Override
-    public DynamicsWorld getDynamicsWorld() {
-        return simulation;
     }
 }
