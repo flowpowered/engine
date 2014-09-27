@@ -295,7 +295,7 @@ public class FlowPhysics extends Physics {
         Transform newLive;
         do {
             oldLive = live.get();
-            final Transform physicsLive = ReactConverter.toFlowTransform(body.getTransform(), oldLive.getPosition().getWorld(), oldLive.getScale());
+            final Transform physicsLive = new Transform(new Point(oldLive.getPosition().getWorld(), ReactConverter.toFlowVector3(body.getTransform().getPosition())), oldLive.getRotation(), oldLive.getScale());
             if (!oldLive.equals(physicsLive)) {
                 newLive = physicsLive;
                 sync();
