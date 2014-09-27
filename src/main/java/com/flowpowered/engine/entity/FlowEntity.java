@@ -118,10 +118,10 @@ public class FlowEntity extends BaseComponentOwner implements Entity {
     void finalizeRun() {
         FlowWorld worldLive = (FlowWorld) getWorld().get();
         FlowWorld worldSnapshot = (FlowWorld) physics.getSnapshottedTransform().getPosition().getWorld().get();
-        //Move entity from Region A to Region B
+        //Move entity from World A to World B
         if (worldSnapshot != worldLive) {
             worldSnapshot.getEntityManager().removeEntity(this);
-            //Add entity to Region B
+            //Add entity to World B
             worldLive.getEntityManager().addEntity(this);
             physics.crossInto(worldSnapshot, worldLive);
         }

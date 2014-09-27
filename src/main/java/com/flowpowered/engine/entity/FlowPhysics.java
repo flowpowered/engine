@@ -66,7 +66,10 @@ public class FlowPhysics extends Physics {
         deactivate();
         Transform transform = live.get();
         body = sim.createRigidBody(new org.spout.physics.math.Transform(ReactConverter.toReactVector3(transform.getPosition().getVector()), new Quaternion(0, 0, 0, 1)), mass, shape);
-        body.setMaterial(new Material());
+        Material mat = new Material();
+        mat.setBounciness(0f);
+        mat.setFrictionCoefficient(0f);
+        body.setMaterial(mat);
         activated = true;
         return this;
     }
@@ -74,7 +77,9 @@ public class FlowPhysics extends Physics {
     public void crossInto(final FlowWorld from, final FlowWorld to) {
         if (entity != null && from != null && body != null) {
             from.getPhysicsManager().queuePreUpdateTask((w) -> w.destroyRigidBody(body));
+            Material mat = body.getMaterial();
             body = to.getPhysicsManager().getSimulation().createRigidBody(body.getTransform(), body.getMass(), body.getCollisionShape());
+            body.setMaterial(mat);
         }
     }
 
@@ -272,8 +277,11 @@ public class FlowPhysics extends Physics {
         if (body == null) {
             return;
         }
-        final org.spout.physics.math.Vector3 positionLiveToReact = ReactConverter.toReactVector3(live.get().getPosition().getVector());
-        body.getTransform().setPosition(positionLiveToReact);
+        org.spout.physics.math.Transform toReact = ReactConverter.toReactTransform(live.get());
+        if (!body.getTransform().equals(toReact)) {
+            body.setIsSleeping(false);
+        }
+        body.getTransform().set(toReact);
     }
 
     /**
