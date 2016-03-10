@@ -41,6 +41,7 @@ import com.flowpowered.api.player.Player;
 import com.flowpowered.api.player.PlayerNetwork;
 import com.flowpowered.api.player.PlayerSnapshot;
 import com.flowpowered.chat.ChatReceiver;
+import com.flowpowered.commands.CommandArguments;
 import com.flowpowered.commands.CommandException;
 import com.flowpowered.engine.geo.world.FlowWorld;
 import com.flowpowered.engine.network.FlowSession;
@@ -184,7 +185,7 @@ public class FlowPlayer implements Player {
     }
 
     @Override
-    public void processCommand(String commandLine) throws CommandException {
+    public void processCommand(CommandArguments commandLine) throws CommandException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
